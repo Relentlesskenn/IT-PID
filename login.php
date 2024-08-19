@@ -1,4 +1,5 @@
 <?php
+session_start();
 $page_title = "Login";
 include('includes/header.php');
 ?>
@@ -7,6 +8,19 @@ include('includes/header.php');
     <div class="container">
             <div class="row justify-content-center">
                 <div class="col-md-6">
+
+                    <!--Alerts-->
+                    <?php
+                        if(isset($_SESSION['status'])){
+                            ?>
+                            <div class="alert alert-primary">
+                                <h5><?= $_SESSION['status']; ?></h5>
+                            </div>
+                        <?php
+                            unset($_SESSION['status']);
+                        }
+                    ?>
+
                     <div class="card shadow">
                         <div class="card-header">
                             <h3><a href="index.php"><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-arrow-left-circle" viewBox="0 0 16 16">
