@@ -1,5 +1,12 @@
 <?php
 session_start();
+
+if(isset($_SESSION['authenticated'])){
+    $_SESSION['status'] = "You are already logged in!";
+    header('Location: dashboard.php');
+    exit(0);
+}
+
 $page_title = "Login";
 include('includes/header.php');
 ?>
@@ -28,7 +35,7 @@ include('includes/header.php');
                             </svg></a> Login</h3>
                         </div>
                         <div class="card-body">
-                            <form action="">
+                            <form action="logincode.php" method="POST">
                                 <div class="form-group mb-3">
                                     <label for="">Username</label>
                                     <input type="text" name="username" class="form-control">
@@ -38,7 +45,7 @@ include('includes/header.php');
                                     <input type="password" name="password" class="form-control">
                                 </div>
                                 <div class="form-group">
-                                    <button type="submit" class="btn btn-primary">Login</button>
+                                    <button type="submit" name="login_btn" class="btn btn-primary">Login</button>
                                 </div>
                             </form>
                         </div>
