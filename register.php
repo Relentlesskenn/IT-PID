@@ -11,7 +11,8 @@ include('includes/header.php');
 
                     <!--Alerts-->
                     <?php
-                        if(isset($_SESSION['status'])){
+                        if(isset($_SESSION['status']))
+                        {
                             ?>
                             <div class="alert alert-primary">
                                 <h4><?= $_SESSION['status']; ?></h4>

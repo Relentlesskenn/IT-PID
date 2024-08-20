@@ -8,8 +8,8 @@ include('includes/header.php');
         <h1>IT-PID</h1>
         <div class="row">
             <div class="col">
-                <a class="btn btn-outline-primary my-2" href="login.php">Login</a><br>
-                <a class="btn btn-success my-2" href="register.php">Register</a>
+            <a class="btn btn-success mt-2" href="register.php">Make an account</a><br>
+                <a class="btn btn-dark mt-2" href="login.php">Log in</a>
             </div>
         </div>
     </div>
