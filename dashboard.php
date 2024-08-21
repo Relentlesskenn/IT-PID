@@ -11,7 +11,7 @@ include('includes/header.php');
                 <div class="card">
                     <div class="card-header">
                         <h4>Dashboard</h4>
-                        <a class="btn btn-danger btn-sm" href="logout.php">Logout</a>
+                        <a class="btn btn-danger btn-sm" href="logout.php">Log out</a>
                     </div>
                     <div class="card-body">
                         <h5>Welcome to IT-PID, <?= $_SESSION['auth_user']['username']?>!</h5>
