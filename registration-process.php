@@ -1,6 +1,6 @@
 <?php
 session_start();
-include('db_conn.php');
+include('_dbconnect.php');
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
@@ -56,7 +56,7 @@ function sendemail_verify($f_name,$email,$verify_token)
         if(mysqli_num_rows($check_email_query_run) > 0)
         {
             $_SESSION['status'] = "Email Address already Exists!";
-            header("Location: register.php");
+            header("Location: registration-page.php");
         } 
         else
         {
@@ -68,12 +68,12 @@ function sendemail_verify($f_name,$email,$verify_token)
                 sendemail_verify("$f_name","$email","$verify_token");
 
                 $_SESSION['status'] = "Registered Successfully! Please verify your Email Address.";
-                header("Location: register.php");
+                header("Location: login-page.php");
             }
             else
             {
                 $_SESSION['status'] = "Registration Failed!";
-                header("Location: register.php");
+                header("Location: registration-page.php");
             }
         }
 

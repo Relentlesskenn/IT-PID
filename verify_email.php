@@ -1,6 +1,6 @@
 <?php
 session_start();
-include('db_conn.php');
+include('_dbconnect.php');
 
     if(isset($_GET['token']))
     {
@@ -20,33 +20,33 @@ include('db_conn.php');
                  if($update_query_run)
                  {
                     $_SESSION['status'] = "Your Account has been verified successfully!";
-                    header("Location: login.php");
+                    header("Location: login-page.php");
                     exit(0);
                  }
                  else
                  {
                     $_SESSION['status'] = "Verification Failed!";
-                    header("Location: login.php");
+                    header("Location: login-page.php");
                     exit(0);
                  }
             }
             else
             {
                 $_SESSION['status'] = "Email Already Verified! Please Login";
-                header("Location: login.php");
+                header("Location: login-page.php");
                 exit(0);
             }
         }
         else
         {
             $_SESSION['status'] = "This token does not Exists!";
-            header("Location: login.php");
+            header("Location: login-page.php");
         }
         
     }
     else
     {
         $_SESSION['status'] = "Not Allowed!";
-        header("Location: login.php");
+        header("Location: login-page.php");
     }
 ?>

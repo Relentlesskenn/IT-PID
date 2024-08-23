@@ -1,6 +1,6 @@
 <?php
 session_start();
-include('db_conn.php');
+include('_dbconnect.php');
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
@@ -59,27 +59,27 @@ if(isset($_POST['resend_email_verification_btn']))
 
                 resend_email_verify($f_name,$email,$verify_token);
                 $_SESSION['status'] = "Verification Email Link has been sent to your email address!";
-                header("Location: login.php");
+                header("Location: login-page.php");
                 exit(0);
             }
             else
             {
                 $_SESSION['status'] = "Email already verified. Please Login!";
-                header("Location: resend_email_verification.php");
+                header("Location: resend_email_verification-page.php");
                 exit(0);
             }
         }
         else
         {
             $_SESSION['status'] = "Email is not registered. Please Register!";
-            header("Location: register.php");
+            header("Location: registration-page.php");
             exit(0);
         }
     }
     else
     {
         $_SESSION['status'] = "Please Enter an Email Address";
-        header("Location: resend_email_verification.php");
+        header("Location: resend_email_verification-page.php");
         exit(0);
     }
 }

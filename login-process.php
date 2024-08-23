@@ -1,6 +1,6 @@
 <?php
 session_start();
-include('db_conn.php');
+include('_dbconnect.php');
 
 if(isset($_POST['login_btn']))
 {
@@ -24,27 +24,27 @@ if(isset($_POST['login_btn']))
                     'username' => $row['username'],
                     'email' => $row['email']
                 ];
-                header("Location: dashboard.php");
+                header("Location: dashboard-page.php");
                 exit(0);
             }
             else
             {
                 $_SESSION['status'] = "Please Verify your Email Address to Login";
-                header("Location: dashboard.php");
+                header("Location: login-page.php");
                 exit(0);
             }
         }
         else
         {
             $_SESSION['status'] = "Invalid Username or Password!";
-            header("Location: login.php");
+            header("Location: login-page.php");
             exit(0);
         }
     }
     else
     {
         $_SESSION['status'] = "All Fields are Required!";
-        header("Location: login.php");
+        header("Location: login-page.php");
         exit(0);
     }
     
