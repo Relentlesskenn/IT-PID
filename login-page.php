@@ -11,7 +11,8 @@ if(isset($_SESSION['authenticated']))
 $page_title = "Login";
 include('includes/header.php');
 ?>
-
+<link rel="stylesheet" href=".\assets\css\text.css">
+<link rel="stylesheet" href=".\assets\css\bg.css">
 <div class="py-5">
     <div class="container">
             <div class="row justify-content-center">
@@ -49,10 +50,10 @@ include('includes/header.php');
                                 <div class="form-group">
                                     <button type="submit" name="login_btn" class="btn btn-primary w-100">Login</button>
                                     <br><br>
-                                    <a href="forgot_your_password-page.php" class="fs-6 fw-lighter text-decoration-none">Forgot your Password?</a>
+                                    <a href="forgot_your_password-page.php" class="font-sm text-decoration-none">Forgot your Password?</a>
                                 </div>
                             </form>
-                            <p class="fs-6 fw-lighter mt-2">
+                            <p class="mt-1 font-sm">
                                 Did not recieve your Verification Email?
                                 <a href="resend_email_verification-page.php" class="text-decoration-none">Resend</a>
                             </p>

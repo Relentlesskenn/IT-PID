@@ -1,0 +1,29 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: auto;
+    font-family: Lexend, sans-serif;
+  }
+  
+  .logo-container {
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .logo-text {
+    font-size: 4.5rem;
+    font-weight: bold;
+    line-height: 0.95;
+  }
+  
+  .large-text {
+    display: block;
+  }
+  
+  .tagline {
+    font-family: Lexend Exa, sans-serif;
+    font-size: .7rem;
+    margin-top: 5px;
+  }

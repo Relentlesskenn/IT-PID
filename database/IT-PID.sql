@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 23, 2024 at 01:59 AM
+-- Generation Time: Sep 01, 2024 at 08:32 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -32,9 +32,9 @@ CREATE TABLE `users` (
   `username` varchar(50) NOT NULL,
   `f_name` varchar(100) NOT NULL,
   `l_name` varchar(100) NOT NULL,
-  `email` varchar(254) NOT NULL,
-  `password` varchar(72) NOT NULL,
-  `verify_token` varchar(200) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `verify_token` varchar(255) NOT NULL,
   `verify_status` tinyint(2) NOT NULL DEFAULT 0 COMMENT '0=no,1=yes',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -44,7 +44,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `username`, `f_name`, `l_name`, `email`, `password`, `verify_token`, `verify_status`, `created_at`) VALUES
-(5, 'qyan', 'Kenneth', 'Lazo', 'it.pid.team@gmail.com', '12345678', '0a99725921d53b1d73a5bad5de9b5708itpid', 1, '2024-08-22 03:43:03');
+(9, 'qyan', 'Kenneth', 'Lazo', 'it.pid.team@gmail.com', '$2y$10$0nhJaCvppTZDabi0VIh0uuNLDwaWPl9uAZR.87zLxcyun02E3Brs.', 'c75324f5fa7c299425eb4510d508ef8aitpid', 1, '2024-09-01 06:34:26');
 
 --
 -- Indexes for dumped tables
@@ -65,7 +65,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

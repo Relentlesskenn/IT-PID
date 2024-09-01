@@ -3,7 +3,7 @@ include('authentication.php');
 $page_title = "Dashboard";
 include('includes/header.php'); 
 ?>
-
+<link rel="stylesheet" href=".\assets\css\text.css">
 <div class="py-5">
     <div class="container ">
         <div class="row">

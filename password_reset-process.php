@@ -81,8 +81,8 @@ if(isset($_POST['password_reset_btn']))
 if(isset($_POST['password_update_btn']))
 {
     $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $new_password = mysqli_real_escape_string($conn, $_POST['new_password']);
-    $confirm_password = mysqli_real_escape_string($conn, $_POST['confirm_password']);
+    $new_password = $_POST['new_password'];
+    $confirm_password = $_POST['confirm_password'];
 
     $token = mysqli_real_escape_string($conn, $_POST['password_token']);
 
@@ -98,9 +98,12 @@ if(isset($_POST['password_update_btn']))
             {
                 if($new_password == $confirm_password)
                 {
-                    $update_password = "UPDATE users SET password='$new_password' WHERE verify_token='$token' LIMIT 1";
+                    // Hash the password
+                    $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+                    
+                    $update_password = "UPDATE users SET password='$hashed_password' WHERE verify_token='$token' LIMIT 1";
                     $update_password_run = mysqli_query($conn, $update_password);
-
+                    
                     if($update_password_run)
                     {
                         $new_token = md5(rand())."itpid";
