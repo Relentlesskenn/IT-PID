@@ -4,7 +4,6 @@ $page_title = "Dashboard";
 include('includes/header.php');
 include('includes/navbar.php');
 ?>
-<link rel="stylesheet" href=".\assets\css\text.css">
 <div class="py-3">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center">
@@ -43,7 +42,6 @@ include('includes/navbar.php');
                 </div>
             </div>
         </div><br>
-        <a class="btn btn-primary btn-lg" style="border-radius: 100%" href="create-page.php">+</a>
     </div>
 </div>
 

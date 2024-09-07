@@ -4,7 +4,6 @@ session_start();
 $page_title = "Forgot Your Password?";
 include('includes/header.php');
 ?>
-<link rel="stylesheet" href=".\assets\css\text.css">
 <link rel="stylesheet" href=".\assets\css\bg.css">
 <div class="py-5">
     <div class="container">

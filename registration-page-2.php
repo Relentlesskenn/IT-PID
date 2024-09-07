@@ -9,7 +9,6 @@ if (!isset($_POST['f_name']) || !isset($_POST['l_name']) || !isset($_POST['email
     exit();
 }
 ?>
-<link rel="stylesheet" href=".\assets\css\text.css">
 <link rel="stylesheet" href=".\assets\css\bg.css">
 <div class="py-5">
     <div class="container">
