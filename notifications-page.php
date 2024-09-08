@@ -5,7 +5,7 @@ include('includes/header.php');
 ?>
 <div class="py-3">
     <div class="container">
-        <a class="btn btn-danger btn-sm" href="dashboard-page.php">X</a>
+        <a class="btn btn-danger btn-sm" href="dashboard-page.php"><</a>
     </div>
 </div>
 
