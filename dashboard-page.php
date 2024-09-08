@@ -20,7 +20,7 @@ include('includes/navbar.php');
                 </blockquote>
             </div>
         </div>
-        <div class="card mt-2">
+        <div class="card mt-2 text-center">
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-borderless">

@@ -61,7 +61,7 @@ function showPage2() {
         <div class="row justify-content-center">
             <div class="col-md-8 text-center">
                 <form method="post" action="" id="pageForm">
-                    <div class="btn-group btn-group-lg" role="group" aria-label="Page Selection">
+                    <div class="btn-group" role="group" aria-label="Page Selection">
                         <input type="radio" class="btn-check" name="page" id="page1" value="page1" autocomplete="off" <?php echo ($selected_page == 'page1') ? 'checked' : ''; ?>>
                         <label class="btn btn-outline-primary" for="page1">Budget</label>
 
