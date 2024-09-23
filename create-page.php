@@ -116,8 +116,9 @@ function showPage2() {
 if (isset($_POST['budget_btn'])) {
     $budgetName = $_POST['budget_name'];
     $budgetAmount = $_POST['budget_amount'];
+    $userId = $_SESSION['auth_user']['user_id']; 
 
-    $sql = "INSERT INTO budgets (name, amount) VALUES ('$budgetName', '$budgetAmount')";
+    $sql = "INSERT INTO budgets (user_id, name, amount) VALUES ('$userId', '$budgetName', '$budgetAmount')";
     $result = mysqli_query($conn, $sql);
 
     if ($result) {
