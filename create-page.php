@@ -72,15 +72,7 @@ function showPage2() {
                     <div class='mb-3'>
                         <label class='mb-2'>Budget Category</label>
                         <select class='form-select' name='budget_category'>
-                        <?php
-                        $userId = $_SESSION['auth_user']['user_id'];
-                        $sql = "SELECT name FROM budgets WHERE user_id = '$userId'";
-                        $result = mysqli_query($conn, $sql);
 
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            echo "<option value='" . $row['name'] . "'>" . $row['name'] . "</option>";
-                        }
-                        ?>
                         </select>
                     </div>
                     <button type='submit' class='btn btn-primary' name='expense_btn'>+ Add Expense</button>
