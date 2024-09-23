@@ -17,15 +17,26 @@ function showPage1() {
                     <div class='card-body'>
                     <form method='post'>
                         <div class='mb-3'>
-                        <label for='budget_category' class='form-label'>Budget Category</label>
+                        <label for='budget_name' class='form-label'>Budget Category</label>
                         <div class='d-flex align-items-center'>
-                            <select class='form-select flex-grow-1 me-2' name='budget_category' id='budget_category'>
+                            <select class='form-select flex-grow-1 me-2' name='budget_name'>
+                            <option value='General'>General</option>
                             <option value='Food'>Food</option>
                             <option value='Housing'>Housing</option>
+                            <option value='Groceries'>Groceries</option>
                             <option value='Transportation'>Transportation</option>
+                            <option value='Health'>Health</option>
+                            <option value='Clothing'>Clothing</option>
+                            <option value='Insurance'>Insurance</option>
+                            <option value='Education'>Education</option>
                             <option value='Utilities'>Utilities</option>
                             <option value='Entertainment'>Entertainment</option>
-                            <option value='Other'>Other</option>
+                            <option value='Pets'>Pets</option>
+                            <option value='Kids'>Kids</option>
+                            <option value='Technology'>Technology</option>
+                            <option value='Travel'>Travel</option>
+                            <option value='Taxes'>Taxes</option>
+                            <option value='Gifts'>Gifts</option>
                             </select>
                             <button type='button' class='btn btn-primary btn-sm' id='add-category-btn'>+</button>
                         </div>
@@ -104,7 +115,6 @@ function showPage2() {
 <?php
 if (isset($_POST['budget_btn'])) {
     $budgetName = $_POST['budget_name'];
-    $budgetCategory = $_POST['budget_category'];
     $budgetAmount = $_POST['budget_amount'];
 
     $sql = "INSERT INTO budgets (name, amount) VALUES ('$budgetName', '$budgetAmount')";
