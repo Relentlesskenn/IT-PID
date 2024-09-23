@@ -72,9 +72,7 @@ function showPage2() {
                     <div class='mb-3'>
                         <label class='mb-2'>Budget Category</label>
                         <select class='form-select'>
-                            <option value='1'>One</option>
-                            <option value='2'>Two</option>
-                            <option value='3'>Three</option>
+                            
                         </select>
                     </div>
                     <button type='submit' class='btn btn-primary' name='expense_btn'>+ Add Expense</button>
@@ -143,6 +141,21 @@ if (isset($_POST['addCategoryBtn'])) {
         echo "<script>alert('Error adding category!');</script>";
     }
 }
+
+if (isset($_POST['expense_btn'])) {
+    $expenseName = $_POST['expense_name'];
+    $expenseAmount = $_POST['expense_amount'];
+    $userId = $_SESSION['auth_user']['user_id'];
+
+    $sql = "INSERT INTO expenses (user_id, name, amount) VALUES ('$userId', '$expenseName', '$expenseAmount')";
+    $result = mysqli_query($conn, $sql);
+
+    if ($result) {
+        echo "<script>alert('Expense added successfully!');</script>";
+    } else {
+        echo "<script>alert('Error adding expense!');</script>";
+    }
+}
 ?>
 
 <script>
@@ -158,12 +171,12 @@ document.querySelectorAll('input[name="page"]').forEach(radio => {
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="modal-title fs-5" id="addCategoryModalLabel">Add New Category</h1>
+        <h1 class="modal-title fs-5" id="addCategoryModalLabel">Add Custom Category</h1>
       </div>
       <div class="modal-body">
         <form method="post">
             <div class="mb-3">
-                <label for="newCategoryName" class="form-label">Category Name</label>
+                <label for="newCategoryName" class="form-label">Custom Category Name</label>
                 <input type="text" class="form-control" name="newCategoryName" required>
             </div>
             <div class='mb-3'>
