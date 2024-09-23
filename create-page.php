@@ -14,9 +14,7 @@ function showPage1() {
             <div class='card-body'>
                 <form method='post'>
                     <div class='mb-3'>
-                        <label for='budget_category' class='form-label'>Budget Category 
-                            <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addCategoryModal">+</button>
-                        </label>
+                        <label for='budget_category' class='form-label'>Budget Category</label>
                         <select class='form-select' name='budget_category'>
                             <option value='Food'>Food</option>
                             <option value='Housing'>Housing</option>
@@ -118,45 +116,5 @@ document.querySelectorAll('input[name="page"]').forEach(radio => {
     });
 });
 </script>
-
-<!-- Modal -->
-<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Add form for creating new category here -->
-                <form method="post">
-                    <div class="mb-3">
-                        <label for="new_category_name" class="form-label">Category Name</label>
-                        <input type="text" class="form-control" id="new_category_name" name="new_category_name">
-                    </div>
-                    <button type="submit" class="btn btn-primary" name="add_category_btn">Add Category</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<?php
-if (isset($_POST['add_category_btn'])) {
-    $newCategoryName = $_POST['new_category_name'];
-
-    // Perform database insertion or any other necessary action
-    // Example:
-    // $sql = "INSERT INTO categories (name) VALUES ('$newCategoryName')";
-    // $result = mysqli_query($conn, $sql);
-
-    // Handle success or failure of the operation
-    if ($result) {
-        echo "<script>alert('Category added successfully!');</script>";
-    } else {
-        echo "<script>alert('Error adding category!');</script>";
-    }
-}
-?>
 
 <?php include('includes/footer.php') ?>
