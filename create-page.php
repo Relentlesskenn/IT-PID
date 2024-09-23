@@ -34,7 +34,7 @@ function showPage1() {
                         <label for='budget_amount' class='form-label'>Amount</label>
                         <input type='text' class='form-control' id='budget_amount' name='budget_amount'>
                         </div>
-                        <button type='submit' class='btn btn-primary w-100' name='budget_btn'>Add Budget</button>
+                        <button type='submit' class='btn btn-primary w-100' name='budget_btn'>+ Add Budget</button>
                     </form>
                     </div>
                 </div>
@@ -66,7 +66,7 @@ function showPage2() {
                             <option value='3'>Three</option>
                         </select>
                     </div>
-                    <button type='submit' class='btn btn-primary' name='expense_btn'>Add Expense</button>
+                    <button type='submit' class='btn btn-primary' name='expense_btn'>+ Add Expense</button>
                 </form>
             </div>
         </div>";
@@ -143,8 +143,7 @@ document.querySelectorAll('input[name="page"]').forEach(radio => {
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" id="saveCategoryBtn">Save changes</button>
+        <button type="button" class="btn btn-primary" id="saveCategoryBtn">+ Add</button>
       </div>
     </div>
   </div>
