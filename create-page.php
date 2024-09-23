@@ -14,8 +14,8 @@ function showPage1() {
             <div class='card-body'>
                 <form method='post'>
                     <div class='mb-3'>
-                        <label for='budget_name' class='form-label'>Budget Category</label>
-                        <select class='form-select' name='budget_name'>
+                        <label for='budget_category' class='form-label'>Budget Category</label>
+                        <select class='form-select' name='budget_category'>
                             <option value='Food'>Food</option>
                             <option value='Housing'>Housing</option>
                             <option value='Transportation'>Transportation</option>
@@ -95,6 +95,7 @@ function showPage2() {
 <?php
 if (isset($_POST['budget_btn'])) {
     $budgetName = $_POST['budget_name'];
+    $budgetCategory = $_POST['budget_category'];
     $budgetAmount = $_POST['budget_amount'];
 
     $sql = "INSERT INTO budgets (name, amount) VALUES ('$budgetName', '$budgetAmount')";
