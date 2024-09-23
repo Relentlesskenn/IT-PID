@@ -122,6 +122,9 @@ if (isset($_POST['budget_btn'])) {
 
     if ($result) {
         echo "<script>alert('Budget added successfully!');</script>";
+        $_SESSION['notification'] = "Budget '$budgetName' added successfully!"; 
+        header("Location: notifications-page.php"); 
+        exit();
     } else {
         echo "<script>alert('Error adding budget!');</script>";
     }
