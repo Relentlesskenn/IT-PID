@@ -1,7 +1,7 @@
 <?php
+$page_title = "Create";
 include('_dbconnect.php');
 include('authentication.php');
-$page_title = "Create";
 include('includes/header.php'); 
 
 $selected_page = isset($_POST['page']) ? $_POST['page'] : 'page1';
@@ -43,7 +43,7 @@ function showPage1() {
                         </div>
                         <div class='mb-3'>
                         <label for='budget_amount' class='form-label'>Amount</label>
-                        <input type='text' class='form-control' id='budget_amount' name='budget_amount'>
+                        <input type='text' class='form-control' name='budget_amount' required>
                         </div>
                         <button type='submit' class='btn btn-primary w-100' name='budget_btn'>+ Add Budget</button>
                     </form>
@@ -85,7 +85,7 @@ function showPage2() {
 ?>
 <div class="py-3">
     <div class="container">
-        <a class="btn btn-danger btn-sm mb-3" href="dashboard-page.php"><</a>
+        <a class="btn btn-secondary btn-sm mb-3" href="dashboard-page.php">X</a>
         <div class="row justify-content-center">
             <div class="col-md-8 text-center">
                 <form method="post" action="" id="pageForm">
@@ -127,6 +127,22 @@ if (isset($_POST['budget_btn'])) {
         echo "<script>alert('Error adding budget!');</script>";
     }
 }
+
+// Add New Category Process
+if (isset($_POST['addCategoryBtn'])) {
+    $newCategoryName = $_POST['newCategoryName'];
+    $newCategoryAmount = $_POST['newCategoryAmount'];
+    $userId = $_SESSION['auth_user']['user_id'];
+
+    $sql = "INSERT INTO budgets (user_id, name, amount) VALUES ('$userId', '$newCategoryName', '$newCategoryAmount')";
+    $result = mysqli_query($conn, $sql);
+
+    if ($result) {
+        echo "<script>alert('Custom Category added successfully!');</script>";
+    } else {
+        echo "<script>alert('Error adding category!');</script>";
+    }
+}
 ?>
 
 <script>
@@ -145,16 +161,18 @@ document.querySelectorAll('input[name="page"]').forEach(radio => {
         <h1 class="modal-title fs-5" id="addCategoryModalLabel">Add New Category</h1>
       </div>
       <div class="modal-body">
-        <form id="addCategoryForm">
+        <form method="post">
             <div class="mb-3">
                 <label for="newCategoryName" class="form-label">Category Name</label>
-                <input type="text" class="form-control" id="newCategoryName" name="newCategoryName" required>
+                <input type="text" class="form-control" name="newCategoryName" required>
             </div>
+            <div class='mb-3'>
+                        <label for='budget_amount' class='form-label'>Amount</label>
+                        <input type='text' class='form-control' name='newCategoryAmount' required>
+            </div>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Close</button>
+            <button type="submit" class="btn btn-primary" name="addCategoryBtn">+ Add</button>
         </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Close</button>
-        <button type="button" class="btn btn-primary" id="saveCategoryBtn">+ Add</button>
       </div>
     </div>
   </div>

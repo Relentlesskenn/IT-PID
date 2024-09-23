@@ -1,6 +1,6 @@
 <?php
-include('authentication.php');
 $page_title = "Dashboard";
+include('authentication.php');
 include('includes/header.php');
 include('includes/navbar.php');
 ?>
@@ -15,8 +15,8 @@ include('includes/navbar.php');
         <div class="card mt-3">
             <div class="card-body">
                 <blockquote class="blockquote mb-0 font-sm">
-                <p>A well-known quote, contained in a blockquote element.</p>
-                <footer class="blockquote-footer">Someone famous in <cite title="Source Title">Source Title</cite></footer>
+                <p>“A penny saved is a penny earned.”</p>
+                <footer class="blockquote-footer">Benjamin Franklin</footer>
                 </blockquote>
             </div>
         </div>
