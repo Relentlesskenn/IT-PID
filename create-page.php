@@ -1,4 +1,5 @@
 <?php
+include('_dbconnect.php');
 include('authentication.php');
 $page_title = "Create";
 include('includes/header.php'); 
@@ -13,12 +14,12 @@ function showPage1() {
             <div class='card-body'>
                 <form method='post'>
                     <div class='mb-3'>
-                        <label for='budget_name' class='form-label'>Budget Name</label>
-                        <input type='text' class='form-control' id='budget_name'>
+                        <label for='budget_name' class='form-label'>Budget Category</label>
+                        <input type='text' class='form-control' name='budget_name'>
                     </div>    
                     <div class='mb-3'>
                         <label for='budget_amount' class='form-label'>Amount</label>
-                        <input type='number' class='form-control' id='budget_amount'>
+                        <input type='number' class='form-control' name='budget_amount'>
                     </div>
                     <button type='submit' class='btn btn-primary' name='budget_btn'>Add Budget</button>
                 </form>
@@ -86,16 +87,12 @@ function showPage2() {
 
 <?php
 if (isset($_POST['budget_btn'])) {
-    // Assuming you have a database connection established
     $budgetName = $_POST['budget_name'];
     $budgetAmount = $_POST['budget_amount'];
 
-    // Perform database insertion or any other necessary action
-    // Example:
-    // $sql = "INSERT INTO budgets (name, amount) VALUES ('$budgetName', '$budgetAmount')";
-    // $result = mysqli_query($conn, $sql);
+    $sql = "INSERT INTO budgets (name, amount) VALUES ('$budgetName', '$budgetAmount')";
+    $result = mysqli_query($conn, $sql);
 
-    // Handle success or failure of the operation
     if ($result) {
         echo "<script>alert('Budget added successfully!');</script>";
     } else {
