@@ -27,7 +27,7 @@ function showPage1() {
                             <option value='Entertainment'>Entertainment</option>
                             <option value='Other'>Other</option>
                             </select>
-                            <button type='button' class='btn btn-primary btn-sm'>+</button>
+                            <button type='button' class='btn btn-primary btn-sm' id='add-category-btn'>+</button>
                         </div>
                         </div>
                         <div class='mb-3'>
@@ -123,6 +123,44 @@ document.querySelectorAll('input[name="page"]').forEach(radio => {
     radio.addEventListener('change', function() {
         document.getElementById('pageForm').submit();
     });
+});
+</script>
+
+<!-- Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="addCategoryModalLabel">Add New Category</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addCategoryForm">
+            <div class="mb-3">
+                <label for="newCategoryName" class="form-label">Category Name</label>
+                <input type="text" class="form-control" id="newCategoryName" name="newCategoryName" required>
+            </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="saveCategoryBtn">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('input[name="page"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        document.getElementById('pageForm').submit();
+    });
+});
+
+document.getElementById('add-category-btn').addEventListener('click', function() {
+    // Show the modal
+    var myModal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
+    myModal.show();
 });
 </script>
 
