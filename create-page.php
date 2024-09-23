@@ -15,8 +15,15 @@ function showPage1() {
                 <form method='post'>
                     <div class='mb-3'>
                         <label for='budget_name' class='form-label'>Budget Category</label>
-                        <input type='text' class='form-control' name='budget_name'>
-                    </div>    
+                        <select class='form-select' name='budget_name'>
+                            <option value='Food'>Food</option>
+                            <option value='Housing'>Housing</option>
+                            <option value='Transportation'>Transportation</option>
+                            <option value='Utilities'>Utilities</option>
+                            <option value='Entertainment'>Entertainment</option>
+                            <option value='Other'>Other</option>
+                        </select>
+                    </div>
                     <div class='mb-3'>
                         <label for='budget_amount' class='form-label'>Amount</label>
                         <input type='number' class='form-control' name='budget_amount'>
