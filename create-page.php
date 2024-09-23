@@ -7,34 +7,40 @@ include('includes/header.php');
 $selected_page = isset($_POST['page']) ? $_POST['page'] : 'page1';
 
 function showPage1() {
-    echo "<div class='card'>
-            <div class='card-header'>
-                Create a Budget Category
-            </div>
-            <div class='card-body'>
-                <form method='post'>
-                    <div class='mb-3 d-flex align-items-center'>
-                        <div>
-                            <label for='budget_category' class='form-label'>Budget Category</label>
-                            <select class='form-select' name='budget_category'>
-                                <option value='Food'>Food</option>
-                                <option value='Housing'>Housing</option>
-                                <option value='Transportation'>Transportation</option>
-                                <option value='Utilities'>Utilities</option>
-                                <option value='Entertainment'>Entertainment</option>
-                                <option value='Other'>Other</option>
+    echo "<div class='container'>
+            <div class='row justify-content-center'>
+                <div class='col-md-6'>
+                <div class='card'>
+                    <div class='card-header'>
+                    Create a Budget Category
+                    </div>
+                    <div class='card-body'>
+                    <form method='post'>
+                        <div class='mb-3'>
+                        <label for='budget_category' class='form-label'>Budget Category</label>
+                        <div class='d-flex align-items-center'>
+                            <select class='form-select flex-grow-1 me-2' name='budget_category' id='budget_category'>
+                            <option value='Food'>Food</option>
+                            <option value='Housing'>Housing</option>
+                            <option value='Transportation'>Transportation</option>
+                            <option value='Utilities'>Utilities</option>
+                            <option value='Entertainment'>Entertainment</option>
+                            <option value='Other'>Other</option>
                             </select>
+                            <button type='button' class='btn btn-primary btn-sm'>+</button>
                         </div>
-                        <button type='button' class='btn btn-primary ms-auto'>+</button> 
-                    </div>
-                    <div class='mb-3'>
+                        </div>
+                        <div class='mb-3'>
                         <label for='budget_amount' class='form-label'>Amount</label>
-                        <input type='number' class='form-control' name='budget_amount'>
+                        <input type='text' class='form-control' id='budget_amount' name='budget_amount'>
+                        </div>
+                        <button type='submit' class='btn btn-primary w-100' name='budget_btn'>Add Budget</button>
+                    </form>
                     </div>
-                    <button type='submit' class='btn btn-primary' name='budget_btn'>Add Budget</button>
-                </form>
+                </div>
+                </div>
             </div>
-        </div>";
+            </div>";
 }
 
 function showPage2() {
@@ -50,7 +56,7 @@ function showPage2() {
                     </div>
                     <div class='mb-3'>
                         <label for='expense_amount' class='form-label'>Amount</label>
-                        <input type='number' class='form-control' id='expense_amount'>
+                        <input type='text' class='form-control' id='expense_amount'>
                     </div>
                     <div class='mb-3'>
                         <label class='mb-2'>Budget Category</label>
