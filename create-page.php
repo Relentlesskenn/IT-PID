@@ -61,6 +61,7 @@ function showPage2() {
         <div class="row justify-content-center">
             <div class="col-md-8 text-center">
                 <form method="post" action="" id="pageForm">
+                    <input type="hidden" name="submitted_page" value="<?php echo $selected_page; ?>">
                     <div class="btn-group" role="group" aria-label="Page Selection">
                         <input type="radio" class="btn-check" name="page" id="page1" value="page1" autocomplete="off" <?php echo ($selected_page == 'page1') ? 'checked' : ''; ?>>
                         <label class="btn btn-outline-primary" for="page1">Budget</label>
@@ -82,6 +83,27 @@ function showPage2() {
         </div>
     </div>
 </div>
+
+<?php
+if (isset($_POST['budget_btn'])) {
+    // Assuming you have a database connection established
+    $budgetName = $_POST['budget_name'];
+    $budgetAmount = $_POST['budget_amount'];
+
+    // Perform database insertion or any other necessary action
+    // Example:
+    // $sql = "INSERT INTO budgets (name, amount) VALUES ('$budgetName', '$budgetAmount')";
+    // $result = mysqli_query($conn, $sql);
+
+    // Handle success or failure of the operation
+    if ($result) {
+        echo "<script>alert('Budget added successfully!');</script>";
+    } else {
+        echo "<script>alert('Error adding budget!');</script>";
+    }
+}
+?>
+
 <script>
 document.querySelectorAll('input[name="page"]').forEach(radio => {
     radio.addEventListener('change', function() {
