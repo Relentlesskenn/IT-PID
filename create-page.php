@@ -13,16 +13,19 @@ function showPage1() {
             </div>
             <div class='card-body'>
                 <form method='post'>
-                    <div class='mb-3'>
-                        <label for='budget_category' class='form-label'>Budget Category</label>
-                        <select class='form-select' name='budget_category'>
-                            <option value='Food'>Food</option>
-                            <option value='Housing'>Housing</option>
-                            <option value='Transportation'>Transportation</option>
-                            <option value='Utilities'>Utilities</option>
-                            <option value='Entertainment'>Entertainment</option>
-                            <option value='Other'>Other</option>
-                        </select>
+                    <div class='mb-3 d-flex align-items-center'>
+                        <div>
+                            <label for='budget_category' class='form-label'>Budget Category</label>
+                            <select class='form-select' name='budget_category'>
+                                <option value='Food'>Food</option>
+                                <option value='Housing'>Housing</option>
+                                <option value='Transportation'>Transportation</option>
+                                <option value='Utilities'>Utilities</option>
+                                <option value='Entertainment'>Entertainment</option>
+                                <option value='Other'>Other</option>
+                            </select>
+                        </div>
+                        <button type='button' class='btn btn-secondary ms-2' id='add-category-btn'>+</button> 
                     </div>
                     <div class='mb-3'>
                         <label for='budget_amount' class='form-label'>Amount</label>
