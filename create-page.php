@@ -25,7 +25,7 @@ function showPage1() {
                                 <option value='Other'>Other</option>
                             </select>
                         </div>
-                        <button type='button' class='btn btn-secondary ms-2' id='add-category-btn'>+</button> 
+                        <button type='button' class='btn btn-primary'>+</button> 
                     </div>
                     <div class='mb-3'>
                         <label for='budget_amount' class='form-label'>Amount</label>
