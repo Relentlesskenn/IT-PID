@@ -63,11 +63,11 @@ function showPage2() {
                 <form method='post'>
                     <div class='mb-3'>
                         <label for='expense_name' class='form-label'>Expense Name</label>
-                        <input type='text' class='form-control' id='expense_name'>
+                        <input type='text' class='form-control' name='expense_name' required>
                     </div>
                     <div class='mb-3'>
                         <label for='expense_amount' class='form-label'>Amount</label>
-                        <input type='text' class='form-control' id='expense_amount'>
+                        <input type='text' class='form-control' name='expense_amount' required>
                     </div>
                     <div class='mb-3'>
                         <label class='mb-2'>Budget Category</label>
@@ -77,27 +77,29 @@ function showPage2() {
                             echo "
                         </select>
                     </div>
-                    <button type='submit' class='btn btn-primary' name='expense_btn'>+ Add Expense</button>
+                    <button type='submit' class='btn btn-primary w-100' name='expense_btn'>+ Add Expense</button>
                 </form>
             </div>
         </div>";
 }
 
+// Fetch Budget Categories
 function fetchBudgetCategories() {
     global $conn;
     $userId = $_SESSION['auth_user']['user_id'];
-    $sql = "SELECT name FROM budgets WHERE user_id = '$userId'";
+    $sql = "SELECT id, name FROM budgets WHERE user_id = '$userId'";
     $result = mysqli_query($conn, $sql);
 
     if (mysqli_num_rows($result) > 0) {
         while ($row = mysqli_fetch_assoc($result)) {
-            echo "<option value='" . $row['name'] . "'>" . $row['name'] . "</option>";
+            echo "<option value='" . $row['id'] . "'>" . $row['name'] . "</option>";
         }
     } else {
         echo "<option value='No categories found'>No categories found</option>";
     }
 }
 ?>
+
 <div class="py-3">
     <div class="container">
         <a class="btn btn-secondary btn-sm mb-3" href="dashboard-page.php">X</a>
@@ -128,6 +130,7 @@ function fetchBudgetCategories() {
 </div>
 
 <?php
+// Add New Budget Process
 if (isset($_POST['budget_btn'])) {
     $budgetName = $_POST['budget_name'];
     $budgetAmount = $_POST['budget_amount'];
@@ -159,12 +162,14 @@ if (isset($_POST['addCategoryBtn'])) {
     }
 }
 
+// Add New Expense Process
 if (isset($_POST['expense_btn'])) {
     $expenseName = $_POST['expense_name'];
     $expenseAmount = $_POST['expense_amount'];
     $userId = $_SESSION['auth_user']['user_id'];
+    $budgetCategory = $_POST['budget_category'];
 
-    $sql = "INSERT INTO expenses (user_id, name, amount) VALUES ('$userId', '$expenseName', '$expenseAmount')";
+    $sql = "INSERT INTO expenses (user_id, name, amount, category_id) VALUES ('$userId', '$expenseName', '$expenseAmount', '$budgetCategory')";
     $result = mysqli_query($conn, $sql);
 
     if ($result) {
