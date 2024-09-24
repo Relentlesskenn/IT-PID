@@ -60,7 +60,7 @@ include('includes/navbar.php');
                         <p class="card-text" style="font-size: 0.8rem;">Remaining - ₱<?= number_format($remainingBalance, 2) ?></p>
                         <div class="progress"> 
                         <div class="progress-bar <?php if ($percentageUsed >= 90) { echo 'bg-danger'; } elseif ($percentageUsed >= 70) { echo 'bg-warning'; } else { echo 'bg-success'; } ?>" 
-                        role="progressbar" style="width: <?= $percentageUsed ?>%;" aria-valuenow="<?= $percentageUsed ?>" aria-valuemin="0"aria-valuemax="100"><?= round($percentageUsed) ?>%</div>
+                        role="progressbar" style="width: <?= $percentageUsed ?>%;" aria-valuenow="<?= $percentageUsed ?>" aria-valuemin="0"aria-valuemax="100"><?= ($percentageUsed) ?>%</div>
                         </div>
                     </div>
                 </div>
