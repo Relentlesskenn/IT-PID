@@ -52,7 +52,7 @@ include('includes/navbar.php');
                 $remainingBalance = $budgetAmount - $totalExpenses;
                 $percentageUsed = ($totalExpenses / $budgetAmount) * 100;
                 ?>
-                <div class="card mt-3 p-2" style="max-width: 190px; width: 100%;">
+                <div class="card mt-3 p-2">
                     <div class="card-body">
                         <h6 class="card-title" style="font-size: 1.3rem; font-weight: bold;"><?= $budgetName ?></h6>
                         <p class="card-text">Budget - ₱<?= number_format($budgetAmount, 2) ?></p>
