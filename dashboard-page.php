@@ -36,7 +36,7 @@ include('includes/navbar.php');
                 </div>
             </div>
         </div>
-
+        
         <?php
         // Fetch budget data from the database
         $userId = $_SESSION['auth_user']['user_id'];
@@ -58,10 +58,9 @@ include('includes/navbar.php');
                         <p class="card-text" style="font-size: 0.8rem;">Budget - ₱<?= number_format($budgetAmount, 2) ?></p>
                         <p class="card-text" style="font-size: 0.8rem;">Spent - ₱<?= number_format($totalExpenses, 2) ?></p>
                         <p class="card-text" style="font-size: 0.8rem;">Remaining - ₱<?= number_format($remainingBalance, 2) ?></p>
-                        <div class="progress" style="height: 5px;"> 
-                            <div class="progress-bar <?php if ($percentageUsed >= 90) { echo 'bg-danger'; } elseif ($percentageUsed >= 75) { echo 'bg-warning'; } ?>" 
-                            role="progressbar" style="width: <?= $percentageUsed ?>%;" aria-valuenow="<?= $percentageUsed ?>" aria-valuemin="0"      
-                            aria-valuemax="100"></div>
+                        <div class="progress"> 
+                        <div class="progress-bar <?php if ($percentageUsed >= 90) { echo 'bg-danger'; } elseif ($percentageUsed >= 70) { echo 'bg-warning'; } else { echo 'bg-success'; } ?>" 
+                        role="progressbar" style="width: <?= $percentageUsed ?>%;" aria-valuenow="<?= $percentageUsed ?>" aria-valuemin="0"aria-valuemax="100"><?= round($percentageUsed) ?>%</div>
                         </div>
                     </div>
                 </div>
