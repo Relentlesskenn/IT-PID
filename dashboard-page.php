@@ -52,13 +52,13 @@ include('includes/navbar.php');
                 $remainingBalance = $budgetAmount - $totalExpenses;
                 $percentageUsed = ($totalExpenses / $budgetAmount) * 100;
                 ?>
-                <div class="card mt-3">
+                <div class="card mt-3 p-2" style="max-width: 190px; width: 100%;">
                     <div class="card-body">
-                        <h5 class="card-title"><?= $budgetName ?></h5>
-                        <p class="card-text">Budget: ₱<?= number_format($budgetAmount, 2) ?></p>
-                        <p class="card-text">Expenses: ₱<?= number_format($totalExpenses, 2) ?></p>
-                        <p class="card-text">Remaining: ₱<?= number_format($remainingBalance, 2) ?></p>
-                        <div class="progress">
+                        <h6 class="card-title" style="font-size: 1.3rem; font-weight: bold;"><?= $budgetName ?></h6>
+                        <p class="card-text">Budget - ₱<?= number_format($budgetAmount, 2) ?></p>
+                        <p class="card-text">Spent - ₱<?= number_format($totalExpenses, 2) ?></p>
+                        <p class="card-text">Remaining - ₱<?= number_format($remainingBalance, 2) ?></p>
+                        <div class="progress"> 
                             <div class="progress-bar <?php if ($percentageUsed >= 90) { echo 'bg-danger'; } elseif ($percentageUsed >= 75) { echo 'bg-warning'; } ?>" 
                             role="progressbar" style="width: <?= $percentageUsed ?>%;" aria-valuenow="<?= $percentageUsed ?>" aria-valuemin="0"      
                             aria-valuemax="100"><?= round($percentageUsed) ?>%</div>
