@@ -72,13 +72,30 @@ function showPage2() {
                     <div class='mb-3'>
                         <label class='mb-2'>Budget Category</label>
                         <select class='form-select' name='budget_category'>
-
+                            ";
+                            fetchBudgetCategories();
+                            echo "
                         </select>
                     </div>
                     <button type='submit' class='btn btn-primary' name='expense_btn'>+ Add Expense</button>
                 </form>
             </div>
         </div>";
+}
+
+function fetchBudgetCategories() {
+    global $conn;
+    $userId = $_SESSION['auth_user']['user_id'];
+    $sql = "SELECT name FROM budgets WHERE user_id = '$userId'";
+    $result = mysqli_query($conn, $sql);
+
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<option value='" . $row['name'] . "'>" . $row['name'] . "</option>";
+        }
+    } else {
+        echo "<option value='No categories found'>No categories found</option>";
+    }
 }
 ?>
 <div class="py-3">
