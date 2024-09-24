@@ -50,6 +50,7 @@ include('includes/navbar.php');
                 $budgetAmount = $row['amount'];
                 $totalExpenses = $row['total_expenses'];
                 $remainingBalance = $budgetAmount - $totalExpenses;
+                $percentageUsed = ($totalExpenses / $budgetAmount) * 100;
                 ?>
                 <div class="card mt-3">
                     <div class="card-body">
@@ -57,6 +58,9 @@ include('includes/navbar.php');
                         <p class="card-text">Budget: ₱<?= number_format($budgetAmount, 2) ?></p>
                         <p class="card-text">Expenses: ₱<?= number_format($totalExpenses, 2) ?></p>
                         <p class="card-text">Remaining: ₱<?= number_format($remainingBalance, 2) ?></p>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: <?= $percentageUsed ?>%;" aria-valuenow="<?= $percentageUsed ?>" aria-valuemin="0" aria-valuemax="100"><?= round($percentageUsed) ?>%</div>
+                        </div>
                     </div>
                 </div>
                 <?php
