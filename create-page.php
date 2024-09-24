@@ -180,8 +180,8 @@ document.querySelectorAll('input[name="page"]').forEach(radio => {
                 <input type="text" class="form-control" name="newCategoryName" required>
             </div>
             <div class='mb-3'>
-                        <label for='budget_amount' class='form-label'>Amount</label>
-                        <input type='text' class='form-control' name='newCategoryAmount' required>
+                <label for='budget_amount' class='form-label'>Amount</label>
+                <input type='text' class='form-control' name='newCategoryAmount' required>
             </div>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Close</button>
             <button type="submit" class="btn btn-primary" name="addCategoryBtn">+ Add</button>
