@@ -54,9 +54,9 @@ include('includes/navbar.php');
                 <div class="card mt-3">
                     <div class="card-body">
                         <h5 class="card-title"><?= $budgetName ?></h5>
-                        <p class="card-text">Budget: $<?= number_format($budgetAmount, 2) ?></p>
-                        <p class="card-text">Expenses: $<?= number_format($totalExpenses, 2) ?></p>
-                        <p class="card-text">Remaining: $<?= number_format($remainingBalance, 2) ?></p>
+                        <p class="card-text">Budget: ₱<?= number_format($budgetAmount, 2) ?></p>
+                        <p class="card-text">Expenses: ₱<?= number_format($totalExpenses, 2) ?></p>
+                        <p class="card-text">Remaining: ₱<?= number_format($remainingBalance, 2) ?></p>
                     </div>
                 </div>
                 <?php
