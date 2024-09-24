@@ -14,7 +14,7 @@ include('includes/navbar.php');
             </svg></a>
         </div>
 
-        <div class="card mt-3 text-center">
+        <div class="card my-3 text-center">
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-borderless">
@@ -36,7 +36,8 @@ include('includes/navbar.php');
                 </div>
             </div>
         </div>
-        
+
+        <div class="row row-cols-2 g-4">
         <?php
         // Fetch budget data from the database
         $userId = $_SESSION['auth_user']['user_id'];
@@ -51,36 +52,36 @@ include('includes/navbar.php');
                 $totalExpenses = $row['total_expenses'];
                 $remainingBalance = $budgetAmount - $totalExpenses;
                 $percentageUsed = ($totalExpenses / $budgetAmount) * 100;
-                ?>
-                <div class="row row-cols-1 row-cols-md-2 g-4">
-                    <div class="col">
-                        <div class="card mt-3 p-2">
-                            <div class="card-body">
-                                <h6 class="card-title" style="font-size: 1rem; font-weight: bold;"><?= $budgetName ?></h6>
-                                <p class="card-text" style="font-size: 0.8rem;">Budget - ₱<?= number_format($budgetAmount, 2) ?></p>
-                                <p class="card-text" style="font-size: 0.8rem;">Spent - ₱<?= number_format($totalExpenses, 2) ?></p>
-                                <p class="card-text" style="font-size: 0.8rem;">Remaining - ₱<?= number_format($remainingBalance, 2) ?></p>
-                                <div class="progress"> 
-                                <div class="progress-bar <?php if ($percentageUsed >= 90) { echo 'bg-danger'; } elseif ($percentageUsed >= 70) { echo 'bg-warning'; } else { echo 'bg-success'; } ?>" 
-                                role="progressbar" style="width: <?= $percentageUsed ?>%;" aria-valuenow="<?= $percentageUsed ?>" aria-valuemin="0"aria-valuemax="100"><?= ($percentageUsed) ?>%</div>
-                                </div>
+        ?>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title" style="font-size: 0.9rem; font-weight: bold;"><?= $budgetName ?></h6>
+                            <p class="card-text" style="font-size: 0.7rem;">Budget - ₱<?= number_format($budgetAmount, 2) ?></p>
+                            <p class="card-text" style="font-size: 0.7rem;">Spent - ₱<?= number_format($totalExpenses, 2) ?></p>
+                            <p class="card-text" style="font-size: 0.7rem;">Remaining - ₱<?= number_format($remainingBalance, 2) ?></p>
+                            <div class="progress" style="height: 13px;">
+                                <div class="progress-bar <?php if ($percentageUsed >= 90) { echo 'bg-danger'; } elseif ($percentageUsed >= 70) { echo 'bg-warning'; } else { echo 'bg-success'; } ?>" role="progressbar" style="width: <?= $percentageUsed ?>%;" aria-valuenow="<?= $percentageUsed ?>" aria-valuemin="0" aria-valuemax="100"><?= ($percentageUsed) ?>%</div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <?php
+        <?php
             }
         } else {
-            ?>
-            <div class="card mt-3">
-                <div class="card-body">
-                    <p class="card-text">No budgets found.</p>
+        ?>
+            <div class="col">
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <p class="card-text">No budgets found.</p>
+                    </div>
                 </div>
             </div>
-            <?php
+        <?php
         }
         ?>
-        
+        </div>
+
     </div>
 </div>
 
