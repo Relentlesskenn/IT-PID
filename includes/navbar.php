@@ -1,5 +1,5 @@
 <link rel="stylesheet" href=".\assets\css\navbar.css">
-<nav class="bottom-nav">
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
     <div class="container">
         <div class="row align-items-center">
             <div class="col nav-item">
@@ -33,4 +33,4 @@
             </div>
          </div>
     </div>
-</nav>
+</nav>```
