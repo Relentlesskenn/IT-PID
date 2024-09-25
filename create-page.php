@@ -102,7 +102,7 @@ function fetchBudgetCategories() {
 
 <div class="py-3">
     <div class="container">
-        <a class="btn btn-secondary btn-sm mb-3" href="dashboard-page.php">X</a>
+        <a class="btn btn-secondary btn-sm mb-4" href="dashboard-page.php">X</a>
         <div class="row justify-content-center">
             <div class="col-md-8 text-center">
                         
@@ -114,7 +114,15 @@ function fetchBudgetCategories() {
                         <form method="post">
                             <div class="mb-3">
                                 <label for="income_name" class="form-label">Income Name</label>
-                                <input type="text" class="form-control" name="income_name" required>
+                                <select class='form-select flex-grow-1 me-2' name='income_name'>
+                                <option value='Salary'>Salary</option>
+                                <option value='Bonus'>Bonus</option>
+                                <option value='Commission'>Commission</option>
+                                <option value='Overtime Pay'>Overtime Pay</option>
+                                <option value='Tips'>Tips</option>
+                                <option value='Freelance Payment'>Freelance Payment</option>
+                                <option value='Allowance'>Allowance</option>
+                                </select>
                             </div>
                             <div class="mb-3">
                                 <label for="income_amount" class="form-label">Amount</label>
