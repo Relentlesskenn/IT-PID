@@ -5,6 +5,7 @@ include('authentication.php');
 include('includes/header.php');
 include('includes/navbar.php');
 
+// Functions
 // Function to fetch and sum expenses
 function getExpensesTotal($userId) {
     global $conn;
@@ -27,6 +28,8 @@ $totalExpenses = getExpensesTotal($_SESSION['auth_user']['user_id']);
 $totalIncomes = getIncomesTotal($_SESSION['auth_user']['user_id']);
 $balance = $totalIncomes - $totalExpenses;
 ?>
+
+<!-- HTML -->
 <div class="py-3">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center">
@@ -58,7 +61,8 @@ $balance = $totalIncomes - $totalExpenses;
                 </div>
             </div>
         </div>
-
+        
+        <!-- Budget Cards -->
         <div class="row row-cols-2 g-4">
         <?php
         // Fetch budget data from the database

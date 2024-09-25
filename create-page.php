@@ -6,6 +6,7 @@ include('includes/header.php');
 
 $selected_page = isset($_POST['page']) ? $_POST['page'] : 'page1';
 
+// Functions
 function showPage1() {
     echo "<div class='container'>
             <div class='row justify-content-center'>
@@ -100,6 +101,7 @@ function fetchBudgetCategories() {
 }
 ?>
 
+<!-- HTML -->
 <div class="py-3">
     <div class="container">
         <a class="btn btn-secondary btn-sm mb-4" href="dashboard-page.php">X</a>
@@ -157,6 +159,7 @@ function fetchBudgetCategories() {
     </div>
 </div>
 
+<!-- Process -->
 <?php
 // Add New Budget Process
 if (isset($_POST['budget_btn'])) {
@@ -224,15 +227,7 @@ if (isset($_POST['income_btn'])) {
 }
 ?>
 
-<script>
-document.querySelectorAll('input[name="page"]').forEach(radio => {
-    radio.addEventListener('change', function() {
-        document.getElementById('pageForm').submit();
-    });
-});
-</script>
-
-<!-- Modal -->
+<!-- Modal-1 -->
 <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -257,6 +252,7 @@ document.querySelectorAll('input[name="page"]').forEach(radio => {
   </div>
 </div>
 
+<!-- Modal-1 Script -->
 <script>
 document.querySelectorAll('input[name="page"]').forEach(radio => {
     radio.addEventListener('change', function() {
@@ -264,6 +260,7 @@ document.querySelectorAll('input[name="page"]').forEach(radio => {
     });
 });
 
+// Add New Category Modal Script
 document.getElementById('add-category-btn').addEventListener('click', function() {
     // Show the modal
     var myModal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
