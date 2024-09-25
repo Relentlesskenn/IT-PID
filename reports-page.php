@@ -1,12 +1,13 @@
 <?php
 $page_title = "Reports";
+include('_dbconnect.php');
 include('authentication.php');
 include('includes/header.php');
 include('includes/navbar.php');
 
 // Fetch recent expenses from the database
 $userId = $_SESSION['auth_user']['user_id'];
-$sql = "SELECT e.category_id, e.amount, e.date, e.comment FROM expenses e WHERE e.user_id = '$userId' ORDER BY e.date DESC LIMIT 10";
+$sql = "SELECT e.category_id, e.amount, e.date, e.comment FROM expenses e WHERE e.user_id = '$userId' ORDER BY e.date DESC LIMIT 50";
 $result = mysqli_query($conn, $sql);
 ?>
 <div class="py-3">
