@@ -75,7 +75,7 @@ function showPage2() {
                     </div>
                     <div class='mb-3'>
                         <label for='expense_comment' class='form-label'>Comment</label>
-                        <textarea class='form-control' name='expense_comment' rows='3'></textarea>
+                        <textarea class='form-control' name='expense_comment' rows='3' maxlength='50' placeholder='Max 50 characters'></textarea>
                     </div>
                     <button type='submit' class='btn btn-primary w-100' name='expense_btn'>+ Add Expense</button>
                 </form>
@@ -194,7 +194,7 @@ if (isset($_POST['addCategoryBtn'])) {
 if (isset($_POST['expense_btn'])) {
     $budgetCategory = $_POST['budget_category'];
     $expenseAmount = $_POST['expense_amount'];
-    $expenseComment = $_POST['expense_comment'];
+    $expenseComment = substr($_POST['expense_comment'], 0, 50);
     $userId = $_SESSION['auth_user']['user_id'];
 
     $sql = "INSERT INTO expenses (user_id, amount, category_id, comment) VALUES ('$userId', '$expenseAmount', '$budgetCategory', '$expenseComment')";

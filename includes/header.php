@@ -17,3 +17,7 @@
 </head>
 <body>
     
+<?php    
+// Set the timezone to Philippine Standard Time
+date_default_timezone_set('Asia/Manila');
+?>

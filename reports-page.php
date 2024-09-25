@@ -5,9 +5,6 @@ include('authentication.php');
 include('includes/header.php');
 include('includes/navbar.php');
 
-// Set the timezone to Philippine Standard Time
-date_default_timezone_set('Asia/Manila');
-
 // Fetch today's expenses from the database
 $userId = $_SESSION['auth_user']['user_id'];
 $today = date('Y-m-d');
