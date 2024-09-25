@@ -5,9 +5,10 @@ include('authentication.php');
 include('includes/header.php');
 include('includes/navbar.php');
 
-// Fetch recent expenses from the database
+// Fetch today's expenses from the database
 $userId = $_SESSION['auth_user']['user_id'];
-$sql = "SELECT e.category_id, e.amount, e.date, e.comment FROM expenses e WHERE e.user_id = '$userId' ORDER BY e.date DESC LIMIT 50";
+$today = date('Y-m-d');
+$sql = "SELECT e.category_id, e.amount, e.date, e.comment FROM expenses e WHERE e.user_id = '$userId' AND DATE(e.date) = '$today' ORDER BY e.date DESC LIMIT 50";
 $result = mysqli_query($conn, $sql);
 ?>
 <div class="py-3">
@@ -15,7 +16,7 @@ $result = mysqli_query($conn, $sql);
         <a class="btn btn-secondary btn-sm mb-3" href="dashboard-page.php">X</a>
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Recent Expenses</h5>
+                <h5 class="card-title">Today's Expenses</h5>
                 <table class="table table-striped">
                     <thead>
                         <tr>
@@ -51,7 +52,7 @@ $result = mysqli_query($conn, $sql);
                         } else {
                         ?>
                             <tr>
-                                <td colspan="4">No recent expenses found.</td>
+                                <td colspan="4">No expenses found for today.</td>
                             </tr>
                         <?php
                         }
