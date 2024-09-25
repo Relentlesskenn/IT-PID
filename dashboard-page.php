@@ -4,6 +4,17 @@ include('_dbconnect.php');
 include('authentication.php');
 include('includes/header.php');
 include('includes/navbar.php');
+
+// Function to fetch and sum expenses
+function getExpensesTotal($userId) {
+    global $conn;
+    $sql = "SELECT SUM(e.amount) AS total_expenses FROM expenses e WHERE e.user_id = '$userId'";
+    $result = mysqli_query($conn, $sql);
+    $row = mysqli_fetch_assoc($result);
+    return $row['total_expenses'] ?? 0;
+}
+
+$totalExpenses = getExpensesTotal($_SESSION['auth_user']['user_id']);
 ?>
 <div class="py-3">
     <div class="container">
@@ -27,7 +38,7 @@ include('includes/navbar.php');
                         </thead>
                         <tbody>
                             <tr>
-                                <td>0.00</td>
+                                <td><?= number_format($totalExpenses, 2) ?></td>
                                 <td>0.00</td>
                                 <td>0.00</td>
                             </tr>
