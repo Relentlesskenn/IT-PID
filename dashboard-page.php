@@ -14,7 +14,17 @@ function getExpensesTotal($userId) {
     return $row['total_expenses'] ?? 0;
 }
 
+// Function to fetch and sum incomes
+function getIncomesTotal($userId) {
+    global $conn;
+    $sql = "SELECT SUM(i.amount) AS total_incomes FROM incomes i WHERE i.user_id = '$userId'";
+    $result = mysqli_query($conn, $sql);
+    $row = mysqli_fetch_assoc($result);
+    return $row['total_incomes'] ?? 0;
+}
+
 $totalExpenses = getExpensesTotal($_SESSION['auth_user']['user_id']);
+$totalIncomes = getIncomesTotal($_SESSION['auth_user']['user_id']);
 ?>
 <div class="py-3">
     <div class="container">
@@ -39,7 +49,7 @@ $totalExpenses = getExpensesTotal($_SESSION['auth_user']['user_id']);
                         <tbody>
                             <tr>
                                 <td><?= number_format($totalExpenses, 2) ?></td>
-                                <td>0.00</td>
+                                <td><?= number_format($totalIncomes, 2) ?></td>
                                 <td>0.00</td>
                             </tr>
                         </tbody>
