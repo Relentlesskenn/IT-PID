@@ -12,7 +12,7 @@ function showPage1() {
                 <div class='col-md-6'>
                 <div class='card'>
                     <div class='card-header'>
-                    Create a Budget Category
+                    Create a Budget
                     </div>
                     <div class='card-body'>
                     <form method='post'>
@@ -103,28 +103,28 @@ function fetchBudgetCategories() {
 <div class="py-3">
     <div class="container">
         <a class="btn btn-secondary btn-sm mb-3" href="dashboard-page.php">X</a>
-        
-        <div class="card mb-4">
-            <div class="card-header">
-                Add Income
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    <div class="mb-3">
-                        <label for="income_name" class="form-label">Income Name</label>
-                        <input type="text" class="form-control" name="income_name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="income_amount" class="form-label">Amount</label>
-                        <input type="text" class="form-control" name="income_amount" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100" name="income_btn">+ Add Income</button>
-                </form>
-            </div>
-        </div>
-        
         <div class="row justify-content-center">
             <div class="col-md-8 text-center">
+                        
+                <div class="card mb-4 justify-content-center">
+                    <div class="card-header">
+                        Add Income
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            <div class="mb-3">
+                                <label for="income_name" class="form-label">Income Name</label>
+                                <input type="text" class="form-control" name="income_name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="income_amount" class="form-label">Amount</label>
+                                <input type="text" class="form-control" name="income_amount" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100" name="income_btn">+ Add Income</button>
+                        </form>
+                    </div>
+                </div>
+
                 <form method="post" action="" id="pageForm">
                     <input type="hidden" name="submitted_page" value="<?php echo $selected_page; ?>">
                     <div class="btn-group" role="group" aria-label="Page Selection">
@@ -196,6 +196,22 @@ if (isset($_POST['expense_btn'])) {
         echo "<script>alert('Expense added successfully!');</script>";
     } else {
         echo "<script>alert('Error adding expense!');</script>";
+    }
+}
+
+// Add New Income Process
+if (isset($_POST['income_btn'])) {
+    $incomeName = $_POST['income_name'];
+    $incomeAmount = $_POST['income_amount'];
+    $userId = $_SESSION['auth_user']['user_id'];
+
+    $sql = "INSERT INTO incomes (user_id, name, amount) VALUES ('$userId', '$incomeName', '$incomeAmount')";
+    $result = mysqli_query($conn, $sql);
+
+    if ($result) {
+        echo "<script>alert('Income added successfully!');</script>";
+    } else {
+        echo "<script>alert('Error adding income!');</script>";
     }
 }
 ?>
