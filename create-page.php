@@ -17,7 +17,7 @@ function showPage1() {
                     <div class='card-body'>
                     <form method='post'>
                         <div class='mb-3'>
-                        <label for='budget_name' class='form-label'>Budget Category</label>
+                        <label for='budget_name' class='form-label'>Budget Name</label>
                         <div class='d-flex align-items-center'>
                             <select class='form-select flex-grow-1 me-2' name='budget_name'>
                             <option value='General'>General</option>
@@ -62,20 +62,20 @@ function showPage2() {
             <div class='card-body'>
                 <form method='post'>
                     <div class='mb-3'>
-                        <label for='expense_name' class='form-label'>Expense Name</label>
-                        <input type='text' class='form-control' name='expense_name' required>
+                            <label class='mb-2'>Budget Category</label>
+                            <select class='form-select' name='budget_category'>
+                                ";
+                                fetchBudgetCategories();
+                                echo "
+                            </select>
                     </div>
                     <div class='mb-3'>
                         <label for='expense_amount' class='form-label'>Amount</label>
                         <input type='text' class='form-control' name='expense_amount' required>
                     </div>
                     <div class='mb-3'>
-                        <label class='mb-2'>Budget Category</label>
-                        <select class='form-select' name='budget_category'>
-                            ";
-                            fetchBudgetCategories();
-                            echo "
-                        </select>
+                        <label for='expense_comment' class='form-label'>Comment</label>
+                        <textarea class='form-control' name='expense_comment' rows='3'></textarea>
                     </div>
                     <button type='submit' class='btn btn-primary w-100' name='expense_btn'>+ Add Expense</button>
                 </form>
@@ -192,12 +192,12 @@ if (isset($_POST['addCategoryBtn'])) {
 
 // Add New Expense Process
 if (isset($_POST['expense_btn'])) {
-    $expenseName = $_POST['expense_name'];
-    $expenseAmount = $_POST['expense_amount'];
-    $userId = $_SESSION['auth_user']['user_id'];
     $budgetCategory = $_POST['budget_category'];
+    $expenseAmount = $_POST['expense_amount'];
+    $expenseComment = $_POST['expense_comment'];
+    $userId = $_SESSION['auth_user']['user_id'];
 
-    $sql = "INSERT INTO expenses (user_id, name, amount, category_id) VALUES ('$userId', '$expenseName', '$expenseAmount', '$budgetCategory')";
+    $sql = "INSERT INTO expenses (user_id, amount, category_id, comment) VALUES ('$userId', '$expenseAmount', '$budgetCategory', '$expenseComment')";
     $result = mysqli_query($conn, $sql);
 
     if ($result) {
