@@ -25,6 +25,7 @@ function getIncomesTotal($userId) {
 
 $totalExpenses = getExpensesTotal($_SESSION['auth_user']['user_id']);
 $totalIncomes = getIncomesTotal($_SESSION['auth_user']['user_id']);
+$balance = $totalIncomes - $totalExpenses;
 ?>
 <div class="py-3">
     <div class="container">
@@ -50,7 +51,7 @@ $totalIncomes = getIncomesTotal($_SESSION['auth_user']['user_id']);
                             <tr>
                                 <td><?= number_format($totalExpenses, 2) ?></td>
                                 <td><?= number_format($totalIncomes, 2) ?></td>
-                                <td>0.00</td>
+                                <td><?= number_format($balance, 2) ?></td>
                             </tr>
                         </tbody>
                     </table>
