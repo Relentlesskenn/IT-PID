@@ -16,7 +16,7 @@ $result = mysqli_query($conn, $sql);
         <a class="btn btn-secondary btn-sm mb-3" href="dashboard-page.php">X</a>
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Today's Expenses</h5>
+                <h5 class="card-title">Today's Expenses (<?= date('F d, Y') ?>)</h5>
                 <table class="table table-striped">
                     <thead>
                         <tr>
