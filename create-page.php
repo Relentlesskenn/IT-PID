@@ -88,7 +88,7 @@ function showPage2() {
 function fetchBudgetCategories() {
     global $conn;
     $userId = $_SESSION['auth_user']['user_id'];
-    $sql = "SELECT id, name FROM budgets WHERE user_id = '$userId'";
+    $sql = "SELECT id, name, amount FROM budgets WHERE user_id = '$userId'";
     $result = mysqli_query($conn, $sql);
 
     if (mysqli_num_rows($result) > 0) {
