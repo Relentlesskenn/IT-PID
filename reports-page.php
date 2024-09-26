@@ -8,8 +8,20 @@ include('includes/navbar.php');
 // Fetch today's expenses from the database
 $userId = $_SESSION['auth_user']['user_id'];
 $today = date('Y-m-d');
-$sql = "SELECT e.category_id, e.amount, e.date, e.comment FROM expenses e WHERE e.user_id = '$userId' AND DATE(e.date) = '$today' ORDER BY e.date DESC LIMIT 50";
+
+// Pagination variables
+$perPage = 10; // Number of expenses per page
+$page = isset($_GET['page']) ? $_GET['page'] : 1; // Get the current page number
+$offset = ($page - 1) * $perPage; // Calculate the offset for the SQL query
+
+$sql = "SELECT e.category_id, e.amount, e.date, e.comment FROM expenses e WHERE e.user_id = '$userId' AND DATE(e.date) = '$today' ORDER BY e.date DESC LIMIT $perPage OFFSET $offset";
 $result = mysqli_query($conn, $sql);
+
+// Calculate total number of pages
+$sqlCount = "SELECT COUNT(*) AS total FROM expenses e WHERE e.user_id = '$userId' AND DATE(e.date) = '$today'";
+$resultCount = mysqli_query($conn, $sqlCount);
+$rowCount = mysqli_fetch_assoc($resultCount);
+$totalPages = ceil($rowCount['total'] / $perPage);
 ?>
 <div class="py-3">
     <div class="container">
@@ -17,6 +29,19 @@ $result = mysqli_query($conn, $sql);
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Today's Expenses (<?= date('m-d-Y') ?>)</h5>
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination">
+                        <?php if ($page > 1): ?>
+                            <li class="page-item"><a class="page-link" href="?page=<?= $page - 1 ?>">Previous</a></li>
+                        <?php endif; ?>
+                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                            <li class="page-item <?= $page == $i ? 'active' : '' ?>"><a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a></li>
+                        <?php endfor; ?>
+                        <?php if ($page < $totalPages): ?>
+                            <li class="page-item"><a class="page-link" href="?page=<?= $page + 1 ?>">Next</a></li>
+                        <?php endif; ?>
+                    </ul>
+                </nav>
                 <table class="table">
                     <thead class="table-dark">
                         <tr>
