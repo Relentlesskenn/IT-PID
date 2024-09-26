@@ -29,7 +29,7 @@ $totalPages = ceil($rowCount['total'] / $perPage);
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Today's Expenses (<?= date('m-d-Y') ?>)</h5>
-                <nav aria-label="Page navigation example">
+                <nav aria-label="Page navigation">
                     <ul class="pagination">
                         <?php if ($page > 1): ?>
                             <li class="page-item"><a class="page-link" href="?page=<?= $page - 1 ?>">Previous</a></li>
