@@ -57,7 +57,11 @@ $totalPages = ceil($rowCount['total'] / $perPage);
                                     <td><?= $categoryName ?></td>
                                     <td>₱<?= number_format($amount, 2) ?></td>
                                     <td><?= date('Y-m-d', strtotime($date)) ?></td>
-                                    <td><?= $comment ?></td>
+                                    <td>
+                                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#commentModal" data-comment="<?= $comment ?>">
+                                            View Comment
+                                        </button>
+                                    </td>
                                 </tr>
                         <?php
                             }
@@ -88,5 +92,41 @@ $totalPages = ceil($rowCount['total'] / $perPage);
         </div>
     </div>
 </div>
+
+<!-- Modal for displaying the comment -->
+<div class="modal fade" id="commentModal" tabindex="-1" aria-labelledby="commentModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="commentModalLabel">Comment</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p id="commentContent"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Get the modal and the comment content element
+  const commentModal = document.getElementById('commentModal');
+  const commentContent = document.getElementById('commentContent');
+
+  // Add an event listener to the "View Comment" buttons
+  const commentButtons = document.querySelectorAll('.btn-primary[data-bs-toggle="modal"]');
+  commentButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      // Get the comment from the button's data attribute
+      const comment = button.getAttribute('data-comment');
+
+      // Set the comment content in the modal
+      commentContent.textContent = comment;
+    });
+  });
+</script>
 
 <?php include('includes/footer.php') ?>
