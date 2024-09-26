@@ -58,8 +58,8 @@ $totalPages = ceil($rowCount['total'] / $perPage);
                                     <td>₱<?= number_format($amount, 2) ?></td>
                                     <td><?= date('Y-m-d', strtotime($date)) ?></td>
                                     <td>
-                                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#commentModal" data-comment="<?= $comment ?>">
-                                            View Comment
+                                        <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#commentModal" data-comment="<?= $comment ?>">
+                                            View
                                         </button>
                                     </td>
                                 </tr>
