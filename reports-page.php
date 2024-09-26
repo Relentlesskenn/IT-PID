@@ -29,19 +29,6 @@ $totalPages = ceil($rowCount['total'] / $perPage);
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Today's Expenses (<?= date('m-d-Y') ?>)</h5>
-                <nav aria-label="Page navigation">
-                    <ul class="pagination">
-                        <?php if ($page > 1): ?>
-                            <li class="page-item"><a class="page-link" href="?page=<?= $page - 1 ?>">Previous</a></li>
-                        <?php endif; ?>
-                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                            <li class="page-item <?= $page == $i ? 'active' : '' ?>"><a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a></li>
-                        <?php endfor; ?>
-                        <?php if ($page < $totalPages): ?>
-                            <li class="page-item"><a class="page-link" href="?page=<?= $page + 1 ?>">Next</a></li>
-                        <?php endif; ?>
-                    </ul>
-                </nav>
                 <table class="table">
                     <thead class="table-dark">
                         <tr>
@@ -84,6 +71,19 @@ $totalPages = ceil($rowCount['total'] / $perPage);
                         ?>
                     </tbody>
                 </table>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        <?php if ($page > 1): ?>
+                            <li class="page-item"><a class="page-link" href="?page=<?= $page - 1 ?>">Previous</a></li>
+                        <?php endif; ?>
+                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                            <li class="page-item <?= $page == $i ? 'active' : '' ?>"><a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a></li>
+                        <?php endfor; ?>
+                        <?php if ($page < $totalPages): ?>
+                            <li class="page-item"><a class="page-link" href="?page=<?= $page + 1 ?>">Next</a></li>
+                        <?php endif; ?>
+                    </ul>
+                </nav>
             </div>
         </div>
     </div>
