@@ -58,7 +58,7 @@ $totalPages = ceil($rowCount['total'] / $perPage);
                                     <td>₱<?= number_format($amount, 2) ?></td>
                                     <td><?= date('Y-m-d', strtotime($date)) ?></td>
                                     <td>
-                                        <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#commentModal" data-comment="<?= $comment ?>">
+                                        <button type="button" class="btn btn-dark btn-sm <?= empty($comment) ? 'disabled' : '' ?>" data-bs-toggle="modal" data-bs-target="#commentModal" data-comment="<?= $comment ?>">
                                             View
                                         </button>
                                     </td>
@@ -117,7 +117,7 @@ $totalPages = ceil($rowCount['total'] / $perPage);
   const commentContent = document.getElementById('commentContent');
 
   // Add an event listener to the "View Comment" buttons
-  const commentButtons = document.querySelectorAll('.btn-primary[data-bs-toggle="modal"]');
+  const commentButtons = document.querySelectorAll('.btn-dark[data-bs-toggle="modal"]');
   commentButtons.forEach(button => {
     button.addEventListener('click', () => {
       // Get the comment from the button's data attribute
