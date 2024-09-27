@@ -67,7 +67,7 @@ $balance = $totalIncomes - $totalExpenses;
         <?php
         // Fetch budget data from the database
         $userId = $_SESSION['auth_user']['user_id'];
-        $sql = "SELECT b.id, b.name, b.amount, b.created_at, SUM(e.amount) AS total_expenses FROM budgets b LEFT JOIN expenses e ON b.id = e.category_id WHERE b.user_id = '$userId' GROUP BY b.id, b.name, b.amount, b.created_at";
+        $sql = "SELECT b.id, b.name, b.amount, b.date, SUM(e.amount) AS total_expenses FROM budgets b LEFT JOIN expenses e ON b.id = e.category_id WHERE b.user_id = '$userId' GROUP BY b.id, b.name, b.amount, b.date";
         $result = mysqli_query($conn, $sql);
 
         if (mysqli_num_rows($result) > 0) {
@@ -75,7 +75,7 @@ $balance = $totalIncomes - $totalExpenses;
                 $budgetId = $row['id'];
                 $budgetName = $row['name'];
                 $budgetAmount = $row['amount'];
-                $createdAt = $row['created_at'];
+                $monthCreated = $row['date'];
                 $totalExpenses = $row['total_expenses'];
                 $remainingBalance = $budgetAmount - $totalExpenses;
                 $percentageUsed = ($totalExpenses / $budgetAmount) * 100;
@@ -83,12 +83,14 @@ $balance = $totalIncomes - $totalExpenses;
                 <div class="col">
                     <div class="card h-100">
                         <div class="card-body d-flex flex-column p-2">
-                            <h6 class="card-title mb-2" style="font-size: 1rem; font-weight: bold;"><?= $budgetName ?></h6>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="card-title mb-0" style="font-size: 1rem; font-weight: bold;"><?= $budgetName ?></h6>
+                            <span style="font-size: 0.8rem;"><?= date('m', strtotime($monthCreated)) ?></span>
+                        </div>
                             <div class="budget-info">
                                 <p class="card-text mb-0" style="font-size: 0.85rem; line-height: 1.6;">Budget - ₱<?= number_format($budgetAmount, 2) ?></p>
                                 <p class="card-text mb-0" style="font-size: 0.85rem; line-height: 1.6;">Spent - ₱<?= number_format($totalExpenses, 2) ?></p>
                                 <p class="card-text mb-1" style="font-size: 0.85rem; line-height: 1.6;">Remaining - ₱<?= number_format($remainingBalance, 2) ?></p>
-                                <p class="card-text mb-1" style="font-size: 0.85rem; line-height: 1.6;">Created at - <?= date('F d, Y', strtotime($createdAt)) ?></p>
                             </div>
                             <div class="progress mt-auto">
                                 <div class="progress-bar <?php if ($percentageUsed >= 90) { echo 'bg-danger'; } elseif ($percentageUsed >= 70) { echo 'bg-warning'; } else { echo 'bg-success'; } ?>" 
