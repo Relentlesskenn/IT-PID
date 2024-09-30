@@ -26,7 +26,7 @@ $totalPages = ceil($rowCount['total'] / $perPage);
 <div class="py-3">
     <div class="container">
         <a class="btn btn-secondary btn-sm mb-3" href="dashboard-page.php">X</a>
-        <div class="card">
+        <div class="card" id="printableCard">
             <div class="card-body">
                 <h5 class="card-title">Today's Expenses (<?= date('m-d-Y') ?>)</h5>
                 <table class="table">
@@ -90,6 +90,7 @@ $totalPages = ceil($rowCount['total'] / $perPage);
                 </nav>
             </div>
         </div>
+        <button class="btn btn-primary" onclick="window.print()">Print Report</button>
     </div>
 </div>
 
