@@ -23,6 +23,24 @@ $resultCount = mysqli_query($conn, $sqlCount);
 $rowCount = mysqli_fetch_assoc($resultCount);
 $totalPages = ceil($rowCount['total'] / $perPage);
 ?>
+<style>
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printableCard, #printableCard * {
+                visibility: visible;
+            }
+            #printableCard {
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+</style>
 <div class="py-3">
     <div class="container">
         <a class="btn btn-secondary btn-sm mb-3" href="dashboard-page.php">X</a>
@@ -90,7 +108,7 @@ $totalPages = ceil($rowCount['total'] / $perPage);
                 </nav>
             </div>
         </div>
-        <button class="btn btn-primary" onclick="window.print()">Print Report</button>
+        <button class="btn btn-primary no-print my-3 w-100" onclick="window.print()">Print Report</button>
     </div>
 </div>
 
