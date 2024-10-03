@@ -1,4 +1,6 @@
 <?php
+ob_start(); // Start output buffering
+require_once('vendor/tecnickcom/tcpdf/tcpdf.php');
 $page_title = "Reports";
 include('_dbconnect.php');
 include('authentication.php');
@@ -14,6 +16,7 @@ $perPage = 10; // Number of expenses per page
 $page = isset($_GET['page']) ? $_GET['page'] : 1; // Get the current page number
 $offset = ($page - 1) * $perPage; // Calculate the offset for the SQL query
 
+// Fetch today's expenses from the database
 $sql = "SELECT e.category_id, e.amount, e.date, e.comment FROM expenses e WHERE e.user_id = '$userId' AND DATE(e.date) = '$today' ORDER BY e.date DESC LIMIT $perPage OFFSET $offset";
 $result = mysqli_query($conn, $sql);
 
@@ -22,29 +25,89 @@ $sqlCount = "SELECT COUNT(*) AS total FROM expenses e WHERE e.user_id = '$userId
 $resultCount = mysqli_query($conn, $sqlCount);
 $rowCount = mysqli_fetch_assoc($resultCount);
 $totalPages = ceil($rowCount['total'] / $perPage);
+
+// Check if the user wants to generate a PDF report
+if (isset($_POST['print_report'])) {
+    // Create new PDF document
+    $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+    // Set document information
+    $pdf->SetCreator(PDF_CREATOR);
+    $pdf->SetAuthor('Your Name');
+    $pdf->SetTitle('Today\'s Expenses');
+    $pdf->SetSubject('Expense Report');
+
+    // Set default header data
+    $pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, 'Expense Report', 'Generated on ' . date('Y-m-d H:i:s'));
+
+    // Set header and footer fonts
+    $pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+    $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+
+    // Set default monospaced font
+    $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+
+    // Set margins
+    $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+    $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+    $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+    // Set auto page breaks
+    $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+    // Add a page
+    $pdf->AddPage();
+
+    // Set font
+    $pdf->SetFont('helvetica', 'B', 16);
+
+    // Title
+    $pdf->Cell(0, 10, "Today's Expenses (" . date('m-d-Y') . ")", 0, 1, 'C');
+    $pdf->Ln(10);
+
+    // Table header
+    $pdf->SetFont('helvetica', 'B', 12);
+    $pdf->Cell(50, 10, 'Category', 1, 0, 'C');
+    $pdf->Cell(40, 10, 'Amount', 1, 0, 'C');
+    $pdf->Cell(50, 10, 'Date', 1, 0, 'C');
+    $pdf->Cell(50, 10, 'Comment', 1, 1, 'C');
+
+    // Table content
+    $pdf->SetFont('helvetica', '', 12);
+
+    $sqlPDF = "SELECT e.category_id, e.amount, e.date, e.comment FROM expenses e WHERE e.user_id = '$userId' AND DATE(e.date) = '$today' ORDER BY e.date DESC";
+    $resultPDF = mysqli_query($conn, $sqlPDF);
+
+    while ($row = mysqli_fetch_assoc($resultPDF)) {
+        $categoryId = $row['category_id'];
+        $amount = $row['amount'];
+        $date = $row['date'];
+        $comment = $row['comment'];
+
+        $sqlCategory = "SELECT name FROM budgets WHERE id = '$categoryId'";
+        $resultCategory = mysqli_query($conn, $sqlCategory);
+        $rowCategory = mysqli_fetch_assoc($resultCategory);
+        $categoryName = $rowCategory['name'];
+
+        $pdf->Cell(50, 10, $categoryName, 1);
+        $pdf->Cell(40, 10, 'P' . number_format($amount, 2), 1);
+        $pdf->Cell(50, 10, date('Y-m-d', strtotime($date)), 1);
+        $pdf->Cell(50, 10, substr($comment, 0, 20) . (strlen($comment) > 20 ? '...' : ''), 1);
+        $pdf->Ln();
+    }
+
+    // Output the PDF
+    ob_end_clean(); // Clean (erase) the output buffer and turn off output buffering
+    $pdf->Output('Today_Expenses_' . date('Y-m-d') . '.pdf', 'D');
+    exit();
+}
+
 ?>
-<style>
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            #printableCard, #printableCard * {
-                visibility: visible;
-            }
-            #printableCard {
-                position: absolute;
-                left: 0;
-                top: 0;
-            }
-            .no-print {
-                display: none;
-            }
-        }
-</style>
+
 <div class="py-3">
     <div class="container">
         <a class="btn btn-secondary btn-sm mb-3" href="dashboard-page.php">X</a>
-        <div class="card" id="printableCard">
+        <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Today's Expenses (<?= date('m-d-Y') ?>)</h5>
                 <table class="table">
@@ -108,7 +171,9 @@ $totalPages = ceil($rowCount['total'] / $perPage);
                 </nav>
             </div>
         </div>
-        <button class="btn btn-primary no-print my-3 w-100" onclick="window.print()">Print Report</button>
+        <form method="post">
+            <button type="submit" name="print_report" class="btn btn-primary my-3 w-100">Print Report</button>
+        </form>
     </div>
 </div>
 
@@ -148,4 +213,7 @@ $totalPages = ceil($rowCount['total'] / $perPage);
   });
 </script>
 
-<?php include('includes/footer.php') ?>
+<?php 
+include('includes/footer.php');
+ob_end_flush();
+?>
