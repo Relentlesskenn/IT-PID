@@ -52,23 +52,13 @@ function showPage2() {
                         <label for='budget_name' class='form-label'>Budget Name</label>
                         <div class='d-flex align-items-center'>
                             <select class='form-select flex-grow-1 me-2' name='budget_name'>
-                            <option value='General'>General</option>
-                            <option value='Food'>Food</option>
-                            <option value='Housing'>Housing</option>
-                            <option value='Groceries'>Groceries</option>
-                            <option value='Transportation'>Transportation</option>
-                            <option value='Health'>Health</option>
-                            <option value='Clothing'>Clothing</option>
-                            <option value='Insurance'>Insurance</option>
-                            <option value='Education'>Education</option>
-                            <option value='Utilities'>Utilities</option>
-                            <option value='Entertainment'>Entertainment</option>
-                            <option value='Pets'>Pets</option>
-                            <option value='Kids'>Kids</option>
-                            <option value='Technology'>Technology</option>
-                            <option value='Travel'>Travel</option>
-                            <option value='Taxes'>Taxes</option>
-                            <option value='Gifts'>Gifts</option>
+                                <option value='General'>General</option>
+                                <option value='Rent'>Rent</option>
+                                <option value='Groceries'>Groceries</option>
+                                <option value='Transportation'>Transportation</option>
+                                <option value='Health'>Health</option>
+                                <option value='Utilities'>Utilities</option>
+                                <option value='Entertainment'>Entertainment</option>
                             </select>
                             <button type='button' class='btn btn-primary btn-sm' id='add-category-btn'>+</button>
                         </div>
