@@ -1,63 +1,58 @@
 <?php
 session_start();
-include('_dbconnect.php');
+require_once('_dbconnect.php');
 
-if(isset($_POST['login_btn']))
-{
-    if(!empty(trim($_POST['username'])) && !empty(trim($_POST['password']))) {
-        $username = mysqli_real_escape_string($conn, $_POST['username']);
-        $password = $_POST['password'];
+if (isset($_POST['login_btn'])) {
+    $username = trim($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
 
-        // Fetch the user from the database
-        $login_query = "SELECT * FROM users WHERE username='$username' LIMIT 1";
-        $login_query_run = mysqli_query($conn, $login_query);
-
-        if(mysqli_num_rows($login_query_run) > 0)
-        {
-            $row = mysqli_fetch_array($login_query_run);
-            
-            // Verify the password
-            if(password_verify($password, $row['password']))
-            {
-                if($row['verify_status'] == "1")
-                {
-                    $_SESSION['authenticated'] = TRUE;
-                    $_SESSION['auth_user'] = [
-                        'user_id' => $row['user_id'],
-                        'l_name' => $row['l_name'],
-                        'f_name' => $row['f_name'],
-                        'username' => $row['username'],
-                        'email' => $row['email']
-                    ];
-                    header("Location: dashboard-page.php");
-                    exit(0);
-                }
-                else
-                {
-                    $_SESSION['status'] = "Please Verify your Email Address to Login";
-                    header("Location: login-page.php");
-                    exit(0);
-                }
-            }
-            else
-            {
-                $_SESSION['status'] = "Invalid Username or Password!";
-                header("Location: login-page.php");
-                exit(0);
-            }
-        }
-        else
-        {
-            $_SESSION['status'] = "Invalid Username or Password!";
-            header("Location: login-page.php");
-            exit(0);
-        }
+    if (empty($username) || empty($password)) {
+        setSessionStatus("All Fields are Required!");
+        redirectToLogin();
     }
-    else
-    {
-        $_SESSION['status'] = "All Fields are Required!";
-        header("Location: login-page.php");
-        exit(0);
+
+    $username = mysqli_real_escape_string($conn, $username);
+
+    $stmt = $conn->prepare("SELECT * FROM users WHERE username = ? LIMIT 1");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $user = $result->fetch_assoc();
+        
+        if (password_verify($password, $user['password'])) {
+            if ($user['verify_status'] == "1") {
+                $_SESSION['authenticated'] = TRUE;
+                $_SESSION['auth_user'] = [
+                    'user_id' => $user['user_id'],
+                    'l_name' => $user['l_name'],
+                    'f_name' => $user['f_name'],
+                    'username' => $user['username'],
+                    'email' => $user['email']
+                ];
+                header("Location: dashboard-page.php");
+                exit();
+            } else {
+                setSessionStatus("Please Verify your Email Address to Login");
+                redirectToLogin();
+            }
+        } else {
+            setSessionStatus("Invalid Username or Password!");
+            redirectToLogin();
+        }
+    } else {
+        setSessionStatus("Invalid Username or Password!");
+        redirectToLogin();
     }
+}
+
+function setSessionStatus($message) {
+    $_SESSION['status'] = $message;
+}
+
+function redirectToLogin() {
+    header("Location: login-page.php");
+    exit();
 }
 ?>

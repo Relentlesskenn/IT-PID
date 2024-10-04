@@ -1,6 +1,6 @@
 <?php
 session_start();
-include('_dbconnect.php');
+require_once '_dbconnect.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
@@ -8,80 +8,77 @@ use PHPMailer\PHPMailer\Exception;
 
 require 'vendor/autoload.php';
 
-function resend_email_verify($f_name,$email,$verify_token)
+function resend_email_verify($f_name, $email, $verify_token)
 {
     $mail = new PHPMailer(true);
-    //$mail->SMTPDebug = 2;
-    $mail->isSMTP();
-    $mail->SMTPAuth = true;
+    try {
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'it.pid.team@gmail.com';
+        $mail->Password   = 'qlotmbifugeutlyj'; // Consider using environment variables for sensitive data
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
 
-    $mail->Host = "smtp.gmail.com";
-    $mail->Username = "it.pid.team@gmail.com";
-    $mail->Password = "qlotmbifugeutlyj";
+        // Recipients
+        $mail->setFrom('it.pid.team@gmail.com', 'IT-PID Team');
+        $mail->addAddress($email, $f_name);
 
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail->Port = 587;
+        // Content
+        $mail->isHTML(true);
+        $mail->Subject = "Resend - Email Verification from IT-PID";
+        $mail->Body    = "
+            <h2>You have Registered with IT-PID!</h2>
+            <h5>Verify your email address to Login with the link given below</h5>
+            <br/><br/>
+            <a href='http://localhost/IT-PID/verify_email.php?token=" . urlencode($verify_token) . "'>Verify Email Address</a>
+        ";
 
-    $mail->setFrom("it.pid.team@gmail.com",$f_name);
-    $mail->addAddress($email);
-
-    $mail->isHTML(true);
-    $mail->Subject = "Resend - Email Verification from IT-PID";
-
-    $email_template = "
-        <h2>You have Registered with IT-PID!</h2>
-        <h5>Verify your email address to Login with the link given below</h5>
-        <br/><br/>
-        <a href='http://localhost/IT-PID/verify_email.php?token=$verify_token'> Verify Email Address </a>
-    ";
-
-    $mail->Body = $email_template;
-    $mail->send();
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log("Message could not be sent. Mailer Error: {$mail->ErrorInfo}");
+        return false;
+    }
 }
 
-if(isset($_POST['resend_email_verification_btn']))
-{
-    if(!empty(trim($_POST['email'])))
-    {
-        $email = mysqli_real_escape_string($conn, $_POST['email']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_email_verification_btn'])) {
+    $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
 
-        $checkemail_query = "SELECT * FROM users WHERE email='$email' LIMIT 1";
-        $checkemail_query_run = mysqli_query($conn, $checkemail_query);
+    if ($email) {
+        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-        if(mysqli_num_rows($checkemail_query_run) > 0)
-        {
-            $row = mysqli_fetch_array($checkemail_query_run);
-            if($row['verify_status'] == "0")
-            {
-                $f_name = $row['f_name'];
-                $email = $row['email'];
-                $verify_token = $row['verify_token'];
-
-                resend_email_verify($f_name,$email,$verify_token);
-                $_SESSION['status'] = "Verification Email Link has been sent to your email address!";
-                header("Location: login-page.php");
-                exit(0);
-            }
-            else
-            {
+        if ($result->num_rows > 0) {
+            $user = $result->fetch_assoc();
+            if ($user['verify_status'] == "0") {
+                if (resend_email_verify($user['f_name'], $user['email'], $user['verify_token'])) {
+                    $_SESSION['status'] = "Verification Email Link has been sent to your email address!";
+                    $_SESSION['status_code'] = 'success';
+                    header("Location: login-page.php");
+                } else {
+                    $_SESSION['status'] = "Email could not be sent. Please try again later.";
+                    $_SESSION['status_code'] = 'error';
+                    header("Location: resend_email_verification-page.php");
+                }
+            } else {
                 $_SESSION['status'] = "Email already verified. Please Login!";
-                header("Location: resend_email_verification-page.php");
-                exit(0);
+                $_SESSION['status_code'] = 'info';
+                header("Location: login-page.php");
             }
-        }
-        else
-        {
+        } else {
             $_SESSION['status'] = "Email is not registered. Please Register!";
+            $_SESSION['status_code'] = 'error';
             header("Location: registration-page.php");
-            exit(0);
         }
-    }
-    else
-    {
-        $_SESSION['status'] = "Please Enter an Email Address";
+    } else {
+        $_SESSION['status'] = "Please enter a valid email address";
+        $_SESSION['status_code'] = 'error';
         header("Location: resend_email_verification-page.php");
-        exit(0);
     }
+    exit();
 }
-
 ?>

@@ -33,15 +33,15 @@ include('includes/header.php');
                                 
                                 <div class="form-group mb-3">
                                     <label for="email" class="form-label">Email Address</label>
-                                    <input type="email" name="email" value="<?php if(isset($_GET['email'])){echo $_GET['email'];} ?>" class="form-control">
+                                    <input type="email" name="email" id="email" value="<?php if(isset($_GET['email'])){echo $_GET['email'];} ?>" class="form-control">
                                 </div>
                                 <div class="form-group mb-3">
                                     <label for="new_password" class="form-label">New Password</label>
-                                    <input type="password" name="new_password" class="form-control">
+                                    <input type="password" name="new_password" id="new_password" class="form-control">
                                 </div>
                                 <div class="form-group mb-3">
                                     <label for="confirm_password" class="form-label">Confirm Password</label>
-                                    <input type="password" name="confirm_password" class="form-control">
+                                    <input type="password" name="confirm_password" id="confirm_password" class="form-control">
                                 </div>
                                 <div class="form-group">
                                     <button type="submit" name="password_update_btn" class="btn btn-primary w-100">Update</button>
