@@ -10,7 +10,7 @@ $selected_page = isset($_POST['page']) ? $_POST['page'] : 'page2';
 function showPage1() {
     echo "<div class='card mb-4 justify-content-center'>
                     <div class='card-header'>
-                        Add Income
+                        Add Income (" . date('F') . ")
                     </div>
                     <div class='card-body'>
                         <form method='post'>
