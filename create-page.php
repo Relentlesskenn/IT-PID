@@ -245,12 +245,13 @@ if (isset($_POST['income_btn'])) {
     $incomeName = $_POST['income_name'];
     $incomeAmount = $_POST['income_amount'];
     $userId = $_SESSION['auth_user']['user_id'];
+    $currentDate = date('Y-m-d'); // Get the current date
 
-    $sql = "INSERT INTO incomes (user_id, name, amount) VALUES ('$userId', '$incomeName', '$incomeAmount')";
+    $sql = "INSERT INTO incomes (user_id, name, amount, date) VALUES ('$userId', '$incomeName', '$incomeAmount', '$currentDate')";
     $result = mysqli_query($conn, $sql);
 
     if ($result) {
-        echo "<script>alert('Income added successfully!');</script>";
+        echo "<script>alert('Income added successfully for " . date('F d, Y', strtotime($currentDate)) . "!');</script>";
     } else {
         echo "<script>alert('Error adding income!');</script>";
     }

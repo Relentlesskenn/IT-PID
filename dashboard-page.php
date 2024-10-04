@@ -6,31 +6,32 @@ include('includes/header.php');
 include('includes/navbar.php');
 
 // Functions
-// Function to fetch and sum expenses
-function getExpensesTotal($userId) {
+// Function to fetch and sum expenses for a specific month and year
+function getExpensesTotal($userId, $month, $year) {
     global $conn;
-    $sql = "SELECT SUM(e.amount) AS total_expenses FROM expenses e WHERE e.user_id = '$userId'";
+    $sql = "SELECT SUM(e.amount) AS total_expenses FROM expenses e WHERE e.user_id = '$userId' AND MONTH(e.date) = '$month' AND YEAR(e.date) = '$year'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_assoc($result);
     return $row['total_expenses'] ?? 0;
 }
 
-// Function to fetch and sum incomes
-function getIncomesTotal($userId) {
+// Function to fetch and sum incomes for a specific month and year
+function getIncomesTotal($userId, $month, $year) {
     global $conn;
-    $sql = "SELECT SUM(i.amount) AS total_incomes FROM incomes i WHERE i.user_id = '$userId'";
+    $sql = "SELECT SUM(i.amount) AS total_incomes FROM incomes i WHERE i.user_id = '$userId' AND MONTH(i.date) = '$month' AND YEAR(i.date) = '$year'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_assoc($result);
     return $row['total_incomes'] ?? 0;
 }
 
-$totalExpenses = getExpensesTotal($_SESSION['auth_user']['user_id']);
-$totalIncomes = getIncomesTotal($_SESSION['auth_user']['user_id']);
-$balance = $totalIncomes - $totalExpenses;
-
 // Get current month and year
 $currentMonth = isset($_GET['month']) ? $_GET['month'] : date('m');
 $currentYear = date('Y');
+
+$totalExpenses = getExpensesTotal($_SESSION['auth_user']['user_id'], $currentMonth, $currentYear);
+$totalIncomes = getIncomesTotal($_SESSION['auth_user']['user_id'], $currentMonth, $currentYear);
+$balance = $totalIncomes - $totalExpenses;
+
 ?>
 
 <!-- HTML -->
@@ -90,7 +91,7 @@ $currentYear = date('Y');
         $userId = $_SESSION['auth_user']['user_id'];
         $sql = "SELECT b.id, b.name, b.amount, b.date, SUM(e.amount) AS total_expenses 
                 FROM budgets b 
-                LEFT JOIN expenses e ON b.id = e.category_id 
+                LEFT JOIN expenses e ON b.id = e.category_id AND MONTH(e.date) = '$currentMonth' AND YEAR(e.date) = '$currentYear'
                 WHERE b.user_id = '$userId' AND MONTH(b.date) = '$currentMonth' AND YEAR(b.date) = '$currentYear'
                 GROUP BY b.id, b.name, b.amount, b.date";
         $result = mysqli_query($conn, $sql);
@@ -135,7 +136,7 @@ $currentYear = date('Y');
         } else {
         ?>
             <div class="col">
-                <div class="card mt-3">
+                <div class="card mt-3 w-100">
                     <div class="card-body">
                         <p class="card-text">No budgets found for the selected month.</p>
                     </div>
