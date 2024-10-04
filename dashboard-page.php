@@ -24,13 +24,38 @@ function getIncomesTotal($userId, $month, $year) {
     return $row['total_incomes'] ?? 0;
 }
 
+function getOrUpdateMonthlyBalance($userId, $month, $year, $balance) {
+    global $conn;
+    $sql = "SELECT balance FROM balances WHERE user_id = '$userId' AND month = '$month' AND year = '$year'";
+    $result = mysqli_query($conn, $sql);
+    
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $storedBalance = $row['balance'];
+        
+        if ($storedBalance != $balance) {
+            $updateSql = "UPDATE balances SET balance = '$balance' WHERE user_id = '$userId' AND month = '$month' AND year = '$year'";
+            mysqli_query($conn, $updateSql);
+        }
+    } else {
+        $insertSql = "INSERT INTO balances (user_id, year, month, balance) VALUES ('$userId', '$year', '$month', '$balance')";
+        mysqli_query($conn, $insertSql);
+    }
+    
+    return $balance;
+}
+
 // Get current month and year
 $currentMonth = isset($_GET['month']) ? $_GET['month'] : date('m');
 $currentYear = date('Y');
 
-$totalExpenses = getExpensesTotal($_SESSION['auth_user']['user_id'], $currentMonth, $currentYear);
-$totalIncomes = getIncomesTotal($_SESSION['auth_user']['user_id'], $currentMonth, $currentYear);
+$userId = $_SESSION['auth_user']['user_id'];
+$totalExpenses = getExpensesTotal($userId, $currentMonth, $currentYear);
+$totalIncomes = getIncomesTotal($userId, $currentMonth, $currentYear);
 $balance = $totalIncomes - $totalExpenses;
+
+// Store or update the monthly balance
+$balance = getOrUpdateMonthlyBalance($userId, $currentMonth, $currentYear, $balance);
 
 ?>
 
@@ -136,7 +161,7 @@ $balance = $totalIncomes - $totalExpenses;
         } else {
         ?>
             <div class="col">
-                <div class="card mt-3 w-100">
+                <div class="card mt-3">
                     <div class="card-body">
                         <p class="card-text">No budgets found for the selected month.</p>
                     </div>
