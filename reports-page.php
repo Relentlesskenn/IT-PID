@@ -26,41 +26,54 @@ $resultCount = mysqli_query($conn, $sqlCount);
 $rowCount = mysqli_fetch_assoc($resultCount);
 $totalPages = ceil($rowCount['total'] / $perPage);
 
-// Check if the user wants to generate a PDF report
+// Check if the print report button was clicked
 if (isset($_POST['print_report'])) {
-    // Create new PDF document
-    $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+    $userId = $_SESSION['auth_user']['user_id'];
+    $today = date('Y-m-d');
 
+    // Extend TCPDF to customize header
+    class MYPDF extends TCPDF {
+        public function Header() {
+            // Move to 15 mm from top
+            $this->SetY(15);
+            // Set font
+            $this->SetFont('helvetica', 'B', 20);
+            // Title
+            $this->Cell(0, 15, 'IT-PID Expense Report', 0, false, 'C', 0, '', 0, false, 'M', 'M');
+            // Line break
+            $this->Ln(20);
+        }
+    }
+    
+    // Create new PDF document
+    $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+    
     // Set document information
     $pdf->SetCreator(PDF_CREATOR);
     $pdf->SetAuthor('Your Name');
     $pdf->SetTitle('Today\'s Expenses');
     $pdf->SetSubject('Expense Report');
-
-    // Set default header data
-    $pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, 'Expense Report', 'Generated on ' . date('Y-m-d H:i:s'));
-
-    // Set header and footer fonts
-    $pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
-    $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
-
+    
+    // Remove default header/footer
+    $pdf->setPrintHeader(true);
+    $pdf->setPrintFooter(false);
+    
     // Set default monospaced font
     $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
-
+    
     // Set margins
-    $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+    $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP + 20, PDF_MARGIN_RIGHT);
     $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
-    $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
-
+    
     // Set auto page breaks
     $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-
+    
     // Add a page
     $pdf->AddPage();
-
+    
     // Set font
     $pdf->SetFont('helvetica', 'B', 16);
-
+    
     // Title
     $pdf->Cell(0, 10, "Today's Expenses (" . date('m-d-Y') . ")", 0, 1, 'C');
     $pdf->Ln(10);
@@ -97,7 +110,7 @@ if (isset($_POST['print_report'])) {
     }
 
     // Output the PDF
-    ob_end_clean(); // Clean (erase) the output buffer and turn off output buffering
+    ob_end_clean();
     $pdf->Output('Today_Expenses_' . date('Y-m-d') . '.pdf', 'D');
     exit();
 }
@@ -159,13 +172,13 @@ if (isset($_POST['print_report'])) {
                 <nav aria-label="Page navigation">
                     <ul class="pagination">
                         <?php if ($page > 1): ?>
-                            <li class="page-item"><a class="page-link" href="?page=<?= $page - 1 ?>">Previous</a></li>
+                            <li class="page-item"><a class="page-link" href="?page=<?= $page - 1 ?>"><</a></li>
                         <?php endif; ?>
                         <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                             <li class="page-item <?= $page == $i ? 'active' : '' ?>"><a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a></li>
                         <?php endfor; ?>
                         <?php if ($page < $totalPages): ?>
-                            <li class="page-item"><a class="page-link" href="?page=<?= $page + 1 ?>">Next</a></li>
+                            <li class="page-item"><a class="page-link" href="?page=<?= $page + 1 ?>">></a></li>
                         <?php endif; ?>
                     </ul>
                 </nav>
