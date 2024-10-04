@@ -28,7 +28,7 @@ function showPage1() {
                             </div>
                             <div class='mb-3'>
                                 <label for='income_amount' class='form-label'>Amount</label>
-                                <input type='text' class='form-control' name='income_amount' required>
+                                <input type='text' class='form-control' name='income_amount' id='income_amount' required>
                             </div>
                             <button type='submit' class='btn btn-primary w-100' name='income_btn'>+ Add Income</button>
                         </form>
@@ -51,7 +51,7 @@ function showPage2() {
                         <div class='mb-3'>
                         <label for='budget_name' class='form-label'>Budget Name</label>
                         <div class='d-flex align-items-center'>
-                            <select class='form-select flex-grow-1 me-2' name='budget_name'>
+                            <select class='form-select flex-grow-1 me-2' name='budget_name' id='budget_name' required>
                                 <option value='General'>General</option>
                                 <option value='Rent'>Rent</option>
                                 <option value='Groceries'>Groceries</option>
@@ -65,7 +65,7 @@ function showPage2() {
                         </div>
                         <div class='mb-3'>
                         <label for='budget_amount' class='form-label'>Amount</label>
-                        <input type='text' class='form-control' name='budget_amount' required>
+                        <input type='text' class='form-control' name='budget_amount' id='budget_amount' required>
                         </div>
                         <button type='submit' class='btn btn-primary w-100' name='budget_btn'>+ Add Budget</button>
                     </form>
@@ -86,7 +86,7 @@ function showPage3() {
                 <form method='post'>
                     <div class='mb-3'>
                             <label class='mb-2'>Budget Category</label>
-                            <select class='form-select' name='budget_category'>
+                            <select class='form-select' name='budget_category' id='budget_category'>
                                 ";
                                 fetchBudgetCategories();
                                 echo "
@@ -94,7 +94,7 @@ function showPage3() {
                     </div>
                     <div class='mb-3'>
                         <label for='expense_amount' class='form-label'>Amount</label>
-                        <input type='text' class='form-control' name='expense_amount' required>
+                        <input type='text' class='form-control' name='expense_amount' id='expense_amount' required>
                     </div>
                     <div class='mb-3'>
                         <label for='expense_comment' class='form-label'>Comment</label>
@@ -259,11 +259,11 @@ if (isset($_POST['income_btn'])) {
         <form method="post">
             <div class="mb-3">
                 <label for="newCategoryName" class="form-label">Custom Category Name</label>
-                <input type="text" class="form-control" name="newCategoryName" required>
+                <input type="text" class="form-control" name="newCategoryName" id="newCategoryName" required>
             </div>
-            <div class='mb-3'>
-                <label for='budget_amount' class='form-label'>Amount</label>
-                <input type='text' class='form-control' name='newCategoryAmount' required>
+            <div class="mb-3">
+                <label for="budget_amount" class="form-label">Amount</label>
+                <input type="text" class="form-control" name="newCategoryAmount" id="newCategoryAmount" required>
             </div>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Close</button>
             <button type="submit" class="btn btn-primary" name="addCategoryBtn">+ Add</button>
