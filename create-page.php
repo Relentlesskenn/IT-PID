@@ -43,7 +43,7 @@ function showPage2() {
                 <div class='col-md-6'>
                 <div class='card'>
                     <div class='card-header'>
-                    Create a Budget for " . date('F Y') . "
+                    Create a Budget (" . date('F') . ")
                     </div>
                     <div class='card-body'>
                     <form method='post'>
@@ -90,7 +90,7 @@ function showPage3() {
     $current_month = date('Y-m');
     echo "<div class='card'>
             <div class='card-header'>
-                Add New Expense for " . date('F Y') . "
+                Add Expense (" . date('F') . ")
             </div>
             <div class='card-body'>
                 <form method='post'>
