@@ -27,6 +27,10 @@ function getIncomesTotal($userId) {
 $totalExpenses = getExpensesTotal($_SESSION['auth_user']['user_id']);
 $totalIncomes = getIncomesTotal($_SESSION['auth_user']['user_id']);
 $balance = $totalIncomes - $totalExpenses;
+
+// Get current month and year
+$currentMonth = isset($_GET['month']) ? $_GET['month'] : date('m');
+$currentYear = date('Y');
 ?>
 
 <!-- HTML -->
@@ -62,12 +66,33 @@ $balance = $totalIncomes - $totalExpenses;
             </div>
         </div>
         
+        <!-- Month selection -->
+        <div class="mb-3">
+            <form action="" method="GET" class="d-flex align-items-center">
+                <label for="month" class="me-2">Select Month:</label>
+                <select name="month" id="month" class="form-select me-2" style="width: auto;">
+                    <?php
+                    for ($i = 1; $i <= 12; $i++) {
+                        $monthName = date('F', mktime(0, 0, 0, $i, 1));
+                        $selected = ($i == $currentMonth) ? 'selected' : '';
+                        echo "<option value='{$i}' {$selected}>{$monthName}</option>";
+                    }
+                    ?>
+                </select>
+                <button type="submit" class="btn btn-primary">View</button>
+            </form>
+        </div>
+        
         <!-- Budget Cards -->
         <div class="row row-cols-2 g-4">
         <?php
         // Fetch budget data from the database
         $userId = $_SESSION['auth_user']['user_id'];
-        $sql = "SELECT b.id, b.name, b.amount, b.date, SUM(e.amount) AS total_expenses FROM budgets b LEFT JOIN expenses e ON b.id = e.category_id WHERE b.user_id = '$userId' GROUP BY b.id, b.name, b.amount, b.date";
+        $sql = "SELECT b.id, b.name, b.amount, b.date, SUM(e.amount) AS total_expenses 
+                FROM budgets b 
+                LEFT JOIN expenses e ON b.id = e.category_id 
+                WHERE b.user_id = '$userId' AND MONTH(b.date) = '$currentMonth' AND YEAR(b.date) = '$currentYear'
+                GROUP BY b.id, b.name, b.amount, b.date";
         $result = mysqli_query($conn, $sql);
 
         if (mysqli_num_rows($result) > 0) {
@@ -76,7 +101,7 @@ $balance = $totalIncomes - $totalExpenses;
                 $budgetName = $row['name'];
                 $budgetAmount = $row['amount'];
                 $monthCreated = $row['date'];
-                $totalExpenses = $row['total_expenses'];
+                $totalExpenses = $row['total_expenses'] ?? 0;
                 $remainingBalance = $budgetAmount - $totalExpenses;
                 $percentageUsed = ($totalExpenses / $budgetAmount) * 100;
         ?>
@@ -85,7 +110,7 @@ $balance = $totalIncomes - $totalExpenses;
                         <div class="card-body d-flex flex-column p-2">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="card-title mb-0" style="font-size: 1rem; font-weight: bold;"><?= $budgetName ?></h6>
-                            <span style="font-size: 0.8rem;"><?= date('m', strtotime($monthCreated)) ?></span>
+                            <span style="font-size: 0.8rem;"><?= date('M', strtotime($monthCreated)) ?></span>
                         </div>
                             <div class="budget-info">
                                 <p class="card-text mb-0" style="font-size: 0.85rem; line-height: 1.6;">Budget - ₱<?= number_format($budgetAmount, 2) ?></p>
@@ -112,7 +137,7 @@ $balance = $totalIncomes - $totalExpenses;
             <div class="col">
                 <div class="card mt-3">
                     <div class="card-body">
-                        <p class="card-text">No budgets found.</p>
+                        <p class="card-text">No budgets found for the selected month.</p>
                     </div>
                 </div>
             </div>

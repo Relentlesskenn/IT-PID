@@ -4,19 +4,50 @@ include('_dbconnect.php');
 include('authentication.php');
 include('includes/header.php'); 
 
-$selected_page = isset($_POST['page']) ? $_POST['page'] : 'page1';
+$selected_page = isset($_POST['page']) ? $_POST['page'] : 'page2';
 
 // Functions
 function showPage1() {
+    echo "<div class='card mb-4 justify-content-center'>
+                    <div class='card-header'>
+                        Add Income
+                    </div>
+                    <div class='card-body'>
+                        <form method='post'>
+                            <div class='mb-3'>
+                                <label for='income_name' class='form-label'>Income Name</label>
+                                <select class='form-select flex-grow-1 me-2' name='income_name'>
+                                <option value='Salary'>Salary</option>
+                                <option value='Bonus'>Bonus</option>
+                                <option value='Commission'>Commission</option>
+                                <option value='Overtime Pay'>Overtime Pay</option>
+                                <option value='Tips'>Tips</option>
+                                <option value='Freelance Payment'>Freelance Payment</option>
+                                <option value='Allowance'>Allowance</option>
+                                </select>
+                            </div>
+                            <div class='mb-3'>
+                                <label for='income_amount' class='form-label'>Amount</label>
+                                <input type='text' class='form-control' name='income_amount' required>
+                            </div>
+                            <button type='submit' class='btn btn-primary w-100' name='income_btn'>+ Add Income</button>
+                        </form>
+                    </div>
+                </div>";
+}
+
+function showPage2() {
+    $current_month = date('Y-m');
     echo "<div class='container'>
             <div class='row justify-content-center'>
                 <div class='col-md-6'>
                 <div class='card'>
                     <div class='card-header'>
-                    Create a Budget
+                    Create a Budget for " . date('F Y') . "
                     </div>
                     <div class='card-body'>
                     <form method='post'>
+                        <input type='hidden' name='budget_month' value='$current_month'>
                         <div class='mb-3'>
                         <label for='budget_name' class='form-label'>Budget Name</label>
                         <div class='d-flex align-items-center'>
@@ -55,10 +86,11 @@ function showPage1() {
             </div>";
 }
 
-function showPage2() {
+function showPage3() {
+    $current_month = date('Y-m');
     echo "<div class='card'>
             <div class='card-header'>
-                Add New Expense
+                Add New Expense for " . date('F Y') . "
             </div>
             <div class='card-body'>
                 <form method='post'>
@@ -88,7 +120,8 @@ function showPage2() {
 function fetchBudgetCategories() {
     global $conn;
     $userId = $_SESSION['auth_user']['user_id'];
-    $sql = "SELECT id, name FROM budgets WHERE user_id = '$userId'";
+    $current_month = date('Y-m');
+    $sql = "SELECT id, name FROM budgets WHERE user_id = '$userId' AND month = '$current_month'";
     $result = mysqli_query($conn, $sql);
 
     if (mysqli_num_rows($result) > 0) {
@@ -107,42 +140,18 @@ function fetchBudgetCategories() {
         <a class="btn btn-secondary btn-sm mb-4" href="dashboard-page.php">X</a>
         <div class="row justify-content-center">
             <div class="col-md-8 text-center">
-                        
-                <div class="card mb-4 justify-content-center">
-                    <div class="card-header">
-                        Add Income
-                    </div>
-                    <div class="card-body">
-                        <form method="post">
-                            <div class="mb-3">
-                                <label for="income_name" class="form-label">Income Name</label>
-                                <select class='form-select flex-grow-1 me-2' name='income_name'>
-                                <option value='Salary'>Salary</option>
-                                <option value='Bonus'>Bonus</option>
-                                <option value='Commission'>Commission</option>
-                                <option value='Overtime Pay'>Overtime Pay</option>
-                                <option value='Tips'>Tips</option>
-                                <option value='Freelance Payment'>Freelance Payment</option>
-                                <option value='Allowance'>Allowance</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="income_amount" class="form-label">Amount</label>
-                                <input type="text" class="form-control" name="income_amount" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100" name="income_btn">+ Add Income</button>
-                        </form>
-                    </div>
-                </div>
 
                 <form method="post" action="" id="pageForm">
                     <input type="hidden" name="submitted_page" value="<?php echo $selected_page; ?>">
                     <div class="btn-group" role="group" aria-label="Page Selection">
                         <input type="radio" class="btn-check" name="page" id="page1" value="page1" autocomplete="off" <?php echo ($selected_page == 'page1') ? 'checked' : ''; ?>>
-                        <label class="btn btn-outline-primary" for="page1">Budget</label>
+                        <label class="btn btn-outline-primary" for="page1">Income</label>
 
                         <input type="radio" class="btn-check" name="page" id="page2" value="page2" autocomplete="off" <?php echo ($selected_page == 'page2') ? 'checked' : ''; ?>>
-                        <label class="btn btn-outline-primary" for="page2">Expense</label>
+                        <label class="btn btn-outline-primary" for="page2">Budget</label>
+
+                        <input type="radio" class="btn-check" name="page" id="page3" value="page3" autocomplete="off" <?php echo ($selected_page == 'page3') ? 'checked' : ''; ?>>
+                        <label class="btn btn-outline-primary" for="page3">Expense</label>
                     </div>
                     <div class="content mt-4">
                         <?php
@@ -150,6 +159,8 @@ function fetchBudgetCategories() {
                                 showPage1();
                             } elseif ($selected_page == 'page2') {
                                 showPage2();
+                            } elseif ($selected_page == 'page3') {
+                                showPage3();
                             }
                         ?>
                     </div>
@@ -165,15 +176,24 @@ function fetchBudgetCategories() {
 if (isset($_POST['budget_btn'])) {
     $budgetName = $_POST['budget_name'];
     $budgetAmount = $_POST['budget_amount'];
+    $budgetMonth = $_POST['budget_month'];
     $userId = $_SESSION['auth_user']['user_id']; 
 
-    $sql = "INSERT INTO budgets (user_id, name, amount) VALUES ('$userId', '$budgetName', '$budgetAmount')";
-    $result = mysqli_query($conn, $sql);
+    // Check if a budget with the same name already exists for the current month
+    $checkSql = "SELECT * FROM budgets WHERE user_id = '$userId' AND name = '$budgetName' AND month = '$budgetMonth'";
+    $checkResult = mysqli_query($conn, $checkSql);
 
-    if ($result) {
-        echo "<script>alert('Budget added successfully!');</script>";
+    if (mysqli_num_rows($checkResult) > 0) {
+        echo "<script>alert('A budget with this name already exists for the current month!');</script>";
     } else {
-        echo "<script>alert('Error adding budget!');</script>";
+        $sql = "INSERT INTO budgets (user_id, name, amount, month) VALUES ('$userId', '$budgetName', '$budgetAmount', '$budgetMonth')";
+        $result = mysqli_query($conn, $sql);
+
+        if ($result) {
+            echo "<script>alert('Budget added successfully for " . date('F Y', strtotime($budgetMonth)) . "!');</script>";
+        } else {
+            echo "<script>alert('Error adding budget: " . mysqli_error($conn) . "');</script>";
+        }
     }
 }
 
@@ -199,14 +219,24 @@ if (isset($_POST['expense_btn'])) {
     $expenseAmount = $_POST['expense_amount'];
     $expenseComment = substr($_POST['expense_comment'], 0, 100);
     $userId = $_SESSION['auth_user']['user_id'];
+    $currentDate = date('Y-m-d'); // Current date
+    $currentMonth = date('Y-m');
 
-    $sql = "INSERT INTO expenses (user_id, amount, category_id, comment) VALUES ('$userId', '$expenseAmount', '$budgetCategory', '$expenseComment')";
-    $result = mysqli_query($conn, $sql);
+    // Check if the budget category exists for the current month
+    $checkBudgetSql = "SELECT id FROM budgets WHERE id = '$budgetCategory' AND user_id = '$userId' AND month = '$currentMonth'";
+    $checkBudgetResult = mysqli_query($conn, $checkBudgetSql);
 
-    if ($result) {
-        echo "<script>alert('Expense added successfully!');</script>";
+    if (mysqli_num_rows($checkBudgetResult) > 0) {
+        $sql = "INSERT INTO expenses (user_id, amount, category_id, date, comment) VALUES ('$userId', '$expenseAmount', '$budgetCategory', '$currentDate', '$expenseComment')";
+        $result = mysqli_query($conn, $sql);
+
+        if ($result) {
+            echo "<script>alert('Expense added successfully for $currentMonth!');</script>";
+        } else {
+            echo "<script>alert('Error adding expense!');</script>";
+        }
     } else {
-        echo "<script>alert('Error adding expense!');</script>";
+        echo "<script>alert('Error: The selected budget category does not exist for the current month.');</script>";
     }
 }
 
