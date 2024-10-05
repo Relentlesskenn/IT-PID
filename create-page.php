@@ -269,7 +269,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 </div>
 
-<!-- ... [Keep Modal-1 HTML] -->
+<!-- Modal-1 -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="addCategoryModalLabel">Add Custom Category</h1>
+      </div>
+      <div class="modal-body">
+        <form method="post">
+            <div class="mb-3">
+                <label for="newCategoryName" class="form-label">Custom Category Name</label>
+                <input type="text" class="form-control" name="newCategoryName" id="newCategoryName" required>
+            </div>
+            <div class="mb-3">
+                <label for="budget_amount" class="form-label">Amount</label>
+                <input type="text" class="form-control" name="newCategoryAmount" id="newCategoryAmount" required>
+            </div>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Close</button>
+            <button type="submit" class="btn btn-primary" name="addCategoryBtn">+ Add</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Modified Script -->
 <script>
