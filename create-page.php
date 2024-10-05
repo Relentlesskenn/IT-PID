@@ -16,7 +16,7 @@ function showPage1() {
                         <form method='post'>
                             <div class='mb-3'>
                                 <label for='income_name' class='form-label'>Income Name</label>
-                                <select class='form-select flex-grow-1 me-2' name='income_name'>
+                                <select class='form-select flex-grow-1 me-2' name='income_name' id='income_name'>
                                 <option value='Salary'>Salary</option>
                                 <option value='Bonus'>Bonus</option>
                                 <option value='Commission'>Commission</option>
@@ -85,7 +85,7 @@ function showPage3() {
             <div class='card-body'>
                 <form method='post'>
                     <div class='mb-3'>
-                            <label class='mb-2'>Budget Category</label>
+                            <label for='budget_category' class='mb-2'>Budget Category</label>
                             <select class='form-select' name='budget_category' id='budget_category'>
                                 ";
                                 fetchBudgetCategories();
@@ -98,7 +98,7 @@ function showPage3() {
                     </div>
                     <div class='mb-3'>
                         <label for='expense_comment' class='form-label'>Comment</label>
-                        <textarea class='form-control' name='expense_comment' rows='3' maxlength='100' placeholder='Max 100 characters'></textarea>
+                        <textarea class='form-control' name='expense_comment' id='expense_comment' rows='3' maxlength='100' placeholder='Max 100 characters'></textarea>
                     </div>
                     <button type='submit' class='btn btn-primary w-100' name='expense_btn'>+ Add Expense</button>
                 </form>
@@ -122,6 +122,105 @@ function fetchBudgetCategories() {
         echo "<option value='No categories found'>No categories found</option>";
     }
 }
+
+$toast_message = '';
+$toast_type = '';
+
+// Process section
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Add New Budget Process
+    if (isset($_POST['budget_btn'])) {
+        $budgetName = $_POST['budget_name'];
+        $budgetAmount = $_POST['budget_amount'];
+        $budgetMonth = $_POST['budget_month'];
+        $userId = $_SESSION['auth_user']['user_id']; 
+
+        $checkSql = "SELECT * FROM budgets WHERE user_id = '$userId' AND name = '$budgetName' AND month = '$budgetMonth'";
+        $checkResult = mysqli_query($conn, $checkSql);
+
+        if (mysqli_num_rows($checkResult) > 0) {
+            $toast_message = 'A budget with this name already exists for the current month!';
+            $toast_type = 'warning';
+        } else {
+            $sql = "INSERT INTO budgets (user_id, name, amount, month) VALUES ('$userId', '$budgetName', '$budgetAmount', '$budgetMonth')";
+            $result = mysqli_query($conn, $sql);
+
+            if ($result) {
+                $toast_message = 'Budget added successfully for ' . date('F Y', strtotime($budgetMonth)) . '!';
+                $toast_type = 'success';
+            } else {
+                $toast_message = 'Error adding budget: ' . mysqli_error($conn);
+                $toast_type = 'danger';
+            }
+        }
+    }
+
+    // Add New Category Process
+    if (isset($_POST['addCategoryBtn'])) {
+        $newCategoryName = $_POST['newCategoryName'];
+        $newCategoryAmount = $_POST['newCategoryAmount'];
+        $userId = $_SESSION['auth_user']['user_id'];
+
+        $sql = "INSERT INTO budgets (user_id, name, amount) VALUES ('$userId', '$newCategoryName', '$newCategoryAmount')";
+        $result = mysqli_query($conn, $sql);
+
+        if ($result) {
+            $toast_message = 'Custom Category added successfully!';
+            $toast_type = 'success';
+        } else {
+            $toast_message = 'Error adding category!';
+            $toast_type = 'danger';
+        }
+    }
+
+    // Add New Expense Process
+    if (isset($_POST['expense_btn'])) {
+        $budgetCategory = $_POST['budget_category'];
+        $expenseAmount = $_POST['expense_amount'];
+        $expenseComment = substr($_POST['expense_comment'], 0, 100);
+        $userId = $_SESSION['auth_user']['user_id'];
+        $currentDate = date('Y-m-d');
+        $currentMonth = date('Y-m');
+
+        $checkBudgetSql = "SELECT id FROM budgets WHERE id = '$budgetCategory' AND user_id = '$userId' AND month = '$currentMonth'";
+        $checkBudgetResult = mysqli_query($conn, $checkBudgetSql);
+
+        if (mysqli_num_rows($checkBudgetResult) > 0) {
+            $sql = "INSERT INTO expenses (user_id, amount, category_id, date, comment) VALUES ('$userId', '$expenseAmount', '$budgetCategory', '$currentDate', '$expenseComment')";
+            $result = mysqli_query($conn, $sql);
+
+            if ($result) {
+                $toast_message = 'Expense added successfully for ' . date('F Y', strtotime($currentDate)) . '!';
+                $toast_type = 'success';
+            } else {
+                $toast_message = 'Error adding expense!';
+                $toast_type = 'danger';
+            }
+        } else {
+            $toast_message = 'Error: The selected budget category does not exist for the current month.';
+            $toast_type = 'warning';
+        }
+    }
+
+    // Add New Income Process
+    if (isset($_POST['income_btn'])) {
+        $incomeName = $_POST['income_name'];
+        $incomeAmount = $_POST['income_amount'];
+        $userId = $_SESSION['auth_user']['user_id'];
+        $currentDate = date('Y-m-d');
+
+        $sql = "INSERT INTO incomes (user_id, name, amount, date) VALUES ('$userId', '$incomeName', '$incomeAmount', '$currentDate')";
+        $result = mysqli_query($conn, $sql);
+
+        if ($result) {
+            $toast_message = 'Income added successfully for ' . date('F Y', strtotime($currentDate)) . '!';
+            $toast_type = 'success';
+        } else {
+            $toast_message = 'Error adding income!';
+            $toast_type = 'danger';
+        }
+    }
+}
 ?>
 
 <!-- HTML -->
@@ -130,6 +229,16 @@ function fetchBudgetCategories() {
         <a class="btn btn-secondary btn-sm mb-4" href="dashboard-page.php">X</a>
         <div class="row justify-content-center">
             <div class="col-md-8 text-center">
+                <!-- Toast container -->
+                <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 11">
+                    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header">
+                            <strong class="me-auto">Notification</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                        <div class="toast-body"></div>
+                    </div>
+                </div>
 
                 <form method="post" action="" id="pageForm">
                     <input type="hidden" name="submitted_page" value="<?php echo $selected_page; ?>">
@@ -160,120 +269,9 @@ function fetchBudgetCategories() {
     </div>
 </div>
 
-<!-- Process -->
-<?php
-// Add New Budget Process
-if (isset($_POST['budget_btn'])) {
-    $budgetName = $_POST['budget_name'];
-    $budgetAmount = $_POST['budget_amount'];
-    $budgetMonth = $_POST['budget_month'];
-    $userId = $_SESSION['auth_user']['user_id']; 
+<!-- ... [Keep Modal-1 HTML] -->
 
-    // Check if a budget with the same name already exists for the current month
-    $checkSql = "SELECT * FROM budgets WHERE user_id = '$userId' AND name = '$budgetName' AND month = '$budgetMonth'";
-    $checkResult = mysqli_query($conn, $checkSql);
-
-    if (mysqli_num_rows($checkResult) > 0) {
-        echo "<script>alert('A budget with this name already exists for the current month!');</script>";
-    } else {
-        $sql = "INSERT INTO budgets (user_id, name, amount, month) VALUES ('$userId', '$budgetName', '$budgetAmount', '$budgetMonth')";
-        $result = mysqli_query($conn, $sql);
-
-        if ($result) {
-            echo "<script>alert('Budget added successfully for " . date('F Y', strtotime($budgetMonth)) . "!');</script>";
-        } else {
-            echo "<script>alert('Error adding budget: " . mysqli_error($conn) . "');</script>";
-        }
-    }
-}
-
-// Add New Category Process
-if (isset($_POST['addCategoryBtn'])) {
-    $newCategoryName = $_POST['newCategoryName'];
-    $newCategoryAmount = $_POST['newCategoryAmount'];
-    $userId = $_SESSION['auth_user']['user_id'];
-
-    $sql = "INSERT INTO budgets (user_id, name, amount) VALUES ('$userId', '$newCategoryName', '$newCategoryAmount')";
-    $result = mysqli_query($conn, $sql);
-
-    if ($result) {
-        echo "<script>alert('Custom Category added successfully!');</script>";
-    } else {
-        echo "<script>alert('Error adding category!');</script>";
-    }
-}
-
-// Add New Expense Process
-if (isset($_POST['expense_btn'])) {
-    $budgetCategory = $_POST['budget_category'];
-    $expenseAmount = $_POST['expense_amount'];
-    $expenseComment = substr($_POST['expense_comment'], 0, 100);
-    $userId = $_SESSION['auth_user']['user_id'];
-    $currentDate = date('Y-m-d'); // Current date
-    $currentMonth = date('Y-m');
-
-    // Check if the budget category exists for the current month
-    $checkBudgetSql = "SELECT id FROM budgets WHERE id = '$budgetCategory' AND user_id = '$userId' AND month = '$currentMonth'";
-    $checkBudgetResult = mysqli_query($conn, $checkBudgetSql);
-
-    if (mysqli_num_rows($checkBudgetResult) > 0) {
-        $sql = "INSERT INTO expenses (user_id, amount, category_id, date, comment) VALUES ('$userId', '$expenseAmount', '$budgetCategory', '$currentDate', '$expenseComment')";
-        $result = mysqli_query($conn, $sql);
-
-        if ($result) {
-            echo "<script>alert('Expense added successfully for $currentMonth!');</script>";
-        } else {
-            echo "<script>alert('Error adding expense!');</script>";
-        }
-    } else {
-        echo "<script>alert('Error: The selected budget category does not exist for the current month.');</script>";
-    }
-}
-
-// Add New Income Process
-if (isset($_POST['income_btn'])) {
-    $incomeName = $_POST['income_name'];
-    $incomeAmount = $_POST['income_amount'];
-    $userId = $_SESSION['auth_user']['user_id'];
-    $currentDate = date('Y-m-d'); // Get the current date
-
-    $sql = "INSERT INTO incomes (user_id, name, amount, date) VALUES ('$userId', '$incomeName', '$incomeAmount', '$currentDate')";
-    $result = mysqli_query($conn, $sql);
-
-    if ($result) {
-        echo "<script>alert('Income added successfully for " . date('F d, Y', strtotime($currentDate)) . "!');</script>";
-    } else {
-        echo "<script>alert('Error adding income!');</script>";
-    }
-}
-?>
-
-<!-- Modal-1 -->
-<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="addCategoryModalLabel">Add Custom Category</h1>
-      </div>
-      <div class="modal-body">
-        <form method="post">
-            <div class="mb-3">
-                <label for="newCategoryName" class="form-label">Custom Category Name</label>
-                <input type="text" class="form-control" name="newCategoryName" id="newCategoryName" required>
-            </div>
-            <div class="mb-3">
-                <label for="budget_amount" class="form-label">Amount</label>
-                <input type="text" class="form-control" name="newCategoryAmount" id="newCategoryAmount" required>
-            </div>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Close</button>
-            <button type="submit" class="btn btn-primary" name="addCategoryBtn">+ Add</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal-1 Script -->
+<!-- Modified Script -->
 <script>
 document.querySelectorAll('input[name="page"]').forEach(radio => {
     radio.addEventListener('change', function() {
@@ -282,10 +280,27 @@ document.querySelectorAll('input[name="page"]').forEach(radio => {
 });
 
 // Add New Category Modal Script
-document.getElementById('add-category-btn').addEventListener('click', function() {
-    // Show the modal
-    var myModal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
-    myModal.show();
+const addCategoryBtn = document.getElementById('add-category-btn');
+if (addCategoryBtn) {
+    addCategoryBtn.addEventListener('click', function() {
+        var myModal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
+        myModal.show();
+    });
+}
+
+// Toast notification script
+window.addEventListener('DOMContentLoaded', (event) => {
+    const toastLiveExample = document.getElementById('liveToast');
+    if (toastLiveExample) {
+        const toast = new bootstrap.Toast(toastLiveExample);
+        <?php if (!empty($toast_message)): ?>
+        document.querySelector('.toast-body').textContent = '<?php echo addslashes($toast_message); ?>';
+        document.querySelector('.toast').classList.remove('bg-success', 'bg-warning', 'bg-danger');
+        document.querySelector('.toast').classList.add('bg-<?php echo $toast_type; ?>');
+        document.querySelector('.toast').classList.add('text-white');
+        toast.show();
+        <?php endif; ?>
+    }
 });
 </script>
 
