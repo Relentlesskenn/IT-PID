@@ -46,9 +46,10 @@ function getOrUpdateMonthlyBalance($userId, $month, $year, $balance) {
     return $balance;
 }
 
-// Get current month and year
+// Get current month, year, and set default year
 $currentMonth = isset($_GET['month']) ? $_GET['month'] : date('m');
-$currentYear = date('Y');
+$currentYear = isset($_GET['year']) ? $_GET['year'] : date('Y');
+$defaultYear = date('Y');
 
 $userId = $_SESSION['auth_user']['user_id'];
 $totalExpenses = getExpensesTotal($userId, $currentMonth, $currentYear);
@@ -63,7 +64,7 @@ $balance = getOrUpdateMonthlyBalance($userId, $currentMonth, $currentYear, $bala
 <!-- HTML -->
 <div class="py-3">
     <div class="container">
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
             <span>Hello, <?= $_SESSION['auth_user']['username']?>!</span>
             <a class="btn btn-dark btn-sm" href="notifications-page.php"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16">
             <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2m.995-14.901a1 1 0 1 0-1.99 0A5 5 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901"/>
@@ -94,33 +95,55 @@ $balance = getOrUpdateMonthlyBalance($userId, $currentMonth, $currentYear, $bala
             </div>
         </div>
         
-        <!-- Month selection -->
-        <div class="mb-3">
-            <form action="" method="GET" class="d-flex align-items-center">
-                <label for="month" class="me-2">Select Month:</label>
-                <select name="month" id="month" class="form-select me-2" style="width: auto;">
-                    <?php
-                    for ($i = 1; $i <= 12; $i++) {
-                        $monthName = date('F', mktime(0, 0, 0, $i, 1));
-                        $selected = ($i == $currentMonth) ? 'selected' : '';
-                        echo "<option value='{$i}' {$selected}>{$monthName}</option>";
-                    }
-                    ?>
-                </select>
-                <button type="submit" class="btn btn-primary">View</button>
+        <!-- Month and Year selection -->
+        <div class="mb-4">
+            <form action="" method="GET" class="row g-2 align-items-center">
+                <div class="col-auto">
+                    <label for="month" class="col-form-label" style="font-size: 0.95rem;">Month:</label>
+                </div>
+                <div class="col-auto">
+                    <select name="month" id="month" class="form-select">
+                        <?php
+                        for ($i = 1; $i <= 12; $i++) {
+                            $monthName = date('F', mktime(0, 0, 0, $i, 1));
+                            $selected = ($i == $currentMonth) ? 'selected' : '';
+                            echo "<option value='{$i}' {$selected}>{$monthName}</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <label for="year" class="col-form-label" style="font-size: 0.95rem;">Year:</label>
+                </div>
+                <div class="col-auto">
+                    <select name="year" id="year" class="form-select">
+                        <?php
+                        $startYear = 2024;
+                        $endYear = date('Y') + 1; 
+                        for ($i = $startYear; $i <= $endYear; $i++) {
+                            $selected = ($i == $currentYear) ? 'selected' : '';
+                            echo "<option value='{$i}' {$selected}>{$i}</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary" style="font-size: 0.95rem;">View</button>
+                </div>
             </form>
         </div>
         
         <!-- Budget Cards -->
         <div class="row row-cols-2 g-4">
+
         <?php
         // Fetch budget data from the database and calculate the remaining balance
         $userId = $_SESSION['auth_user']['user_id'];
-        $sql = "SELECT b.id, b.name, b.amount, b.date, SUM(e.amount) AS total_expenses 
+        $sql = "SELECT b.id, b.name, b.amount, b.month, SUM(e.amount) AS total_expenses 
                 FROM budgets b 
                 LEFT JOIN expenses e ON b.id = e.category_id AND MONTH(e.date) = '$currentMonth' AND YEAR(e.date) = '$currentYear'
-                WHERE b.user_id = '$userId' AND MONTH(b.date) = '$currentMonth' AND YEAR(b.date) = '$currentYear'
-                GROUP BY b.id, b.name, b.amount, b.date";
+                WHERE b.user_id = '$userId' AND b.month = '$currentYear-$currentMonth'
+                GROUP BY b.id, b.name, b.amount, b.month";
         $result = mysqli_query($conn, $sql);
 
         if (mysqli_num_rows($result) > 0) {
@@ -128,18 +151,19 @@ $balance = getOrUpdateMonthlyBalance($userId, $currentMonth, $currentYear, $bala
                 $budgetId = $row['id'];
                 $budgetName = $row['name'];
                 $budgetAmount = $row['amount'];
-                $monthCreated = $row['date'];
+                $monthCreated = $row['month'];
                 $totalExpenses = $row['total_expenses'] ?? 0;
                 $remainingBalance = $budgetAmount - $totalExpenses;
                 $percentageUsed = ($totalExpenses / $budgetAmount) * 100;
         ?>
-                <!-- Budget Card -->
+
+                <!-- Budget Card Content -->
                 <div class="col">
                     <div class="card h-100">
                         <div class="card-body d-flex flex-column p-2">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="card-title mb-0" style="font-size: 1rem; font-weight: bold;"><?= $budgetName ?></h6>
-                            <span style="font-size: 0.8rem;"><?= date('M', strtotime($monthCreated)) ?></span>
+                            <span style="font-size: 0.8rem;"><?= date('M Y', strtotime($monthCreated)) ?></span>
                         </div>
                             <div class="budget-info">
                                 <p class="card-text mb-0" style="font-size: 0.85rem; line-height: 1.6;">Budget - ₱<?= number_format($budgetAmount, 2) ?></p>
@@ -163,10 +187,10 @@ $balance = getOrUpdateMonthlyBalance($userId, $currentMonth, $currentYear, $bala
             }
         } else {
         ?>
-            <div class="col">
-                <div class="card mt-3">
+            <div class="col-12">
+                <div class="card">
                     <div class="card-body">
-                        <p class="card-text">No budgets found for the selected month.</p>
+                        <p class="card-text">No budgets found for the selected date.</p>
                     </div>
                 </div>
             </div>

@@ -4,106 +4,102 @@ include('_dbconnect.php');
 include('authentication.php');
 include('includes/header.php'); 
 
-$selected_page = isset($_POST['page']) ? $_POST['page'] : 'page2';
+$selected_page = isset($_POST['page']) ? $_POST['page'] : 'budget';
 
 // Functions
-function showPage1() {
-    echo "<div class='card mb-4 justify-content-center'>
-                    <div class='card-header'>
-                        Add Income (" . date('F') . ")
-                    </div>
-                    <div class='card-body'>
-                        <form method='post'>
-                            <div class='mb-3'>
-                                <label for='income_name' class='form-label'>Income Name</label>
-                                <select class='form-select flex-grow-1 me-2' name='income_name' id='income_name'>
-                                <option value='Salary'>Salary</option>
-                                <option value='Bonus'>Bonus</option>
-                                <option value='Commission'>Commission</option>
-                                <option value='Overtime Pay'>Overtime Pay</option>
-                                <option value='Tips'>Tips</option>
-                                <option value='Freelance Payment'>Freelance Payment</option>
-                                <option value='Allowance'>Allowance</option>
-                                </select>
-                            </div>
-                            <div class='mb-3'>
-                                <label for='income_amount' class='form-label'>Amount</label>
-                                <input type='text' class='form-control' name='income_amount' id='income_amount' required>
-                            </div>
-                            <button type='submit' class='btn btn-primary w-100' name='income_btn'>+ Add Income</button>
-                        </form>
-                    </div>
-                </div>";
-}
-
-function showPage2() {
-    $current_month = date('Y-m');
-    echo "<div class='container'>
-            <div class='row justify-content-center'>
-                <div class='col-md-6'>
-                <div class='card'>
-                    <div class='card-header'>
-                    Create a Budget (" . date('F') . ")
-                    </div>
-                    <div class='card-body'>
-                    <form method='post'>
-                        <input type='hidden' name='budget_month' value='$current_month'>
-                        <div class='mb-3'>
-                        <label for='budget_name' class='form-label'>Budget Name</label>
-                        <div class='d-flex align-items-center'>
-                            <select class='form-select flex-grow-1 me-2' name='budget_name' id='budget_name' required>
-                                <option value='General'>General</option>
-                                <option value='Rent'>Rent</option>
-                                <option value='Groceries'>Groceries</option>
-                                <option value='Transportation'>Transportation</option>
-                                <option value='Health'>Health</option>
-                                <option value='Utilities'>Utilities</option>
-                                <option value='Entertainment'>Entertainment</option>
-                            </select>
-                            <button type='button' class='btn btn-primary btn-sm' id='add-category-btn'>+</button>
-                        </div>
-                        </div>
-                        <div class='mb-3'>
-                        <label for='budget_amount' class='form-label'>Amount</label>
-                        <input type='text' class='form-control' name='budget_amount' id='budget_amount' required>
-                        </div>
-                        <button type='submit' class='btn btn-primary w-100' name='budget_btn'>+ Add Budget</button>
-                    </form>
-                    </div>
-                </div>
+function showIncome() {
+    echo"
+        <form method='post'>
+            <div class='mb-3'>
+                <label for='income_name' class='form-label'>Income Type</label>
+                <select class='form-select form-select-lg' name='income_name' id='income_name'>
+                    <option value='Salary'>Salary</option>
+                    <option value='Bonus'>Bonus</option>
+                    <option value='Commission'>Commission</option>
+                    <option value='Overtime Pay'>Overtime Pay</option>
+                    <option value='Tips'>Tips</option>
+                    <option value='Freelance Payment'>Freelance Payment</option>
+                    <option value='Allowance'>Allowance</option>
+                </select>
+            </div>
+            <div class='mb-3'>
+                <label for='income_amount' class='form-label'>Amount</label>
+                <div class='input-group input-group-lg'>
+                    <span class='input-group-text'>₱</span>
+                    <input type='number' step='0.01' class='form-control' name='income_amount' id='income_amount' required inputmode='decimal'>
                 </div>
             </div>
-            </div>";
+            <button type='submit' class='btn btn-primary btn-lg w-100' name='income_btn'>
+                + Add Income
+            </button>
+        </form>
+        ";
 }
 
-function showPage3() {
+function showBudget() {
     $current_month = date('Y-m');
-    echo "<div class='card'>
-            <div class='card-header'>
-                Add Expense (" . date('F') . ")
+    echo"   
+        <form method='post'>
+        <input type='hidden' name='budget_month' value='$current_month'>
+            <div class='mb-3'>
+                <label for='budget_name' class='form-label'>Budget Category</label>
+                    <div class='input-group input-group-lg'>
+                    <select class='form-select' name='budget_name' id='budget_name' required>
+                        <option value='General'>General</option>
+                        <option value='Rent'>Rent</option>
+                        <option value='Groceries'>Groceries</option>
+                        <option value='Transportation'>Transportation</option>
+                        <option value='Health'>Health</option>
+                        <option value='Utilities'>Utilities</option>
+                        <option value='Entertainment'>Entertainment</option>
+                    </select>
+                    <button type='button' class='btn btn-outline-secondary' id='add-category-btn'>
+                        +
+                    </button>
+                    </div>
             </div>
-            <div class='card-body'>
-                <form method='post'>
-                    <div class='mb-3'>
-                            <label for='budget_category' class='mb-2'>Budget Category</label>
-                            <select class='form-select' name='budget_category' id='budget_category'>
-                                ";
-                                fetchBudgetCategories();
-                                echo "
-                            </select>
-                    </div>
-                    <div class='mb-3'>
-                        <label for='expense_amount' class='form-label'>Amount</label>
-                        <input type='text' class='form-control' name='expense_amount' id='expense_amount' required>
-                    </div>
-                    <div class='mb-3'>
-                        <label for='expense_comment' class='form-label'>Comment</label>
-                        <textarea class='form-control' name='expense_comment' id='expense_comment' rows='3' maxlength='100' placeholder='Max 100 characters'></textarea>
-                    </div>
-                    <button type='submit' class='btn btn-primary w-100' name='expense_btn'>+ Add Expense</button>
-                </form>
+            <div class='mb-3'>
+                <label for='budget_amount' class='form-label'>Amount</label>
+                <div class='input-group input-group-lg'>
+                    <span class='input-group-text'>₱</span>
+                    <input type='number' step='0.01' class='form-control' name='budget_amount' id='budget_amount' required inputmode='decimal'>
+                </div>
             </div>
-        </div>";
+            <button type='submit' class='btn btn-success btn-lg w-100' name='budget_btn'>
+                + Add Budget
+            </button>
+        </form>
+        ";
+}
+
+function showExpense() {
+    $current_month = date('Y-m');
+    echo"
+        <form method='post'>
+            <div class='mb-3'>
+                <label for='budget_category' class='form-label'>Budget Category</label>
+                <select class='form-select form-select-lg' name='budget_category' id='budget_category'>
+                    ";
+                    fetchBudgetCategories();
+                    echo "
+                </select>
+            </div>
+            <div class='mb-3'>
+                <label for='expense_amount' class='form-label'>Amount</label>
+                <div class='input-group input-group-lg'>
+                    <span class='input-group-text'>₱</span>
+                    <input type='number' step='0.01' class='form-control' name='expense_amount' id='expense_amount' required inputmode='decimal'>
+                </div>
+            </div>
+            <div class='mb-3'>
+                <label for='expense_comment' class='form-label'>Comment</label>
+                <textarea class='form-control' name='expense_comment' id='expense_comment' rows='3' maxlength='100' placeholder='Max 100 characters'></textarea>
+            </div>
+            <button type='submit' class='btn btn-danger btn-lg w-100' name='expense_btn'>
+                + Add Expense
+            </button>
+        </form>
+        ";
 }
 
 // Fetch Budget Categories
@@ -119,7 +115,7 @@ function fetchBudgetCategories() {
             echo "<option value='" . $row['id'] . "'>" . $row['name'] . "</option>";
         }
     } else {
-        echo "<option value='No categories found'>No categories found</option>";
+        echo "<option value=''>No categories found</option>";
     }
 }
 
@@ -225,78 +221,85 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 
 <!-- HTML -->
-<div class="py-3">
-    <div class="container">
-        <a class="btn btn-secondary btn-sm mb-4" href="dashboard-page.php">X</a>
-        <div class="row justify-content-center">
-            <div class="col-md-8 text-center">
-                
-                <!-- Toast container -->
-                <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 11">
-                    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-                        <div class="toast-header">
-                            <strong class="me-auto">Notification</strong>
-                            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                        </div>
-                        <div class="toast-body"></div>
-                    </div>
+<div class="container-fluid vh-100 d-flex flex-column justify-content-center align-items-center">
+    <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <a href="dashboard-page.php" class="btn btn-outline-dark">
+                    <- Dashboard
+                </a>
+            </div>
+            
+            <form method="post" action="" id="pageForm" class="mb-4">
+                <input type="hidden" name="submitted_page" value="<?php echo $selected_page; ?>">
+                <div class="btn-group w-100" role="group" aria-label="Page Selection">
+                    <input type="radio" class="btn-check" name="page" id="income" value="income" autocomplete="off" <?php echo ($selected_page == 'income') ? 'checked' : ''; ?>>
+                    <label class="btn btn-outline-primary" for="income">Income</label>
+
+                    <input type="radio" class="btn-check" name="page" id="budget" value="budget" autocomplete="off" <?php echo ($selected_page == 'budget') ? 'checked' : ''; ?>>
+                    <label class="btn btn-outline-success" for="budget">Budget</label>
+
+                    <input type="radio" class="btn-check" name="page" id="expense" value="expense" autocomplete="off" <?php echo ($selected_page == 'expense') ? 'checked' : ''; ?>>
+                    <label class="btn btn-outline-danger" for="expense">Expense</label>
                 </div>
-
-                <form method="post" action="" id="pageForm">
-                    <input type="hidden" name="submitted_page" value="<?php echo $selected_page; ?>">
-                    <div class="btn-group" role="group" aria-label="Page Selection">
-                        <input type="radio" class="btn-check" name="page" id="page1" value="page1" autocomplete="off" <?php echo ($selected_page == 'page1') ? 'checked' : ''; ?>>
-                        <label class="btn btn-outline-primary" for="page1">Income</label>
-
-                        <input type="radio" class="btn-check" name="page" id="page2" value="page2" autocomplete="off" <?php echo ($selected_page == 'page2') ? 'checked' : ''; ?>>
-                        <label class="btn btn-outline-primary" for="page2">Budget</label>
-
-                        <input type="radio" class="btn-check" name="page" id="page3" value="page3" autocomplete="off" <?php echo ($selected_page == 'page3') ? 'checked' : ''; ?>>
-                        <label class="btn btn-outline-primary" for="page3">Expense</label>
-                    </div>
-                    <div class="content mt-4">
-                        <?php
-                            if ($selected_page == 'page1') {
-                                showPage1();
-                            } elseif ($selected_page == 'page2') {
-                                showPage2();
-                            } elseif ($selected_page == 'page3') {
-                                showPage3();
-                            }
-                        ?>
-                    </div>
-                </form>
+            </form>
+            
+            <div class="content">
+                <?php
+                    if ($selected_page == 'income') {
+                        showIncome();
+                    } elseif ($selected_page == 'budget') {
+                        showBudget();
+                    } elseif ($selected_page == 'expense') {
+                        showExpense();
+                    }
+                ?>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal-1 -->
+<!-- Toast container -->
+<div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body"></div>
+    </div>
+</div>
+
+<!-- Modal for adding custom category -->
 <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="modal-title fs-5" id="addCategoryModalLabel">Add Custom Category</h1>
+        <h5 class="modal-title" id="addCategoryModalLabel">Add Custom Category</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <form method="post">
             <div class="mb-3">
                 <label for="newCategoryName" class="form-label">Custom Category Name</label>
-                <input type="text" class="form-control" name="newCategoryName" id="newCategoryName" required>
+                <input type="text" class="form-control form-control-lg" name="newCategoryName" id="newCategoryName" required>
             </div>
             <div class="mb-3">
-                <label for="budget_amount" class="form-label">Amount</label>
-                <input type="text" class="form-control" name="newCategoryAmount" id="newCategoryAmount" required>
+                <label for="newCategoryAmount" class="form-label">Amount</label>
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text">₱</span>
+                    <input type="number" step="0.01" class="form-control" name="newCategoryAmount" id="newCategoryAmount" required inputmode="decimal">
+                </div>
             </div>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Close</button>
-            <button type="submit" class="btn btn-primary" name="addCategoryBtn">+ Add</button>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg" name="addCategoryBtn">+ Add Category</button>
+            </div>
         </form>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modified Script -->
 <script>
 document.querySelectorAll('input[name="page"]').forEach(radio => {
     radio.addEventListener('change', function() {
