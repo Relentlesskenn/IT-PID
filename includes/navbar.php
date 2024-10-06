@@ -37,13 +37,13 @@
         <div class="nav-content">
             <div class="nav-item">
                 <a href="goals-page.php">
-                    <i class="bi bi-bullseye fs-4"></i>
+                    <i class="bi bi-bullseye fs-3"></i>
                     <span>Goals</span>
                 </a>
             </div>
             <div class="nav-item">
                 <a href="reports-page.php">
-                    <i class="bi bi-clipboard2-data fs-4"></i>
+                    <i class="bi bi-clipboard2-data fs-3"></i>
                     <span>Reports</span>
                 </a>
             </div>
@@ -54,13 +54,13 @@
             </div>
             <div class="nav-item">
                 <a href="learn-page.php">
-                    <i class="bi bi-book fs-4"></i>
+                    <i class="bi bi-book fs-3"></i>
                     <span>Learn</span>
                 </a>
             </div>
             <div class="nav-item">
                 <a href="settings-page.php">
-                    <i class="bi bi-gear fs-4"></i>
+                    <i class="bi bi-gear fs-3"></i>
                     <span>Settings</span>
                 </a>
             </div>
