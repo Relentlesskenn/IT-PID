@@ -24,6 +24,7 @@ function getIncomesTotal($userId, $month, $year) {
     return $row['total_incomes'] ?? 0;
 }
 
+// Function to update or insert the monthly balance
 function getOrUpdateMonthlyBalance($userId, $month, $year, $balance) {
     global $conn;
     $sql = "SELECT balance FROM balances WHERE user_id = '$userId' AND month = '$month' AND year = '$year'";

@@ -1,37 +1,69 @@
 <link rel="stylesheet" href=".\assets\css\navbar.css">
+<style>
+    .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background-color: white;
+        box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    }
+    .nav-content {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 3px 0;
+    }
+    .nav-item {
+        text-align: center;
+    }
+    .nav-item a {
+        color: black;
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 0.8rem;
+    }
+    body {
+        padding-bottom: 80px; /* Adjust this value based on the height of your navbar */
+    }
+</style>
+
 <!-- Navbar -->
 <nav class="bottom-nav">
     <div class="container">
-        <div class="row align-items-center">
-            <div class="col nav-item">
-                <a href="goals-page.php" style="color: black; text-decoration: none;">
-                    <i class="bi bi-bullseye fs-4" style="color: black;"></i>
-                    Goals
+        <div class="nav-content">
+            <div class="nav-item">
+                <a href="goals-page.php">
+                    <i class="bi bi-bullseye fs-4"></i>
+                    <span>Goals</span>
                 </a>
             </div>
-            <div class="col nav-item">
-                <a href="reports-page.php" style="color: black; text-decoration: none;">
-                    <i class="bi bi-clipboard2-data fs-4" style="color: black;"></i>
-                    Reports
+            <div class="nav-item">
+                <a href="reports-page.php">
+                    <i class="bi bi-clipboard2-data fs-4"></i>
+                    <span>Reports</span>
                 </a>
             </div>
-            <div class="col nav-item">
+            <div class="nav-item">
                 <a class="btn btn-primary" href="create-page.php">
                     <i class="bi bi-plus fs-1" style="color: white;"></i>
                 </a>
             </div>
-            <div class="col nav-item">
-                <a href="learn-page.php" style="color: black; text-decoration: none;">
-                    <i class="bi bi-book fs-4" style="color: black;"></i>
-                    Learn
+            <div class="nav-item">
+                <a href="learn-page.php">
+                    <i class="bi bi-book fs-4"></i>
+                    <span>Learn</span>
                 </a>
             </div>
-            <div class="col nav-item">
-                <a href="settings-page.php" style="color: black; text-decoration: none;">
-                    <i class="bi bi-gear fs-4" style="color: black;"></i>
-                     Settings
+            <div class="nav-item">
+                <a href="settings-page.php">
+                    <i class="bi bi-gear fs-4"></i>
+                    <span>Settings</span>
                 </a>
             </div>
-         </div>
+        </div>
     </div>
 </nav>
