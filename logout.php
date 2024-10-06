@@ -1,8 +1,9 @@
 <?php
 session_start();
 
+// Destroy the session variables
 unset($_SESSION['authenticated']);
 unset($_SESSION['auth_user']);
-header("Location: landing-page.php");
+header("Location: index.php");
 
 ?>

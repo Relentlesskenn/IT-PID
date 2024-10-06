@@ -68,7 +68,8 @@ $balance = getOrUpdateMonthlyBalance($userId, $currentMonth, $currentYear, $bala
             <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2m.995-14.901a1 1 0 1 0-1.99 0A5 5 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901"/>
             </svg></a>
         </div>
-
+        
+        <!--Expenses, Incomes, and Balance-->
         <div class="card my-3 text-center">
             <div class="card-body">
                 <div class="table-responsive">
@@ -112,7 +113,7 @@ $balance = getOrUpdateMonthlyBalance($userId, $currentMonth, $currentYear, $bala
         <!-- Budget Cards -->
         <div class="row row-cols-2 g-4">
         <?php
-        // Fetch budget data from the database
+        // Fetch budget data from the database and calculate the remaining balance
         $userId = $_SESSION['auth_user']['user_id'];
         $sql = "SELECT b.id, b.name, b.amount, b.date, SUM(e.amount) AS total_expenses 
                 FROM budgets b 
@@ -131,6 +132,7 @@ $balance = getOrUpdateMonthlyBalance($userId, $currentMonth, $currentYear, $bala
                 $remainingBalance = $budgetAmount - $totalExpenses;
                 $percentageUsed = ($totalExpenses / $budgetAmount) * 100;
         ?>
+                <!-- Budget Card -->
                 <div class="col">
                     <div class="card h-100">
                         <div class="card-body d-flex flex-column p-2">

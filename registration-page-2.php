@@ -14,11 +14,14 @@ $f_name = filter_input(INPUT_POST, 'f_name');
 $l_name = filter_input(INPUT_POST, 'l_name');
 $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
 ?>
+
 <link rel="stylesheet" href="./assets/css/bg.css">
 <div class="py-5">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6">
+
+                <!-- Alert -->
                 <?php
                 if(isset($_SESSION['status']))
                 {
@@ -38,6 +41,7 @@ $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
                             Create an Account
                         </h3>
                     </div>
+                    <!-- Registration Form -->
                     <div class="card-body">
                         <form action="registration-process.php" method="POST">
                             <input type="hidden" name="f_name" value="<?= htmlspecialchars($f_name) ?>">

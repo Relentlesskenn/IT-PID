@@ -34,8 +34,8 @@ include('includes/header.php');
                     <div class="card-body">
                         <form action="resend_email_verification-process.php" method="POST">
                             <div class="form-group mb-3">
-                                <label for="email">Email</label>
-                                <input type="email" name="email" id="email" class="form-control" placeholder="Enter Email Address" required autocomplete="email">
+                                <label for="email">Email Address</label>
+                                <input type="email" name="email" id="email" class="form-control" required autocomplete="email">
                             </div>
                             <div class="form-group">
                                 <button type="submit" name="resend_email_verification_btn" class="btn btn-primary w-100">Submit</button>

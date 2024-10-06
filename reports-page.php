@@ -120,6 +120,8 @@ if (isset($_POST['print_report'])) {
 <div class="py-3">
     <div class="container">
         <a class="btn btn-secondary btn-sm mb-3" href="dashboard-page.php">X</a>
+
+        <!-- Today's Expenses Table -->
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Today's Expenses (<?= date('m-d-Y') ?>)</h5>
@@ -228,5 +230,5 @@ if (isset($_POST['print_report'])) {
 
 <?php 
 include('includes/footer.php');
-ob_end_flush();
+ob_end_flush(); // End output buffering
 ?>

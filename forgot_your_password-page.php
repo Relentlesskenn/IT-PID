@@ -9,6 +9,8 @@ include('includes/header.php');
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6">
+
+                <!-- Alert -->
                 <?php
                 if (isset($_SESSION['status'])) {
                     $status_class = ($_SESSION['status_type'] ?? 'primary');
@@ -20,6 +22,7 @@ include('includes/header.php');
                     unset($_SESSION['status_type']);
                 }
                 ?>
+                
                 <div class="card shadow">
                     <div class="card-header">
                         <h3>

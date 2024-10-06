@@ -126,8 +126,9 @@ function fetchBudgetCategories() {
 $toast_message = '';
 $toast_type = '';
 
-// Process section
+// Process
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
     // Add New Budget Process
     if (isset($_POST['budget_btn'])) {
         $budgetName = $_POST['budget_name'];
@@ -229,6 +230,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <a class="btn btn-secondary btn-sm mb-4" href="dashboard-page.php">X</a>
         <div class="row justify-content-center">
             <div class="col-md-8 text-center">
+                
                 <!-- Toast container -->
                 <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 11">
                     <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">

@@ -1,4 +1,5 @@
 <link rel="stylesheet" href=".\assets\css\navbar.css">
+<!-- Navbar -->
 <nav class="bottom-nav">
     <div class="container">
         <div class="row align-items-center">

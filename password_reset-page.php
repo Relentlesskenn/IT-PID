@@ -23,6 +23,7 @@ include('includes/header.php');
                         }
                     ?>
 
+                    <!-- Change Password Form -->
                     <div class="card shadow">
                         <div class="card-header">
                             <h3>Change Password</h3>

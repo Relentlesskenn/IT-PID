@@ -2,6 +2,7 @@
 session_start();
 include('_dbconnect.php');
 
+    // Check if token is valid or not
     if(isset($_GET['token']))
     {
         $token = $_GET['token'];
