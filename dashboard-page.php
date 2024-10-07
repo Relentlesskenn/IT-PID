@@ -103,9 +103,9 @@ $unreadNotificationsCount = getUnreadNotificationsCount($userId);
                         </thead>
                         <tbody>
                             <tr>
-                                <td class="fs-5"><?= number_format($totalExpenses, 2) ?></td>
-                                <td class="fs-5"><?= number_format($totalIncomes, 2) ?></td>
-                                <td class="fs-5"><?= number_format($balance, 2) ?></td>
+                                <td style="font-size: 1.06rem;">₱<?= number_format($totalExpenses, 2) ?></td>
+                                <td style="font-size: 1.06rem;">₱<?= number_format($totalIncomes, 2) ?></td>
+                                <td style="font-size: 1.06rem;">₱<?= number_format($balance, 2) ?></td>
                             </tr>
                         </tbody>
                     </table>
