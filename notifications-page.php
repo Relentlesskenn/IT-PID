@@ -4,6 +4,15 @@ include('_dbconnect.php');
 include('authentication.php');
 include('includes/header.php');
 
+$userId = $_SESSION['auth_user']['user_id'];
+
+// Handle notification deletion
+if (isset($_POST['delete_notification'])) {
+    $notificationId = mysqli_real_escape_string($conn, $_POST['notification_id']);
+    $deleteSql = "DELETE FROM notifications WHERE id = '$notificationId' AND user_id = '$userId'";
+    mysqli_query($conn, $deleteSql);
+}
+
 // Fetch notifications
 $userId = $_SESSION['auth_user']['user_id'];
 $sql = "SELECT * FROM notifications WHERE user_id = '$userId' ORDER BY created_at DESC";
@@ -28,10 +37,14 @@ mysqli_query($conn, $updateSql);
                 <?php while ($row = mysqli_fetch_assoc($result)): ?>
                     <div class="list-group-item list-group-item-action">
                         <div class="d-flex w-100 justify-content-between">
-                            <h5 class="mb-1"><?php echo ucfirst($row['type']); ?> Notification</h5>
-                            <small><?php echo date('M d, Y H:i', strtotime($row['created_at'])); ?></small>
+                            <h5 class="mt-1"><?php echo ucfirst($row['type']); ?> Notification</h5>
+                            <form method="POST">
+                                <input type="hidden" name="notification_id" value="<?php echo $row['id']; ?>">
+                                <button type="submit" name="delete_notification" class="btn btn-sm btn-danger"><i class="bi bi-trash3"></i></button>
+                            </form>
                         </div>
                         <p class="mb-1"><?php echo $row['message']; ?></p>
+                        <small><?php echo date('m/d/y H:i', strtotime($row['created_at'])); ?></small>
                     </div>
                 <?php endwhile; ?>
             </div>
