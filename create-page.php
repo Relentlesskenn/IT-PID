@@ -4,7 +4,7 @@ include('_dbconnect.php');
 include('authentication.php');
 include('includes/header.php'); 
 
-$selected_page = isset($_POST['page']) ? $_POST['page'] : 'budget';
+$selected_page = isset($_POST['page']) ? $_POST['page'] : (isset($_GET['page']) ? $_GET['page'] : 'budget');
 
 // Functions
 function showIncome() {
@@ -172,7 +172,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($result) {
             $toast_message = 'Custom Category added successfully!';
-            $toast_type = 'success';
+            $toast_type = 'primary';
         } else {
             $toast_message = 'Error adding category!';
             $toast_type = 'danger';
@@ -197,7 +197,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             if ($result) {
                 $toast_message = 'Expense added successfully for ' . date('F Y', strtotime($currentDate)) . '!';
-                $toast_type = 'success';
+                $toast_type = 'primary';
             } else {
                 $toast_message = 'Error adding expense!';
                 $toast_type = 'danger';
@@ -206,6 +206,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $toast_message = 'Error: The selected budget category does not exist for the current month.';
             $toast_type = 'warning';
         }
+        $selected_page = 'expense';
     }
 
     // Add New Income Process
@@ -220,11 +221,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($result) {
             $toast_message = 'Income added successfully for ' . date('F Y', strtotime($currentDate)) . '!';
-            $toast_type = 'success';
+            $toast_type = 'primary';
         } else {
             $toast_message = 'Error adding income!';
             $toast_type = 'danger';
         }
+        $selected_page = 'income';
     }
 }
 ?>
@@ -278,16 +280,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="addCategoryModalLabel">Add Custom Category</h5>
+        <h5 class="modal-title" id="addCategoryModalLabel">Add Custom Budget</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <form method="post">
             <div class="mb-3">
-                <label for="newCategoryName" class="form-label">Custom Category Name</label>
+                <label for="newCategoryName" class="form-label">Custom Budget Name</label>
                 <input type="text" class="form-control form-control-lg" name="newCategoryName" id="newCategoryName" required>
             </div>
-            <div class="mb-3">
+            <div class="mb-4">
                 <label for="newCategoryAmount" class="form-label">Amount</label>
                 <div class="input-group input-group-lg">
                     <span class="input-group-text">₱</span>
@@ -295,7 +297,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
             </div>
             <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary btn-lg" name="addCategoryBtn">+ Add Category</button>
+                <button type="submit" class="btn btn-success btn-lg" name="addCategoryBtn">+ Add Budget</button>
             </div>
         </form>
       </div>
