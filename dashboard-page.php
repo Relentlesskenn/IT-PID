@@ -46,6 +46,15 @@ function getOrUpdateMonthlyBalance($userId, $month, $year, $balance) {
     return $balance;
 }
 
+// Function to get the number of unread notifications for a user
+function getUnreadNotificationsCount($userId) {
+    global $conn;
+    $sql = "SELECT COUNT(*) AS unread_count FROM notifications WHERE user_id = '$userId' AND is_read = 0";
+    $result = mysqli_query($conn, $sql);
+    $row = mysqli_fetch_assoc($result);
+    return $row['unread_count'];
+}
+
 // Get current month, year, and set default year
 $currentMonth = isset($_GET['month']) ? $_GET['month'] : date('m');
 $currentYear = isset($_GET['year']) ? $_GET['year'] : date('Y');
@@ -59,6 +68,9 @@ $balance = $totalIncomes - $totalExpenses;
 // Store or update the monthly balance
 $balance = getOrUpdateMonthlyBalance($userId, $currentMonth, $currentYear, $balance);
 
+// Get the number of unread notifications
+$unreadNotificationsCount = getUnreadNotificationsCount($userId);
+
 ?>
 
 <!-- HTML -->
@@ -66,9 +78,15 @@ $balance = getOrUpdateMonthlyBalance($userId, $currentMonth, $currentYear, $bala
     <div class="container">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <span style="font-size: 1.1rem;">Hello, <?= $_SESSION['auth_user']['username']?>!</span>
-            <a class="btn btn-dark btn-sm" href="notifications-page.php"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16">
-            <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2m.995-14.901a1 1 0 1 0-1.99 0A5 5 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901"/>
-            </svg></a>
+            <a class="btn btn-primary position-relative" href="notifications-page.php">
+                <i class="bi bi-bell-fill"></i>
+                <?php if ($unreadNotificationsCount > 0): ?>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    <?= $unreadNotificationsCount ?>
+                    <span class="visually-hidden">unread notifications</span>
+                </span>
+                <?php endif; ?>
+            </a>
         </div>
         
         <!--Expenses, Incomes, and Balance-->
