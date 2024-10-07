@@ -128,6 +128,15 @@ function fetchBudgetCategories() {
     }
 }
 
+// Function to add a notification
+function addNotification($userId, $type, $message) {
+    global $conn;
+    $stmt = $conn->prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, ?, ?)");
+    $stmt->bind_param("iss", $userId, $type, $message);
+    $stmt->execute();
+    $stmt->close();
+}
+
 $toast_message = '';
 $toast_type = '';
 
@@ -154,6 +163,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($result) {
                 $toast_message = 'Budget added successfully for ' . date('F Y', strtotime($budgetMonth)) . '!';
                 $toast_type = 'success';
+                $notificationMessage = sprintf("New budget '%s' of ₱%.2f added for %s", 
+                    mysqli_real_escape_string($conn, $budgetName),
+                    $budgetAmount,
+                    date('F Y', strtotime($budgetMonth))
+                );
+                addNotification($userId, 'budget', $notificationMessage);
             } else {
                 $toast_message = 'Error adding budget: ' . mysqli_error($conn);
                 $toast_type = 'danger';
@@ -163,16 +178,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Add New Category Process
     if (isset($_POST['addCategoryBtn'])) {
-        $newCategoryName = $_POST['newCategoryName'];
-        $newCategoryAmount = $_POST['newCategoryAmount'];
+        $newCategoryName = mysqli_real_escape_string($conn, $_POST['newCategoryName']);
+        $newCategoryAmount = floatval($_POST['newCategoryAmount']);
         $userId = $_SESSION['auth_user']['user_id'];
-
-        $sql = "INSERT INTO budgets (user_id, name, amount) VALUES ('$userId', '$newCategoryName', '$newCategoryAmount')";
-        $result = mysqli_query($conn, $sql);
-
+        $currentMonth = date('Y-m');
+    
+        $stmt = $conn->prepare("INSERT INTO budgets (user_id, name, amount, month) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("isds", $userId, $newCategoryName, $newCategoryAmount, $currentMonth);
+        $result = $stmt->execute();
+        $stmt->close();
+    
         if ($result) {
             $toast_message = 'Custom Category added successfully!';
             $toast_type = 'primary';
+            $notificationMessage = sprintf("New custom budget category '%s' of ₱%.2f added for %s", 
+                $newCategoryName,
+                $newCategoryAmount,
+                date('F Y', strtotime($currentMonth))
+            );
+            addNotification($userId, 'budget', $notificationMessage);
         } else {
             $toast_message = 'Error adding category!';
             $toast_type = 'danger';
@@ -198,6 +222,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($result) {
                 $toast_message = 'Expense added successfully for ' . date('F Y', strtotime($currentDate)) . '!';
                 $toast_type = 'primary';
+                $notificationMessage = sprintf("New expense of ₱%.2f added to '%s' category", 
+                    $expenseAmount,
+                    mysqli_real_escape_string($conn, $budgetCategory)
+                );
+                addNotification($userId, 'expense', $notificationMessage);
             } else {
                 $toast_message = 'Error adding expense!';
                 $toast_type = 'danger';
@@ -222,6 +251,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($result) {
             $toast_message = 'Income added successfully for ' . date('F Y', strtotime($currentDate)) . '!';
             $toast_type = 'primary';
+            $notificationMessage = sprintf("New income '%s' of ₱%.2f added", 
+                mysqli_real_escape_string($conn, $incomeName),
+                $incomeAmount
+            );
+            addNotification($userId, 'income', $notificationMessage);
         } else {
             $toast_message = 'Error adding income!';
             $toast_type = 'danger';
