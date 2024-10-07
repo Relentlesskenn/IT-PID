@@ -65,7 +65,7 @@ $balance = getOrUpdateMonthlyBalance($userId, $currentMonth, $currentYear, $bala
 <div class="py-3">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
-            <span>Hello, <?= $_SESSION['auth_user']['username']?>!</span>
+            <span style="font-size: 1.1rem;">Hello, <?= $_SESSION['auth_user']['username']?>!</span>
             <a class="btn btn-dark btn-sm" href="notifications-page.php"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16">
             <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2m.995-14.901a1 1 0 1 0-1.99 0A5 5 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901"/>
             </svg></a>
@@ -85,9 +85,9 @@ $balance = getOrUpdateMonthlyBalance($userId, $currentMonth, $currentYear, $bala
                         </thead>
                         <tbody>
                             <tr>
-                                <td><?= number_format($totalExpenses, 2) ?></td>
-                                <td><?= number_format($totalIncomes, 2) ?></td>
-                                <td><?= number_format($balance, 2) ?></td>
+                                <td class="fs-5"><?= number_format($totalExpenses, 2) ?></td>
+                                <td class="fs-5"><?= number_format($totalIncomes, 2) ?></td>
+                                <td class="fs-5"><?= number_format($balance, 2) ?></td>
                             </tr>
                         </tbody>
                     </table>
@@ -190,7 +190,7 @@ $balance = getOrUpdateMonthlyBalance($userId, $currentMonth, $currentYear, $bala
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        <p class="card-text">No budgets found for the selected date.</p>
+                        <p class="card-text text-center">No budgets found for the selected date.</p>
                     </div>
                 </div>
             </div>
@@ -198,7 +198,6 @@ $balance = getOrUpdateMonthlyBalance($userId, $currentMonth, $currentYear, $bala
         }
         ?>
         </div>
-
     </div>
 </div>
 
