@@ -22,16 +22,19 @@ function showIncome() {
                     <option value='Allowance'>Allowance</option>
                 </select>
             </div>
-            <div class='mb-3'>
+            <div class='mb-4'>
                 <label for='income_amount' class='form-label'>Amount</label>
                 <div class='input-group input-group-lg'>
                     <span class='input-group-text'>₱</span>
                     <input type='number' step='0.01' class='form-control' name='income_amount' id='income_amount' required inputmode='decimal'>
                 </div>
             </div>
-            <button type='submit' class='btn btn-primary btn-lg w-100' name='income_btn'>
+            <button type='submit' class='btn btn-primary btn-lg w-100 mb-2' name='income_btn'>
                 + Add Income
             </button>
+            <a class='btn btn-secondary btn-lg w-100 mb-2' href='dashboard-page.php'>
+                Back
+            </a>
         </form>
         ";
 }
@@ -58,16 +61,19 @@ function showBudget() {
                     </button>
                     </div>
             </div>
-            <div class='mb-3'>
+            <div class='mb-4'>
                 <label for='budget_amount' class='form-label'>Amount</label>
                 <div class='input-group input-group-lg'>
                     <span class='input-group-text'>₱</span>
                     <input type='number' step='0.01' class='form-control' name='budget_amount' id='budget_amount' required inputmode='decimal'>
                 </div>
             </div>
-            <button type='submit' class='btn btn-success btn-lg w-100' name='budget_btn'>
+            <button type='submit' class='btn btn-success btn-lg w-100 mb-2' name='budget_btn'>
                 + Add Budget
             </button>
+            <a class='btn btn-secondary btn-lg w-100 mb-2' href='dashboard-page.php'>
+                Back
+            </a>
         </form>
         ";
 }
@@ -91,13 +97,16 @@ function showExpense() {
                     <input type='number' step='0.01' class='form-control' name='expense_amount' id='expense_amount' required inputmode='decimal'>
                 </div>
             </div>
-            <div class='mb-3'>
+            <div class='mb-4'>
                 <label for='expense_comment' class='form-label'>Comment</label>
                 <textarea class='form-control' name='expense_comment' id='expense_comment' rows='3' maxlength='100' placeholder='Max 100 characters'></textarea>
             </div>
-            <button type='submit' class='btn btn-danger btn-lg w-100' name='expense_btn'>
+            <button type='submit' class='btn btn-danger btn-lg w-100 mb-2' name='expense_btn'>
                 + Add Expense
             </button>
+            <a class='btn btn-secondary btn-lg w-100 mb-2' href='dashboard-page.php'>
+                Back
+            </a>
         </form>
         ";
 }
@@ -224,13 +233,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <div class="container-fluid vh-100 d-flex flex-column justify-content-center align-items-center">
     <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <a href="dashboard-page.php" class="btn btn-outline-dark">
-                    <- Dashboard
-                </a>
-            </div>
-            
-            <form method="post" action="" id="pageForm" class="mb-4">
+            <form method="post" action="" id="pageForm" class="mt-2 mb-4">
                 <input type="hidden" name="submitted_page" value="<?php echo $selected_page; ?>">
                 <div class="btn-group w-100" role="group" aria-label="Page Selection">
                     <input type="radio" class="btn-check" name="page" id="income" value="income" autocomplete="off" <?php echo ($selected_page == 'income') ? 'checked' : ''; ?>>
