@@ -161,9 +161,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $result = mysqli_query($conn, $sql);
 
             if ($result) {
-                $toast_message = 'Budget added successfully for ' . date('F Y', strtotime($budgetMonth)) . '!';
+                $toast_message = 'Budget has been successfully recorded for ' . date('F Y', strtotime($budgetMonth)) . '!';
                 $toast_type = 'success';
-                $notificationMessage = sprintf("New budget '%s' of ₱%.2f added for %s", 
+                $notificationMessage = sprintf("A new budget '%s' of ₱%.2f has been successfully set for %s", 
                     mysqli_real_escape_string($conn, $budgetName),
                     $budgetAmount,
                     date('F Y', strtotime($budgetMonth))
@@ -189,9 +189,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->close();
     
         if ($result) {
-            $toast_message = 'Custom Category added successfully!';
+            $toast_message = 'Custom Budget has been successfully recorded for ' . date('F Y', strtotime($currentMonth)) . '!';
             $toast_type = 'primary';
-            $notificationMessage = sprintf("New custom budget category '%s' of ₱%.2f added for %s", 
+            $notificationMessage = sprintf("A new custom budget '%s' of ₱%.2f has been successfully set for %s", 
                 $newCategoryName,
                 $newCategoryAmount,
                 date('F Y', strtotime($currentMonth))
@@ -212,6 +212,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $currentDate = date('Y-m-d');
         $currentMonth = date('Y-m');
 
+        // Fetch the category name
+        $categoryNameSql = "SELECT name FROM budgets WHERE id = '$budgetCategory' AND user_id = '$userId'";
+        $categoryNameResult = mysqli_query($conn, $categoryNameSql);
+        $categoryName = '';
+        if ($categoryNameRow = mysqli_fetch_assoc($categoryNameResult)) {
+            $categoryName = $categoryNameRow['name'];
+        }
+
         $checkBudgetSql = "SELECT id FROM budgets WHERE id = '$budgetCategory' AND user_id = '$userId' AND month = '$currentMonth'";
         $checkBudgetResult = mysqli_query($conn, $checkBudgetSql);
 
@@ -220,11 +228,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $result = mysqli_query($conn, $sql);
 
             if ($result) {
-                $toast_message = 'Expense added successfully for ' . date('F Y', strtotime($currentDate)) . '!';
+                $toast_message = 'Expense has been successfully recorded for ' . date('F Y', strtotime($currentDate)) . '!';
                 $toast_type = 'primary';
-                $notificationMessage = sprintf("New expense of ₱%.2f added to '%s' category", 
+                $notificationMessage = sprintf("A new expense of ₱%.2f has been successfully recorded to '%s' category",
                     $expenseAmount,
-                    mysqli_real_escape_string($conn, $budgetCategory)
+                    mysqli_real_escape_string($conn, $categoryName)
                 );
                 addNotification($userId, 'expense', $notificationMessage);
             } else {
@@ -249,9 +257,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $result = mysqli_query($conn, $sql);
 
         if ($result) {
-            $toast_message = 'Income added successfully for ' . date('F Y', strtotime($currentDate)) . '!';
+            $toast_message = 'Income has been successfully recorded for ' . date('F Y', strtotime($currentDate)) . '!';
             $toast_type = 'primary';
-            $notificationMessage = sprintf("New income '%s' of ₱%.2f added", 
+            $notificationMessage = sprintf("A new income '%s' of ₱%.2f has been successfully recorded",
                 mysqli_real_escape_string($conn, $incomeName),
                 $incomeAmount
             );
