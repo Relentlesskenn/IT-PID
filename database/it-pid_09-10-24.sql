@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 25, 2024 at 03:57 AM
+-- Generation Time: Oct 09, 2024 at 12:36 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -26,6 +26,22 @@ USE `it-pid`;
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `balances`
+--
+
+CREATE TABLE `balances` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `year` int(11) NOT NULL,
+  `month` int(11) NOT NULL,
+  `balance` decimal(10,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `budgets`
 --
 
@@ -34,7 +50,22 @@ CREATE TABLE `budgets` (
   `user_id` int(11) NOT NULL,
   `name` varchar(155) NOT NULL,
   `amount` decimal(15,2) NOT NULL,
-  `date` timestamp NOT NULL DEFAULT current_timestamp()
+  `date` date NOT NULL DEFAULT current_timestamp(),
+  `month` varchar(7) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `budget_alerts`
+--
+
+CREATE TABLE `budget_alerts` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `budget_id` int(11) NOT NULL,
+  `alert_type` varchar(20) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -47,7 +78,7 @@ CREATE TABLE `expenses` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `category_id` int(11) NOT NULL,
-  `name` varchar(155) NOT NULL,
+  `comment` varchar(100) NOT NULL,
   `amount` decimal(15,2) NOT NULL,
   `date` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -61,9 +92,25 @@ CREATE TABLE `expenses` (
 CREATE TABLE `incomes` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `name` varchar(155) NOT NULL,
-  `amount` decimal(15,2) NOT NULL,
-  `date` datetime DEFAULT current_timestamp()
+  `name` varchar(255) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `date` date NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `notifications`
+--
+
+CREATE TABLE `notifications` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `type` varchar(50) NOT NULL,
+  `message` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `is_read` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -89,12 +136,25 @@ CREATE TABLE `users` (
 --
 
 --
+-- Indexes for table `balances`
+--
+ALTER TABLE `balances`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `user_year_month` (`user_id`,`year`,`month`);
+
+--
 -- Indexes for table `budgets`
 --
 ALTER TABLE `budgets`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `budget_name` (`name`),
-  ADD KEY `user_id` (`user_id`);
+  ADD UNIQUE KEY `unique_budget` (`user_id`,`name`,`month`);
+
+--
+-- Indexes for table `budget_alerts`
+--
+ALTER TABLE `budget_alerts`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_alert` (`user_id`,`budget_id`,`alert_type`);
 
 --
 -- Indexes for table `expenses`
@@ -112,6 +172,13 @@ ALTER TABLE `incomes`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indexes for table `notifications`
+--
+ALTER TABLE `notifications`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -123,9 +190,21 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `balances`
+--
+ALTER TABLE `balances`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `budgets`
 --
 ALTER TABLE `budgets`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `budget_alerts`
+--
+ALTER TABLE `budget_alerts`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -141,6 +220,12 @@ ALTER TABLE `incomes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `notifications`
+--
+ALTER TABLE `notifications`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
@@ -149,6 +234,12 @@ ALTER TABLE `users`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `balances`
+--
+ALTER TABLE `balances`
+  ADD CONSTRAINT `balances_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`);
 
 --
 -- Constraints for table `budgets`
@@ -168,6 +259,12 @@ ALTER TABLE `expenses`
 --
 ALTER TABLE `incomes`
   ADD CONSTRAINT `incomes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`);
+
+--
+-- Constraints for table `notifications`
+--
+ALTER TABLE `notifications`
+  ADD CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
