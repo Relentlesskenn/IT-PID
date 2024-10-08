@@ -55,6 +55,66 @@ function getUnreadNotificationsCount($userId) {
     return $row['unread_count'];
 }
 
+// Function to check budget status and generate alerts
+function checkBudgetStatus($userId, $month, $year) {
+    global $conn;
+    $alerts = array();
+
+    $sql = "SELECT b.id, b.name, b.amount, SUM(e.amount) AS total_expenses 
+            FROM budgets b 
+            LEFT JOIN expenses e ON b.id = e.category_id AND MONTH(e.date) = '$month' AND YEAR(e.date) = '$year'
+            WHERE b.user_id = '$userId' AND b.month = '$year-$month'
+            GROUP BY b.id, b.name, b.amount";
+    $result = mysqli_query($conn, $sql);
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $budgetId = $row['id'];
+        $budgetAmount = $row['amount'];
+        $totalExpenses = $row['total_expenses'] ?? 0;
+        $percentageUsed = ($totalExpenses / $budgetAmount) * 100;
+
+        $alertType = '';
+        $alertMessage = '';
+
+        if ($percentageUsed > 100) {
+            $alertType = 'exceed';
+            $alertMessage = "You have exceeded your budget for {$row['name']}!";
+        } elseif ($percentageUsed >= 90) {
+            $alertType = '90_percent';
+            $alertMessage = "You have reached 90% of your budget for {$row['name']}.";
+        } elseif ($percentageUsed >= 70) {
+            $alertType = '70_percent';
+            $alertMessage = "You have reached 70% of your budget for {$row['name']}.";
+        }
+
+        if ($alertType && !isAlertShown($userId, $budgetId, $alertType)) {
+            $alerts[] = array(
+                'message' => $alertMessage,
+                'type' => $alertType == 'exceed' ? 'danger' : ($alertType == '90_percent' ? 'warning' : 'info'),
+                'budgetId' => $budgetId,
+                'alertType' => $alertType
+            );
+        }
+    }
+
+    return $alerts;
+}
+
+// Function to check if an alert has been shown
+function isAlertShown($userId, $budgetId, $alertType) {
+    global $conn;
+    $sql = "SELECT * FROM budget_alerts WHERE user_id = '$userId' AND budget_id = '$budgetId' AND alert_type = '$alertType'";
+    $result = mysqli_query($conn, $sql);
+    return mysqli_num_rows($result) > 0;
+}
+
+// Function to mark an alert as shown
+function markAlertAsShown($userId, $budgetId, $alertType) {
+    global $conn;
+    $sql = "INSERT INTO budget_alerts (user_id, budget_id, alert_type) VALUES ('$userId', '$budgetId', '$alertType')";
+    mysqli_query($conn, $sql);
+}
+
 // Get current month, year, and set default year
 $currentMonth = isset($_GET['month']) ? $_GET['month'] : date('m');
 $currentYear = isset($_GET['year']) ? $_GET['year'] : date('Y');
@@ -70,6 +130,9 @@ $balance = getOrUpdateMonthlyBalance($userId, $currentMonth, $currentYear, $bala
 
 // Get the number of unread notifications
 $unreadNotificationsCount = getUnreadNotificationsCount($userId);
+
+// Check budget status and get alerts
+$budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
 
 ?>
 
@@ -217,6 +280,59 @@ $unreadNotificationsCount = getUnreadNotificationsCount($userId);
         ?>
         </div>
     </div>
+
+    <!-- Toast container for budget alerts -->
+    <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050">
+        <div id="budgetAlertToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">Budget Alert</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body"></div>
+        </div>
+    </div>
 </div>
+
+<script>
+// Function to show budget alert toasts
+function showBudgetAlerts(alerts) {
+    const toastContainer = document.getElementById('budgetAlertToast');
+    const toast = new bootstrap.Toast(toastContainer);
+
+    function showNextAlert(index) {
+        if (index >= alerts.length) return;
+
+        const alert = alerts[index];
+        toastContainer.querySelector('.toast-body').textContent = alert.message;
+        toastContainer.classList.remove('bg-info', 'bg-warning', 'bg-danger');
+        toastContainer.classList.add(`bg-${alert.type}`, 'text-white');
+        toast.show();
+
+        // Mark the alert as shown
+        fetch('mark_alert_shown.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `userId=<?php echo $userId; ?>&budgetId=${alert.budgetId}&alertType=${alert.alertType}`
+        });
+
+        // Wait for the toast to hide before showing the next one
+        toastContainer.addEventListener('hidden.bs.toast', () => {
+            setTimeout(() => {
+                showNextAlert(index + 1);
+            }, 500);
+        }, { once: true });
+    }
+
+    showNextAlert(0);
+}
+
+// Show budget alerts when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    const budgetAlerts = <?php echo json_encode($budgetAlerts); ?>;
+    showBudgetAlerts(budgetAlerts);
+});
+</script>
 
 <?php include('includes/footer.php') ?>
