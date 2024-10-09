@@ -94,7 +94,7 @@ if ($hasData) {
                 </div>
                 <div class="card-body category-list">
                     <?php foreach ($spendingBreakdown as $category): ?>
-                        <div class="category-item" style="background-color: <?php echo htmlspecialchars($category['color']); ?>;">
+                        <div class="category-item" style="background-color: <?php echo htmlspecialchars($category['color']); ?>; color:#272727;">
                             <strong><?php echo htmlspecialchars($category['category']); ?></strong>
                             <span class="float-end">₱<?php echo number_format($category['total_amount'], 2); ?></span>
                         </div>
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     display: true,
                     text: 'Spending Breakdown for <?php echo date("F Y", strtotime($currentMonth)); ?>',
                     font: {
-                        size: 16
+                        size: 18
                     }
                 },
                 tooltip: {
