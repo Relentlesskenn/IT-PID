@@ -18,6 +18,16 @@ body {
     color: white; 
 }
 
+.pagination .page-link {
+    color: #433878; /* Change this to your desired link color */
+}
+
+.pagination .page-link:hover {
+    color: #433878;
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+}
+
 .pagination .page-item.disabled .page-link {
     color: #6c757d; /* Change this to your desired disabled color */
 }
