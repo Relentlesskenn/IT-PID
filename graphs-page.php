@@ -114,6 +114,8 @@ if ($hasData) {
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     <?php if ($hasData): ?>
+    Chart.defaults.font.family = "'Lexend', 'sans-serif'";
+
     var ctx = document.getElementById('spendingBreakdownChart').getContext('2d');
     var spendingBreakdownChart = new Chart(ctx, {
         type: 'doughnut',
@@ -132,24 +134,28 @@ document.addEventListener('DOMContentLoaded', function() {
             plugins: {
                 legend: {
                     position: 'bottom',
+                    labels: {
+                        font: {
+                            size: 16,
+                            weight: 'bold',
+                            family: "'Lexend', 'sans-serif'"
+                        },
+                        padding: 15,
+                        color: '#272727'
+                    }
                 },
                 title: {
                     display: true,
                     text: 'Spending Breakdown for <?php echo date("F Y", strtotime($currentMonth)); ?>',
                     font: {
-                        size: 18
-                    }
+                        size: 18,
+                        weight: 'bold',
+                        family: "'Lexend', 'sans-serif'"
+                    },
+                    color: '#272727'
                 },
                 tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            var label = context.label || '';
-                            var value = context.parsed || 0;
-                            var total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            var percentage = ((value / total) * 100).toFixed(2);
-                            return label + ': ₱' + value.toFixed(2) + ' (' + percentage + '%)';
-                        }
-                    }
+                    enabled: false
                 }
             },
             cutout: '60%',
@@ -159,6 +165,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+    // Function to update chart size based on screen width
+    function updateChartSize() {
+        var chartContainer = document.querySelector('.card-body');
+        var containerWidth = chartContainer.offsetWidth;
+        var aspectRatio = window.innerWidth < 768 ? 1 : 2;  // 1:1 aspect ratio on mobile, 2:1 on larger screens
+        
+        spendingBreakdownChart.options.aspectRatio = aspectRatio;
+        spendingBreakdownChart.resize();
+    }
+
+    // Initial call to set chart size
+    updateChartSize();
+
+    // Update chart size on window resize
+    window.addEventListener('resize', updateChartSize);
 
     // Highlight corresponding chart segment when hovering over category item
     document.querySelectorAll('.category-item').forEach((item, index) => {
