@@ -128,7 +128,6 @@ if ($hasData) {
         <h1 class="h4 mb-0">Graphs</h1>
     </div>
     
-    <?php if ($hasData): ?>
     <div class="row">
         <div class="col-lg-6 mb-4">
             <div class="card h-100">
@@ -136,22 +135,30 @@ if ($hasData) {
                     <h2 class="card-title">Spending Breakdown</h2>
                 </div>
                 <div class="card-body">
-                    <canvas id="spendingBreakdownChart"></canvas>
+                    <?php if (!empty($spendingBreakdown)): ?>
+                        <canvas id="spendingBreakdownChart"></canvas>
+                    <?php else: ?>
+                        <p class="text-center">No spending data available for <?php echo date('F Y', strtotime($currentMonth)); ?></p>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
-        <div class="col-lg-4 mb-4">
+        <div class="col-lg-6 mb-4">
             <div class="card h-100">
                 <div class="card-header">
                     <h2 class="card-title">Categories</h2>
                 </div>
                 <div class="card-body category-list">
-                    <?php foreach ($spendingBreakdown as $category): ?>
-                        <div class="category-item" style="background-color: <?php echo htmlspecialchars($category['color']); ?>; color:white;">
-                            <strong><?php echo htmlspecialchars($category['category']); ?></strong>
-                            <strong><span class="float-end">₱<?php echo number_format($category['total_amount'], 2); ?></span></strong>
-                        </div>
-                    <?php endforeach; ?>
+                    <?php if (!empty($spendingBreakdown)): ?>
+                        <?php foreach ($spendingBreakdown as $category): ?>
+                            <div class="category-item" style="background-color: <?php echo htmlspecialchars($category['color']); ?>; color:white;">
+                                <strong><?php echo htmlspecialchars($category['category']); ?></strong>
+                                <strong><span class="float-end">₱<?php echo number_format($category['total_amount'], 2); ?></span></strong>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p class="text-center">No categories with spending for <?php echo date('F Y', strtotime($currentMonth)); ?></p>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -161,7 +168,11 @@ if ($hasData) {
                     <h2 class="card-title">Income vs. Expenses</h2>
                 </div>
                 <div class="card-body">
-                    <canvas id="incomeExpensesChart"></canvas>
+                    <?php if (!empty(array_filter($monthlyIncomeExpenses))): ?>
+                        <canvas id="incomeExpensesChart"></canvas>
+                    <?php else: ?>
+                        <p class="text-center">No income or expense data available for <?php echo date('Y'); ?></p>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -171,17 +182,30 @@ if ($hasData) {
                     <h2 class="card-title">Expense Trend Over Time</h2>
                 </div>
                 <div class="card-body">
-                    <canvas id="expenseTrendChart"></canvas>
+                    <?php if (!empty($expenseTrend)): ?>
+                        <canvas id="expenseTrendChart"></canvas>
+                    <?php else: ?>
+                        <p class="text-center">No expense trend data available for <?php echo date('Y'); ?></p>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
-    <?php else: ?>
-    <div class="alert alert-info" role="alert">
-        No data available for <?php echo date("Y", strtotime($currentYear)); ?>. Add some income and expenses to see your financial graphs.
+
+    <?php if (!$hasData): ?>
+    <div class="alert alert-info mt-4" role="alert">
+        <h4 class="alert-heading">No Financial Data Available</h4>
+        <p>There is currently no financial data to display graphs for <?php echo date("Y", strtotime($currentYear)); ?>.</p>
+        <hr>
+        <p class="mb-0">To start seeing your financial graphs:</p>
+        <ul>
+            <li>Add some income entries</li>
+            <li>Record your expenses</li>
+            <li>Create budget categories</li>
+        </ul>
+        <a href="create-page.php" class="btn btn-primary mt-3">Add Financial Data</a>
     </div>
     <?php endif; ?>
-</div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>

@@ -11,7 +11,7 @@
 }
 
 .card-header {
-    background-color: #f8f9fa;
+    background-color: #433878;
     border-bottom: none;
     padding: 1.25rem 1.5rem;
     border-top-left-radius: 15px;
@@ -21,7 +21,7 @@
 .card-title {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #333;
+    color: white;
     margin-bottom: 0;
 }
 
