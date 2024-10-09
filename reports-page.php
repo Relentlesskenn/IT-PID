@@ -232,6 +232,9 @@ if (isset($_POST['generate_pdf'])) {
     generatePDF($conn, $userId, $viewType, $selectedDate, $selectedMonth, $selectedYear);
 }
 
+// After fetching expenses and before HTML output
+$hasExpenses = ($result->num_rows > 0);
+
 ?>
 
 <link rel="stylesheet" href=".\assets\css\global.css">
@@ -287,7 +290,9 @@ if (isset($_POST['generate_pdf'])) {
         <input type="hidden" name="date" value="<?php echo $selectedDate; ?>">
         <input type="hidden" name="month" value="<?php echo $selectedMonth; ?>">
         <input type="hidden" name="year" value="<?php echo $selectedYear; ?>">
-        <button type="submit" name="generate_pdf" class="btn btn-custom-primary">Generate PDF</button>
+        <button type="submit" name="generate_pdf" class="btn btn-custom-primary w-100" <?php echo $hasExpenses ? '' : 'disabled'; ?>>
+            Generate PDF
+        </button>
     </form>
 
     <!-- Expenses Table -->
@@ -303,7 +308,7 @@ if (isset($_POST['generate_pdf'])) {
             </thead>
             <tbody>
                 <?php
-                if ($result->num_rows > 0) {
+                if ($hasExpenses) {
                     while ($row = $result->fetch_assoc()) {
                         $categoryId = $row['category_id'];
                         $amount = $row['amount'];
@@ -324,7 +329,7 @@ if (isset($_POST['generate_pdf'])) {
                             <td>₱<?php echo number_format($amount, 2); ?></td>
                             <td><?php echo date('Y-m-d', strtotime($date)); ?></td>
                             <td>
-                                <button type="button" class="btn btn-sm btn-custom-primary" data-bs-toggle="modal" data-bs-target="#commentModal" data-comment="<?php echo htmlspecialchars($comment); ?>">
+                                <button type="button" class="btn btn-sm btn-custom-primary w-100" data-bs-toggle="modal" data-bs-target="#commentModal" data-comment="<?php echo htmlspecialchars($comment); ?>">
                                     View
                                 </button>
                             </td>
@@ -340,8 +345,9 @@ if (isset($_POST['generate_pdf'])) {
     </div>
 
     <!-- Pagination -->
+    <?php if ($hasExpenses): ?>
     <nav aria-label="Page navigation">
-        <ul class="pagination justify-content-start">
+        <ul class="pagination justify-content-center">
             <?php if ($page > 1): ?>
                 <li class="page-item">
                     <a class="page-link" href="?view=<?php echo $viewType; ?>&date=<?php echo $selectedDate; ?>&month=<?php echo $selectedMonth; ?>&year=<?php echo $selectedYear; ?>&page=<?php echo $page - 1; ?>" aria-label="Previous">
@@ -370,6 +376,7 @@ if (isset($_POST['generate_pdf'])) {
             <?php endif; ?>
         </ul>
     </nav>
+    <?php endif; ?>
 </div>
 
 <!-- Modal for displaying the comment -->
