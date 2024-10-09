@@ -171,15 +171,15 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                     <table class="table table-borderless">
                         <thead>
                             <tr>
-                                <th scope="col">Expenses</th>
                                 <th scope="col">Income</th>
+                                <th scope="col">Expenses</th>
                                 <th scope="col">Balance</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td style="font-size: 1.06rem;">₱<?= number_format($totalExpenses, 2) ?></td>
                                 <td style="font-size: 1.06rem;">₱<?= number_format($totalIncomes, 2) ?></td>
+                                <td style="font-size: 1.06rem;">₱<?= number_format($totalExpenses, 2) ?></td>
                                 <td style="font-size: 1.06rem;">₱<?= number_format($balance, 2) ?></td>
                             </tr>
                         </tbody>
