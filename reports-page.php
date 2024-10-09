@@ -242,9 +242,13 @@ $hasExpenses = ($result->num_rows > 0);
 <!-- HTML content -->
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="dashboard-page.php" class="btn btn-outline-dark">
-            <- Dashboard
+        <a href="dashboard-page.php" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-arrow-left"></i> Dashboard
         </a>
+    <h1 class="h4 mb-0">Reports</h1>
+    <a href="graphs-page.php" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-graph-up"></i> Graphs
+    </a>
     </div>
     <h1 class="mb-4">Expense History</h1>
 
