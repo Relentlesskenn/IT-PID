@@ -88,6 +88,11 @@ $spendingBreakdown = getSpendingBreakdown($conn, $userId, $currentMonth);
 $monthlyIncomeExpenses = getMonthlyIncomeExpenses($conn, $userId, $currentYear);
 $expenseTrend = getExpenseTrend($conn, $userId, $currentYear);
 
+// Check if there's any income or expense data
+$hasIncomeExpenseData = !empty(array_filter($monthlyIncomeExpenses, function($month) {
+    return $month['income'] > 0 || $month['expense'] > 0;
+}));
+
 // Check if there's any data
 $hasData = !empty($spendingBreakdown) || !empty(array_filter($monthlyIncomeExpenses)) || !empty($expenseTrend);
 
@@ -168,7 +173,7 @@ if ($hasData) {
                     <h2 class="card-title">Income vs. Expenses</h2>
                 </div>
                 <div class="card-body">
-                    <?php if (!empty(array_filter($monthlyIncomeExpenses))): ?>
+                    <?php if ($hasIncomeExpenseData): ?>
                         <canvas id="incomeExpensesChart"></canvas>
                     <?php else: ?>
                         <p class="text-center">No income or expense data available for <?php echo date('Y'); ?></p>
