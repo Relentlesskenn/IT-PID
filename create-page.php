@@ -29,7 +29,7 @@ function showIncome() {
                     <input type='number' step='0.01' class='form-control' name='income_amount' id='income_amount' required inputmode='decimal'>
                 </div>
             </div>
-            <button type='submit' class='btn btn-primary btn-lg w-100 mb-2' name='income_btn'>
+            <button type='submit' class='btn btn-custom-primary btn-lg w-100 mb-2' name='income_btn'>
                 + Add Income
             </button>
             <a class='btn btn-secondary btn-lg w-100 mb-2' href='dashboard-page.php'>
@@ -68,7 +68,7 @@ function showBudget() {
                     <input type='number' step='0.01' class='form-control' name='budget_amount' id='budget_amount' required inputmode='decimal'>
                 </div>
             </div>
-            <button type='submit' class='btn btn-success btn-lg w-100 mb-2' name='budget_btn'>
+            <button type='submit' class='btn btn-custom-primary btn-lg w-100 mb-2' name='budget_btn'>
                 + Add Budget
             </button>
             <a class='btn btn-secondary btn-lg w-100 mb-2' href='dashboard-page.php'>
@@ -101,7 +101,7 @@ function showExpense() {
                 <label for='expense_comment' class='form-label'>Comment</label>
                 <textarea class='form-control' name='expense_comment' id='expense_comment' rows='3' maxlength='100' placeholder='Max 100 characters'></textarea>
             </div>
-            <button type='submit' class='btn btn-danger btn-lg w-100 mb-2' name='expense_btn'>
+            <button type='submit' class='btn btn-custom-primary btn-lg w-100 mb-2' name='expense_btn'>
                 + Add Expense
             </button>
             <a class='btn btn-secondary btn-lg w-100 mb-2' href='dashboard-page.php'>
@@ -162,7 +162,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             if ($result) {
                 $toast_message = 'Budget has been successfully recorded for ' . date('F Y', strtotime($budgetMonth)) . '!';
-                $toast_type = 'success';
+                $toast_type = 'primary';
                 $notificationMessage = sprintf("A new budget '%s' of ₱%.2f has been successfully set for %s", 
                     mysqli_real_escape_string($conn, $budgetName),
                     $budgetAmount,
