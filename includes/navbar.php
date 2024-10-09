@@ -60,7 +60,7 @@
         font-size: 1.75rem;
     }
     body {
-        padding-bottom: 80px; /* Adjust based on navbar height */
+        padding-bottom: 90px;
     }
 
     /* Responsive styles */

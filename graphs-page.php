@@ -9,7 +9,7 @@ $userId = $_SESSION['auth_user']['user_id'];
 // Get the current month and year
 $currentMonth = date('Y-m');
 $currentYear = date('Y');
-$currentDate = date('m/d/y');
+$currentDate = date('M Y');
 
 // Function to fetch spending breakdown data
 function getSpendingBreakdown($conn, $userId, $month) {

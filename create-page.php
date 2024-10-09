@@ -41,14 +41,14 @@ function showIncome() {
 
 // Predefined budget categories with colors
 $budgetCategories = [
-    'General' => '#624E88',             // Purple
-    'Food' => '#944E63',                // Peach
-    'Groceries' => '#4F6F52',           // Green
-    'Rent' => '#454545',                // Grey
-    'Transportation' => '#EEC759',      // Yellow
-    'Health' => '#BB6464',              // Red
-    'Utilities' => '#6B7AA1',           // Blue
-    'Entertainment' => '#CC7351'        // Orange
+    'General' => '#624E88',             // *Purple
+    'Food' => '#87431D',                // *Brown
+    'Groceries' => '#4E9F3D',           // *Green
+    'Rent' => '#2B2B2B',                // *Black
+    'Transportation' => '#F6C90E',      // *Yellow
+    'Health' => '#D21312',              // *Red
+    'Utilities' => '#0F4C75',           // *Blue
+    'Entertainment' => '#FF6500'        // *Orange
 ];
 
 function showBudget() {
@@ -174,7 +174,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $result = mysqli_query($conn, $sql);
     
             if ($result) {
-                $toast_message = 'Budget has been successfully recorded for ' . date('F Y', strtotime($budgetMonth)) . '!';
+                $toast_message = "A budget of ₱" . number_format($budgetAmount, 2) . " for '$budgetName' has been set for " . date('F Y', strtotime($budgetMonth)) . "!";
                 $toast_type = 'primary';
                 $notificationMessage = sprintf("A new budget '%s' of ₱%.2f has been successfully set for %s", 
                     mysqli_real_escape_string($conn, $budgetName),
@@ -203,7 +203,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->close();
     
         if ($result) {
-            $toast_message = 'Custom Budget has been successfully recorded for ' . date('F Y', strtotime($currentMonth)) . '!';
+            $toast_message = "A custom Budget of ₱" . number_format($newCategoryAmount, 2) . " for '$newCategoryName' has been set for " . date('F Y', strtotime($currentMonth)) . "!";
             $toast_type = 'primary';
             $notificationMessage = sprintf("A new custom budget '%s' of ₱%.2f has been successfully set for %s", 
                 $newCategoryName,
@@ -242,7 +242,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $result = mysqli_query($conn, $sql);
 
             if ($result) {
-                $toast_message = 'Expense has been successfully recorded for ' . date('F Y', strtotime($currentDate)) . '!';
+                $toast_message = "A expense of ₱" . number_format($expenseAmount, 2) . " has been recorded for '$categoryName' category on " . date('F j, Y', strtotime($currentDate)) . "!";
                 $toast_type = 'primary';
                 $notificationMessage = sprintf("A new expense of ₱%.2f has been successfully recorded to '%s' category",
                     $expenseAmount,
@@ -271,11 +271,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $result = mysqli_query($conn, $sql);
 
         if ($result) {
-            $toast_message = 'Income has been successfully recorded for ' . date('F Y', strtotime($currentDate)) . '!';
+            $toast_message = "A income of ₱" . number_format($incomeAmount, 2) . " has been successfully recorded for '$incomeName' on " . date('F j, Y', strtotime($currentDate)) . "!";
             $toast_type = 'primary';
-            $notificationMessage = sprintf("A new income '%s' of ₱%.2f has been successfully recorded",
-                mysqli_real_escape_string($conn, $incomeName),
-                $incomeAmount
+            $notificationMessage = sprintf("A new income of ₱%.2f has been successfully recorded for '%s'",
+                $incomeAmount,
+                mysqli_real_escape_string($conn, $incomeName)
             );
             addNotification($userId, 'income', $notificationMessage);
         } else {
