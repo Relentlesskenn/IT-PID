@@ -153,6 +153,18 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
 
 ?>
 
+<!-- CSS for colored badges -->
+<style>
+   .badge.rounded-pill-custom {
+       width: 12px;
+       height: 12px;
+       padding: 0;
+       margin-left: 5px;
+       display: inline-block;
+       vertical-align: middle;
+   }
+</style>
+
 <!-- HTML -->
 <div class="py-3">
     <div class="container">
@@ -237,11 +249,11 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
         <?php
         // Fetch budget data from the database and calculate the remaining balance
         $userId = $_SESSION['auth_user']['user_id'];
-        $sql = "SELECT b.id, b.name, b.amount, b.month, SUM(e.amount) AS total_expenses 
+        $sql = "SELECT b.id, b.name, b.amount, b.month, b.color, SUM(e.amount) AS total_expenses 
                 FROM budgets b 
                 LEFT JOIN expenses e ON b.id = e.category_id AND MONTH(e.date) = '$currentMonth' AND YEAR(e.date) = '$currentYear'
                 WHERE b.user_id = '$userId' AND b.month = '$currentYear-$currentMonth'
-                GROUP BY b.id, b.name, b.amount, b.month";
+                GROUP BY b.id, b.name, b.amount, b.month, b.color";
         $result = mysqli_query($conn, $sql);
 
         if (mysqli_num_rows($result) > 0) {
@@ -259,10 +271,13 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                 <div class="col">
                     <div class="card h-100">
                         <div class="card-body d-flex flex-column p-2">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="card-title mb-0" style="font-size: 1rem; font-weight: bold;"><?= $budgetName ?></h6>
-                            <span style="font-size: 0.8rem;"><?= date('M Y', strtotime($monthCreated)) ?></span>
-                        </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="card-title mb-0" style="font-size: 1rem; font-weight: bold;">
+                                    <!-- Add the colored badge here -->
+                                    <span class="badge rounded-pill-custom" style="background-color: <?= $row['color'] ?>;">&nbsp;</span>
+                                    <?= $budgetName ?>
+                                </h6>
+                            </div>
                             <div class="budget-info">
                                 <p class="card-text mb-0" style="font-size: 0.85rem; line-height: 1.6;">Budget - ₱<?= number_format($budgetAmount, 2) ?></p>
                                 <p class="card-text mb-0" style="font-size: 0.85rem; line-height: 1.6;">Spent - ₱<?= number_format($totalExpenses, 2) ?></p>

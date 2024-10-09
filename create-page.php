@@ -39,27 +39,36 @@ function showIncome() {
         ";
 }
 
+// Predefined budget categories with colors
+$budgetCategories = [
+    'General' => '#8E7AB5',             // Purple
+    'Rent' => '#B4B4B8',                // Grey
+    'Groceries' => '#A8E6A1',           // Green
+    'Transportation' => '#FFF2B2',      // Yellow
+    'Health' => '#E97777',              // Red
+    'Utilities' => '#BCCEF8',           // Blue
+    'Entertainment' => '#17A589'        // Teal
+];
+
 function showBudget() {
+    global $budgetCategories;
     $current_month = date('Y-m');
-    echo"   
+    echo "   
         <form method='post'>
         <input type='hidden' name='budget_month' value='$current_month'>
             <div class='mb-3'>
                 <label for='budget_name' class='form-label'>Budget Category</label>
-                    <div class='input-group input-group-lg'>
+                <div class='input-group input-group-lg'>
                     <select class='form-select' name='budget_name' id='budget_name' required>
-                        <option value='General'>General</option>
-                        <option value='Rent'>Rent</option>
-                        <option value='Groceries'>Groceries</option>
-                        <option value='Transportation'>Transportation</option>
-                        <option value='Health'>Health</option>
-                        <option value='Utilities'>Utilities</option>
-                        <option value='Entertainment'>Entertainment</option>
-                    </select>
+                        <option value=''>Select a category</option>";
+    foreach ($budgetCategories as $category => $color) {
+        echo "<option value='$category' data-color='$color'>$category</option>";
+    }
+    echo "          </select>
                     <button type='button' class='btn btn-outline-secondary' id='add-category-btn'>
                         +
                     </button>
-                    </div>
+                </div>
             </div>
             <div class='mb-4'>
                 <label for='budget_amount' class='form-label'>Amount</label>
@@ -149,17 +158,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $budgetAmount = $_POST['budget_amount'];
         $budgetMonth = $_POST['budget_month'];
         $userId = $_SESSION['auth_user']['user_id']; 
-
+    
+        // Get the color from predefined categories, or use a default color
+        $budgetColor = isset($budgetCategories[$budgetName]) ? $budgetCategories[$budgetName] : '#6c757d';
+    
         $checkSql = "SELECT * FROM budgets WHERE user_id = '$userId' AND name = '$budgetName' AND month = '$budgetMonth'";
         $checkResult = mysqli_query($conn, $checkSql);
-
+    
         if (mysqli_num_rows($checkResult) > 0) {
             $toast_message = 'A budget with this name already exists for the current month!';
             $toast_type = 'warning';
         } else {
-            $sql = "INSERT INTO budgets (user_id, name, amount, month) VALUES ('$userId', '$budgetName', '$budgetAmount', '$budgetMonth')";
+            $sql = "INSERT INTO budgets (user_id, name, amount, month, color) VALUES ('$userId', '$budgetName', '$budgetAmount', '$budgetMonth', '$budgetColor')";
             $result = mysqli_query($conn, $sql);
-
+    
             if ($result) {
                 $toast_message = 'Budget has been successfully recorded for ' . date('F Y', strtotime($budgetMonth)) . '!';
                 $toast_type = 'primary';
@@ -180,11 +192,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['addCategoryBtn'])) {
         $newCategoryName = mysqli_real_escape_string($conn, $_POST['newCategoryName']);
         $newCategoryAmount = floatval($_POST['newCategoryAmount']);
+        $newCategoryColor = $_POST['newCategoryColor'];
         $userId = $_SESSION['auth_user']['user_id'];
         $currentMonth = date('Y-m');
     
-        $stmt = $conn->prepare("INSERT INTO budgets (user_id, name, amount, month) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("isds", $userId, $newCategoryName, $newCategoryAmount, $currentMonth);
+        $stmt = $conn->prepare("INSERT INTO budgets (user_id, name, amount, month, color) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("isdss", $userId, $newCategoryName, $newCategoryAmount, $currentMonth, $newCategoryColor);
         $result = $stmt->execute();
         $stmt->close();
     
@@ -330,12 +343,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <label for="newCategoryName" class="form-label">Custom Budget Name</label>
                 <input type="text" class="form-control form-control-lg" name="newCategoryName" id="newCategoryName" required>
             </div>
-            <div class="mb-4">
+            <div class="mb-3">
                 <label for="newCategoryAmount" class="form-label">Amount</label>
                 <div class="input-group input-group-lg">
                     <span class="input-group-text">₱</span>
                     <input type="number" step="0.01" class="form-control" name="newCategoryAmount" id="newCategoryAmount" required inputmode="decimal">
                 </div>
+            </div>
+            <div class="mb-4">
+                <label for="newCategoryColor" class="form-label">Color</label>
+                <input type="color" class="form-control form-control-color" id="newCategoryColor" name="newCategoryColor" value="#6c757d">
             </div>
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-custom-primary btn-lg" name="addCategoryBtn">+ Add Budget</button>

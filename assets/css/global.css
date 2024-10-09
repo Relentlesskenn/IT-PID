@@ -1,4 +1,6 @@
 body {
+    background-color: #f8f9fa;
+    color: #333;
     font-family: Lexend, sans-serif;
     font-size: 1rem;
 }
@@ -19,7 +21,7 @@ body {
 }
 
 .pagination .page-link {
-    color: #433878; /* Change this to your desired link color */
+    color: #433878;
 }
 
 .pagination .page-link:hover {
@@ -29,5 +31,5 @@ body {
 }
 
 .pagination .page-item.disabled .page-link {
-    color: #6c757d; /* Change this to your desired disabled color */
+    color: #6c757d;
 }

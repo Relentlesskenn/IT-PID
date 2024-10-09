@@ -1,0 +1,38 @@
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid #e3e6f0;
+    border-top-left-radius: 15px !important;
+    border-top-right-radius: 15px !important;
+}
+
+h1, h2 {
+    color: #2c3e50;
+}
+
+#spendingBreakdownChart {
+    max-height: 400px;
+}
+
+.category-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.category-item {
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+    color: #fff;
+}
+
+.category-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
