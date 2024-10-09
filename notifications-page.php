@@ -26,6 +26,8 @@ mysqli_query($conn, $updateSql);
 function getAlertClass($message) {
     if (strpos($message, 'exceeded') !== false) {
         return 'list-group-item-danger';
+    } elseif (strpos($message, '100%') !== false) {
+        return 'list-group-item-danger';
     } elseif (strpos($message, '90%') !== false) {
         return 'list-group-item-warning';
     } elseif (strpos($message, '70%') !== false) {
@@ -33,6 +35,7 @@ function getAlertClass($message) {
     }
     return '';
 }
+
 ?>
 
 <div class="py-3">
@@ -53,7 +56,7 @@ function getAlertClass($message) {
                             <h5 class="mb-1">
                                 <?php
                                 if ($row['type'] === 'budget_alert') {
-                                    echo '<i class="bi bi-exclamation-circle"></i> Budget Alert';
+                                    echo 'Budget Alert';
                                 } else {
                                     echo ucfirst(str_replace('_', ' ', $row['type'])) . ' Notification';
                                 }

@@ -88,6 +88,9 @@ function checkBudgetStatus($userId, $month, $year) {
         if ($percentageUsed > 100) {
             $alertType = 'exceed';
             $alertMessage = "You have exceeded your budget for {$row['name']}!";
+        } elseif ($percentageUsed == 100) {
+            $alertType = '100_percent';
+            $alertMessage = "You have reached 100% of your budget for {$row['name']}.";
         } elseif ($percentageUsed >= 90) {
             $alertType = '90_percent';
             $alertMessage = "You have reached 90% of your budget for {$row['name']}.";
@@ -99,7 +102,9 @@ function checkBudgetStatus($userId, $month, $year) {
         if ($alertType && !isAlertShown($userId, $budgetId, $alertType)) {
             $alerts[] = array(
                 'message' => $alertMessage,
-                'type' => $alertType == 'exceed' ? 'danger' : ($alertType == '90_percent' ? 'warning' : 'info'),
+                'type' => $alertType == 'exceed' ? 'danger' : 
+                         ($alertType == '100_percent' ? 'danger' : 
+                         ($alertType == '90_percent' ? 'warning' : 'info')),
                 'budgetId' => $budgetId,
                 'alertType' => $alertType
             );
