@@ -45,7 +45,7 @@ include('includes/header.php');
                                     <input type="password" name="confirm_password" id="confirm_password" class="form-control">
                                 </div>
                                 <div class="form-group">
-                                    <button type="submit" name="password_update_btn" class="btn btn-primary w-100">Update</button>
+                                    <button type="submit" name="password_update_btn" class="btn btn-custom-primary w-100">Update</button>
                                 </div>
                             </form>
                         </div>

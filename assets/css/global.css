@@ -6,3 +6,8 @@ body {
 .font-sm{
     font-size: 1rem;
 }
+
+.btn-custom-primary {
+    background-color: #433878;
+    color: white;
+}

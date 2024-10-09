@@ -158,7 +158,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
     <div class="container">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <span style="font-size: 1.1rem;">Hello, <?= $_SESSION['auth_user']['username']?>!</span>
-            <a class="btn btn-primary btn-sm position-relative" href="notifications-page.php">
+            <a class="btn btn-custom-primary btn-sm position-relative" href="notifications-page.php">
                 <i class="bi bi-bell-fill"></i>
                 <?php if ($unreadNotificationsCount > 0): ?>
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -226,7 +226,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                     </select>
                 </div>
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-primary" style="font-size: 0.95rem;">View</button>
+                    <button type="submit" class="btn btn-custom-primary" style="font-size: 0.95rem;">View</button>
                 </div>
             </form>
         </div>
