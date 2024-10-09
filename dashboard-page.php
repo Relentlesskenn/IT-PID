@@ -55,6 +55,15 @@ function getUnreadNotificationsCount($userId) {
     return $row['unread_count'];
 }
 
+// Function to add a notification
+function addNotification($userId, $type, $message) {
+    global $conn;
+    $stmt = $conn->prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, ?, ?)");
+    $stmt->bind_param("iss", $userId, $type, $message);
+    $stmt->execute();
+    $stmt->close();
+}
+
 // Function to check budget status and generate alerts
 function checkBudgetStatus($userId, $month, $year) {
     global $conn;
@@ -94,6 +103,9 @@ function checkBudgetStatus($userId, $month, $year) {
                 'budgetId' => $budgetId,
                 'alertType' => $alertType
             );
+            
+            // Add notification
+            addNotification($userId, 'budget_alert', $alertMessage);
         }
     }
 
@@ -141,7 +153,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
     <div class="container">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <span style="font-size: 1.1rem;">Hello, <?= $_SESSION['auth_user']['username']?>!</span>
-            <a class="btn btn-primary position-relative" href="notifications-page.php">
+            <a class="btn btn-primary btn-sm position-relative" href="notifications-page.php">
                 <i class="bi bi-bell-fill"></i>
                 <?php if ($unreadNotificationsCount > 0): ?>
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">

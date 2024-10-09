@@ -21,6 +21,18 @@ $result = mysqli_query($conn, $sql);
 // Mark all notifications as read
 $updateSql = "UPDATE notifications SET is_read = TRUE WHERE user_id = '$userId'";
 mysqli_query($conn, $updateSql);
+
+// Function to determine the alert class based on the message content
+function getAlertClass($message) {
+    if (strpos($message, 'exceeded') !== false) {
+        return 'list-group-item-danger';
+    } elseif (strpos($message, '90%') !== false) {
+        return 'list-group-item-warning';
+    } elseif (strpos($message, '70%') !== false) {
+        return 'list-group-item-info';
+    }
+    return '';
+}
 ?>
 
 <div class="py-3">
@@ -35,9 +47,18 @@ mysqli_query($conn, $updateSql);
         <?php if (mysqli_num_rows($result) > 0): ?>
             <div class="list-group">
                 <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                    <div class="list-group-item list-group-item-action">
+                    <?php $alertClass = $row['type'] === 'budget_alert' ? getAlertClass($row['message']) : ''; ?>
+                    <div class="list-group-item list-group-item-action <?php echo $alertClass; ?>">
                         <div class="d-flex w-100 justify-content-between">
-                            <h5 class="mt-1"><?php echo ucfirst($row['type']); ?> Notification</h5>
+                            <h5 class="mb-1">
+                                <?php
+                                if ($row['type'] === 'budget_alert') {
+                                    echo '<i class="bi bi-exclamation-circle"></i> Budget Alert';
+                                } else {
+                                    echo ucfirst(str_replace('_', ' ', $row['type'])) . ' Notification';
+                                }
+                                ?>
+                            </h5>
                             <form method="POST">
                                 <input type="hidden" name="notification_id" value="<?php echo $row['id']; ?>">
                                 <button type="submit" name="delete_notification" class="btn btn-sm btn-danger"><i class="bi bi-trash3"></i></button>
