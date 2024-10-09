@@ -347,7 +347,7 @@ $hasExpenses = ($result->num_rows > 0);
     <!-- Pagination -->
     <?php if ($hasExpenses): ?>
     <nav aria-label="Page navigation">
-        <ul class="pagination justify-content-center">
+        <ul class="pagination justify-content-start">
             <?php if ($page > 1): ?>
                 <li class="page-item">
                     <a class="page-link" href="?view=<?php echo $viewType; ?>&date=<?php echo $selectedDate; ?>&month=<?php echo $selectedMonth; ?>&year=<?php echo $selectedYear; ?>&page=<?php echo $page - 1; ?>" aria-label="Previous">
