@@ -7,232 +7,398 @@ include('authentication.php');
 include('includes/header.php');
 include('includes/navbar.php');
 
-// Fetch today's expenses from the database
 $userId = $_SESSION['auth_user']['user_id'];
-$today = date('Y-m-d');
+
+// Get the current date, month, and year
+$currentDate = date('Y-m-d');
+$currentMonth = date('Y-m');
+$currentYear = date('Y');
+
+// Get user's creation year
+$userCreationYear = getUserCreationYear($conn, $userId);
+
+// Check if date, month, and year are set in GET parameters
+$selectedDate = isset($_GET['date']) ? $_GET['date'] : $currentDate;
+$selectedMonth = isset($_GET['month']) ? $_GET['month'] : $currentMonth;
+$selectedYear = isset($_GET['year']) ? $_GET['year'] : $currentYear;
+
+// Check if the view type is set (daily, monthly, or yearly)
+$viewType = isset($_GET['view']) ? $_GET['view'] : 'daily';
 
 // Pagination variables
 $perPage = 10; // Number of expenses per page
-$page = isset($_GET['page']) ? $_GET['page'] : 1; // Get the current page number
+$page = isset($_GET['page']) ? intval($_GET['page']) : 1; // Get the current page number
 $offset = ($page - 1) * $perPage; // Calculate the offset for the SQL query
 
-// Fetch today's expenses from the database
-$sql = "SELECT e.category_id, e.amount, e.date, e.comment FROM expenses e WHERE e.user_id = '$userId' AND DATE(e.date) = '$today' ORDER BY e.date DESC LIMIT $perPage OFFSET $offset";
-$result = mysqli_query($conn, $sql);
+// Function to get user's creation year
+function getUserCreationYear($conn, $userId) {
+    $sql = "SELECT YEAR(created_at) as creation_year FROM users WHERE user_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    return $row['creation_year'];
+}
 
-// Calculate total number of pages
-$sqlCount = "SELECT COUNT(*) AS total FROM expenses e WHERE e.user_id = '$userId' AND DATE(e.date) = '$today'";
-$resultCount = mysqli_query($conn, $sqlCount);
-$rowCount = mysqli_fetch_assoc($resultCount);
-$totalPages = ceil($rowCount['total'] / $perPage);
+// Function to get expenses based on view type
+function getExpenses($conn, $userId, $viewType, $selectedDate, $selectedMonth, $selectedYear, $offset = null, $perPage = null) {
+    switch ($viewType) {
+        case 'daily':
+            $sql = "SELECT e.category_id, e.amount, e.date, e.comment 
+                    FROM expenses e 
+                    WHERE e.user_id = ? AND DATE(e.date) = ?
+                    ORDER BY e.date DESC";
+            if ($offset !== null && $perPage !== null) {
+                $sql .= " LIMIT ? OFFSET ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("isii", $userId, $selectedDate, $perPage, $offset);
+            } else {
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("is", $userId, $selectedDate);
+            }
+            break;
+        case 'monthly':
+            $monthStart = date('Y-m-01', strtotime($selectedMonth));
+            $monthEnd = date('Y-m-t', strtotime($selectedMonth));
+            $sql = "SELECT e.category_id, e.amount, e.date, e.comment 
+                    FROM expenses e 
+                    WHERE e.user_id = ? AND e.date BETWEEN ? AND ?
+                    ORDER BY e.date DESC";
+            if ($offset !== null && $perPage !== null) {
+                $sql .= " LIMIT ? OFFSET ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("issii", $userId, $monthStart, $monthEnd, $perPage, $offset);
+            } else {
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("iss", $userId, $monthStart, $monthEnd);
+            }
+            break;
+        case 'yearly':
+            $sql = "SELECT e.category_id, e.amount, e.date, e.comment 
+                    FROM expenses e 
+                    WHERE e.user_id = ? AND YEAR(e.date) = ?
+                    ORDER BY e.date DESC";
+            if ($offset !== null && $perPage !== null) {
+                $sql .= " LIMIT ? OFFSET ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("iiii", $userId, $selectedYear, $perPage, $offset);
+            } else {
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("ii", $userId, $selectedYear);
+            }
+            break;
+    }
+    $stmt->execute();
+    return $stmt->get_result();
+}
 
-// Check if the print report button was clicked
-if (isset($_POST['print_report'])) {
-    $userId = $_SESSION['auth_user']['user_id'];
-    $today = date('Y-m-d');
+// Function to get total number of expenses
+function getTotalExpenses($conn, $userId, $viewType, $selectedDate, $selectedMonth, $selectedYear) {
+    switch ($viewType) {
+        case 'daily':
+            $sql = "SELECT COUNT(*) AS total 
+                    FROM expenses e 
+                    WHERE e.user_id = ? AND DATE(e.date) = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("is", $userId, $selectedDate);
+            break;
+        case 'monthly':
+            $monthStart = date('Y-m-01', strtotime($selectedMonth));
+            $monthEnd = date('Y-m-t', strtotime($selectedMonth));
+            $sql = "SELECT COUNT(*) AS total 
+                    FROM expenses e 
+                    WHERE e.user_id = ? AND e.date BETWEEN ? AND ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("iss", $userId, $monthStart, $monthEnd);
+            break;
+        case 'yearly':
+            $sql = "SELECT COUNT(*) AS total 
+                    FROM expenses e 
+                    WHERE e.user_id = ? AND YEAR(e.date) = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ii", $userId, $selectedYear);
+            break;
+    }
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    return $row['total'];
+}
 
-    // Extend TCPDF to customize header
-    class MYPDF extends TCPDF {
-        public function Header() {
-            // Move to 15 mm from top
-            $this->SetY(15);
-            // Set font
-            $this->SetFont('helvetica', 'B', 20);
-            // Title
-            $this->Cell(0, 15, 'IT-PID Expense Report', 0, false, 'C', 0, '', 0, false, 'M', 'M');
-            // Line break
-            $this->Ln(20);
+// Get expenses and calculate total pages
+$result = getExpenses($conn, $userId, $viewType, $selectedDate, $selectedMonth, $selectedYear, $offset, $perPage);
+$totalExpenses = getTotalExpenses($conn, $userId, $viewType, $selectedDate, $selectedMonth, $selectedYear);
+$totalPages = ceil($totalExpenses / $perPage);
+
+// Function to generate PDF
+function generatePDF($conn, $userId, $viewType, $selectedDate, $selectedMonth, $selectedYear) {
+    ob_clean(); // Clear any previous output
+    try {
+        // Extend TCPDF with custom Header and Footer
+        class MYPDF extends TCPDF {
+            public function Header() {
+                $this->SetY(15);
+                $this->SetFont('helvetica', 'B', 20);
+                $this->Cell(0, 15, 'IT-PID Expense Report', 0, false, 'C', 0, '', 0, false, 'M', 'M');
+            }
+            public function Footer() {
+                $this->SetY(-15);
+                $this->SetFont('helvetica', 'I', 8);
+                $this->Cell(0, 10, 'Page '.$this->getAliasNumPage().'/'.$this->getAliasNbPages(), 0, false, 'C', 0, '', 0, false, 'T', 'M');
+            }
         }
+
+        // Create new PDF document
+        $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+        // Set document information
+        $pdf->SetCreator(PDF_CREATOR);
+        $pdf->SetAuthor('IT-PID');
+        $pdf->SetTitle('Expense Report');
+        $pdf->SetSubject('Expense Report');
+
+        // Set default header data
+        $pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE, PDF_HEADER_STRING);
+
+        // Set margins
+        $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+        $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+        $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+        // Set auto page breaks
+        $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+        // Add a page
+        $pdf->AddPage();
+
+        // Set font
+        $pdf->SetFont('helvetica', '', 10);
+
+        // Fetch expenses
+        $expenses = getExpenses($conn, $userId, $viewType, $selectedDate, $selectedMonth, $selectedYear);
+
+        // Create the table header
+        $html = '<table border="1" cellpadding="4">
+                    <tr>
+                        <th><b>Category</b></th>
+                        <th><b>Amount</b></th>
+                        <th><b>Date</b></th>
+                        <th><b>Comment</b></th>
+                    </tr>';
+
+        // Add expenses to the table
+        while ($row = $expenses->fetch_assoc()) {
+            $categoryId = $row['category_id'];
+            $sqlCategory = "SELECT name FROM budgets WHERE id = ?";
+            $stmtCategory = $conn->prepare($sqlCategory);
+            $stmtCategory->bind_param("i", $categoryId);
+            $stmtCategory->execute();
+            $resultCategory = $stmtCategory->get_result();
+            $rowCategory = $resultCategory->fetch_assoc();
+            $categoryName = $rowCategory['name'];
+
+            $html .= '<tr>
+                        <td>'.htmlspecialchars($categoryName).'</td>
+                        <td>P'.number_format($row['amount'], 2).'</td>
+                        <td>'.date('Y-m-d', strtotime($row['date'])).'</td>
+                        <td>'.htmlspecialchars($row['comment']).'</td>
+                      </tr>';
+        }
+
+        $html .= '</table>';
+
+        // Print the table
+        $pdf->writeHTML($html, true, false, true, false, '');
+
+        // Close and output PDF document
+        $pdf->Output('expense_report.pdf', 'D');
+    } catch (Exception $e) {
+        // Log the error
+        error_log('PDF Generation Error: ' . $e->getMessage());
+        // Display an error message to the user
+        echo '<div class="alert alert-danger">An error occurred while generating the PDF. Please try again later.</div>';
     }
-    
-    // Create new PDF document
-    $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-    
-    // Set document information
-    $pdf->SetCreator(PDF_CREATOR);
-    $pdf->SetAuthor('Your Name');
-    $pdf->SetTitle('Today\'s Expenses');
-    $pdf->SetSubject('Expense Report');
-    
-    // Remove default header/footer
-    $pdf->setPrintHeader(true);
-    $pdf->setPrintFooter(false);
-    
-    // Set default monospaced font
-    $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
-    
-    // Set margins
-    $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP + 20, PDF_MARGIN_RIGHT);
-    $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
-    
-    // Set auto page breaks
-    $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-    
-    // Add a page
-    $pdf->AddPage();
-    
-    // Set font
-    $pdf->SetFont('helvetica', 'B', 16);
-    
-    // Title
-    $pdf->Cell(0, 10, "Today's Expenses (" . date('m-d-Y') . ")", 0, 1, 'C');
-    $pdf->Ln(10);
+}
 
-    // Table header
-    $pdf->SetFont('helvetica', 'B', 12);
-    $pdf->Cell(50, 10, 'Category', 1, 0, 'C');
-    $pdf->Cell(40, 10, 'Amount', 1, 0, 'C');
-    $pdf->Cell(50, 10, 'Date', 1, 0, 'C');
-    $pdf->Cell(50, 10, 'Comment', 1, 1, 'C');
-
-    // Table content
-    $pdf->SetFont('helvetica', '', 12);
-
-    $sqlPDF = "SELECT e.category_id, e.amount, e.date, e.comment FROM expenses e WHERE e.user_id = '$userId' AND DATE(e.date) = '$today' ORDER BY e.date DESC";
-    $resultPDF = mysqli_query($conn, $sqlPDF);
-
-    while ($row = mysqli_fetch_assoc($resultPDF)) {
-        $categoryId = $row['category_id'];
-        $amount = $row['amount'];
-        $date = $row['date'];
-        $comment = $row['comment'];
-
-        $sqlCategory = "SELECT name FROM budgets WHERE id = '$categoryId'";
-        $resultCategory = mysqli_query($conn, $sqlCategory);
-        $rowCategory = mysqli_fetch_assoc($resultCategory);
-        $categoryName = $rowCategory['name'];
-
-        $pdf->Cell(50, 10, $categoryName, 1);
-        $pdf->Cell(40, 10, 'P' . number_format($amount, 2), 1);
-        $pdf->Cell(50, 10, date('Y-m-d', strtotime($date)), 1);
-        $pdf->Cell(50, 10, substr($comment, 0, 20) . (strlen($comment) > 20 ? '...' : ''), 1);
-        $pdf->Ln();
-    }
-
-    // Output the PDF
-    ob_end_clean();
-    $pdf->Output('Today_Expenses_' . date('Y-m-d') . '.pdf', 'D');
-    exit();
+// Check if PDF generation is requested
+if (isset($_POST['generate_pdf'])) {
+    $userId = $_SESSION['auth_user']['user_id'];
+    $viewType = $_POST['view'];
+    $selectedDate = $_POST['date'];
+    $selectedMonth = $_POST['month'];
+    $selectedYear = $_POST['year'];
+    
+    generatePDF($conn, $userId, $viewType, $selectedDate, $selectedMonth, $selectedYear);
 }
 
 ?>
 
-<div class="py-3">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <a href="dashboard-page.php" class="btn btn-outline-dark">
-                <- Dashboard
-            </a>
-        </div>
+<link rel="stylesheet" href=".\assets\css\global.css">
 
-        <!-- Today's Expenses Table -->
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Today's Expenses (<?= date('m-d-Y') ?>)</h5>
-                <table class="table">
-                    <thead class="table-dark">
-                        <tr>
-                            <th scope="col">Category</th>
-                            <th scope="col">Amount</th>
-                            <th scope="col">Date</th>
-                            <th scope="col">Comment</th>
-                        </tr>
-                    </thead>
-                    <tbody class="table table-bordered">
-                        <?php
-                        if (mysqli_num_rows($result) > 0) {
-                            while ($row = mysqli_fetch_assoc($result)) {
-                                $categoryId = $row['category_id'];
-                                $amount = $row['amount'];
-                                $date = $row['date'];
-                                $comment = $row['comment'];
-
-                                // Fetch category name from the database
-                                $sqlCategory = "SELECT name FROM budgets WHERE id = '$categoryId'";
-                                $resultCategory = mysqli_query($conn, $sqlCategory);
-                                $rowCategory = mysqli_fetch_assoc($resultCategory);
-                                $categoryName = $rowCategory['name'];
-                        ?>
-                                <tr>
-                                    <td><?= $categoryName ?></td>
-                                    <td>₱<?= number_format($amount, 2) ?></td>
-                                    <td><?= date('Y-m-d', strtotime($date)) ?></td>
-                                    <td>
-                                        <button type="button" class="btn btn-custom-primary btn-sm <?= empty($comment) ? 'btn-dark disabled' : '' ?>" data-bs-toggle="modal" data-bs-target="#commentModal" data-comment="<?= $comment ?>">
-                                            View
-                                        </button>
-                                    </td>
-                                </tr>
-                        <?php
-                            }
-                        } else {
-                        ?>
-                            <tr>
-                                <td colspan="4">No expenses found for today.</td>
-                            </tr>
-                        <?php
-                        }
-                        ?>
-                    </tbody>
-                </table>
-                <nav aria-label="Page navigation">
-                    <ul class="pagination">
-                        <?php if ($page > 1): ?>
-                            <li class="page-item"><a class="page-link" href="?page=<?= $page - 1 ?>"><</a></li>
-                        <?php endif; ?>
-                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                            <li class="page-item <?= $page == $i ? 'active' : '' ?>"><a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a></li>
-                        <?php endfor; ?>
-                        <?php if ($page < $totalPages): ?>
-                            <li class="page-item"><a class="page-link" href="?page=<?= $page + 1 ?>">></a></li>
-                        <?php endif; ?>
-                    </ul>
-                </nav>
-            </div>
-        </div>
-        <form method="post">
-            <button type="submit" name="print_report" class="btn btn-custom-primary my-3 w-100">Print Report</button>
-        </form>
+<!-- HTML content -->
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="dashboard-page.php" class="btn btn-outline-dark">
+            <- Dashboard
+        </a>
     </div>
+    <h1 class="mb-4">Expense History</h1>
+
+    <!-- View Type and Date Selection -->
+    <form class="mb-4" method="get" id="viewForm">
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">View:</label>
+            </div>
+            <div class="col-auto">
+                <select name="view" class="form-select" onchange="document.getElementById('viewForm').submit();">
+                    <option value="daily" <?php echo $viewType == 'daily' ? 'selected' : ''; ?>>Daily</option>
+                    <option value="monthly" <?php echo $viewType == 'monthly' ? 'selected' : ''; ?>>Monthly</option>
+                    <option value="yearly" <?php echo $viewType == 'yearly' ? 'selected' : ''; ?>>Yearly</option>
+                </select>
+            </div>
+            <?php if ($viewType == 'daily'): ?>
+            <div class="col-auto">
+                <input type="date" name="date" class="form-control" value="<?php echo $selectedDate; ?>" min="<?php echo $userCreationYear; ?>-01-01" max="<?php echo $currentDate; ?>" onchange="document.getElementById('viewForm').submit();">
+            </div>
+            <?php elseif ($viewType == 'monthly'): ?>
+            <div class="col-auto">
+                <input type="month" name="month" class="form-control" value="<?php echo $selectedMonth; ?>" min="<?php echo $userCreationYear; ?>-01" max="<?php echo $currentMonth; ?>" onchange="document.getElementById('viewForm').submit();">
+            </div>
+            <?php elseif ($viewType == 'yearly'): ?>
+            <div class="col-auto">
+                <select name="year" class="form-select" onchange="document.getElementById('viewForm').submit();">
+                    <?php
+                    for ($y = $currentYear; $y >= $userCreationYear; $y--) {
+                        $selected = $y == $selectedYear ? 'selected' : '';
+                        echo "<option value='$y' $selected>$y</option>";
+                    }
+                    ?>
+                </select>
+            </div>
+            <?php endif; ?>
+        </div>
+    </form>
+
+    <!-- PDF Generation Form -->
+    <form method="post" class="mb-3">
+        <input type="hidden" name="view" value="<?php echo $viewType; ?>">
+        <input type="hidden" name="date" value="<?php echo $selectedDate; ?>">
+        <input type="hidden" name="month" value="<?php echo $selectedMonth; ?>">
+        <input type="hidden" name="year" value="<?php echo $selectedYear; ?>">
+        <button type="submit" name="generate_pdf" class="btn btn-custom-primary">Generate PDF</button>
+    </form>
+
+    <!-- Expenses Table -->
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Comment</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                if ($result->num_rows > 0) {
+                    while ($row = $result->fetch_assoc()) {
+                        $categoryId = $row['category_id'];
+                        $amount = $row['amount'];
+                        $date = $row['date'];
+                        $comment = $row['comment'];
+
+                        // Fetch category name from the database
+                        $sqlCategory = "SELECT name FROM budgets WHERE id = ?";
+                        $stmtCategory = $conn->prepare($sqlCategory);
+                        $stmtCategory->bind_param("i", $categoryId);
+                        $stmtCategory->execute();
+                        $resultCategory = $stmtCategory->get_result();
+                        $rowCategory = $resultCategory->fetch_assoc();
+                        $categoryName = $rowCategory['name'];
+                ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($categoryName); ?></td>
+                            <td>₱<?php echo number_format($amount, 2); ?></td>
+                            <td><?php echo date('Y-m-d', strtotime($date)); ?></td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-custom-primary" data-bs-toggle="modal" data-bs-target="#commentModal" data-comment="<?php echo htmlspecialchars($comment); ?>">
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+                <?php
+                    }
+                } else {
+                    echo "<tr><td colspan='4' class='text-center'>No expenses found for the selected period.</td></tr>";
+                }
+                ?>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-start">
+            <?php if ($page > 1): ?>
+                <li class="page-item">
+                    <a class="page-link" href="?view=<?php echo $viewType; ?>&date=<?php echo $selectedDate; ?>&month=<?php echo $selectedMonth; ?>&year=<?php echo $selectedYear; ?>&page=<?php echo $page - 1; ?>" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            <?php endif; ?>
+
+            <?php
+            $startPage = max(1, $page - 2);
+            $endPage = min($totalPages, $page + 2);
+            
+            for ($i = $startPage; $i <= $endPage; $i++):
+            ?>
+                <li class="page-item <?php echo $page == $i ? 'active' : ''; ?>">
+                    <a class="page-link" href="?view=<?php echo $viewType; ?>&date=<?php echo $selectedDate; ?>&month=<?php echo $selectedMonth; ?>&year=<?php echo $selectedYear; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                </li>
+            <?php endfor; ?>
+
+            <?php if ($page < $totalPages): ?>
+                <li class="page-item">
+                    <a class="page-link" href="?view=<?php echo $viewType; ?>&date=<?php echo $selectedDate; ?>&month=<?php echo $selectedMonth; ?>&year=<?php echo $selectedYear; ?>&page=<?php echo $page + 1; ?>" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            <?php endif; ?>
+        </ul>
+    </nav>
 </div>
 
 <!-- Modal for displaying the comment -->
 <div class="modal fade" id="commentModal" tabindex="-1" aria-labelledby="commentModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="commentModalLabel">Comment</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p id="commentContent"></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="commentModalLabel">Comment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="commentContent"></p>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
 <script>
-  // Get the modal and the comment content element
-  const commentModal = document.getElementById('commentModal');
-  const commentContent = document.getElementById('commentContent');
-
-  // Add an event listener to the "View Comment" buttons
-  const commentButtons = document.querySelectorAll('.btn-custom-primary[data-bs-toggle="modal"]');
-  commentButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      // Get the comment from the button's data attribute
-      const comment = button.getAttribute('data-comment');
-
-      // Set the comment content in the modal
-      commentContent.textContent = comment;
-    });
-  });
+    // JavaScript to handle the comment modal
+    var commentModal = document.getElementById('commentModal')
+    commentModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget
+        var comment = button.getAttribute('data-comment')
+        var modalBody = commentModal.querySelector('.modal-body p')
+        modalBody.textContent = comment
+    })
 </script>
 
 <?php 
 include('includes/footer.php');
-ob_end_flush(); // End output buffering
+ob_end_flush(); // End output buffering and send output
 ?>

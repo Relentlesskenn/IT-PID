@@ -11,3 +11,13 @@ body {
     background-color: #433878;
     color: white;
 }
+
+.pagination .page-item.active .page-link {
+    background-color: #433878;
+    border-color: #433878;
+    color: white; 
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d; /* Change this to your desired disabled color */
+}
