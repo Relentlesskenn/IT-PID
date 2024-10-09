@@ -32,7 +32,7 @@ function showIncome() {
             <button type='submit' class='btn btn-custom-primary btn-lg w-100 mb-2' name='income_btn'>
                 + Add Income
             </button>
-            <a class='btn btn-secondary btn-lg w-100 mb-2' href='dashboard-page.php'>
+            <a class='btn btn-outline-secondary btn-lg w-100 mb-2' href='dashboard-page.php'>
                 Back
             </a>
         </form>
@@ -71,7 +71,7 @@ function showBudget() {
             <button type='submit' class='btn btn-custom-primary btn-lg w-100 mb-2' name='budget_btn'>
                 + Add Budget
             </button>
-            <a class='btn btn-secondary btn-lg w-100 mb-2' href='dashboard-page.php'>
+            <a class='btn btn-outline-secondary btn-lg w-100 mb-2' href='dashboard-page.php'>
                 Back
             </a>
         </form>
@@ -104,7 +104,7 @@ function showExpense() {
             <button type='submit' class='btn btn-custom-primary btn-lg w-100 mb-2' name='expense_btn'>
                 + Add Expense
             </button>
-            <a class='btn btn-secondary btn-lg w-100 mb-2' href='dashboard-page.php'>
+            <a class='btn btn-outline-secondary btn-lg w-100 mb-2' href='dashboard-page.php'>
                 Back
             </a>
         </form>
@@ -323,7 +323,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="addCategoryModalLabel">Add Custom Budget</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <form method="post">
@@ -339,7 +338,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
             </div>
             <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-success btn-lg" name="addCategoryBtn">+ Add Budget</button>
+                <button type="submit" class="btn btn-custom-primary btn-lg" name="addCategoryBtn">+ Add Budget</button>
+                <button type="button" class="btn btn-outline-secondary btn-lg w-100 mb-1" data-bs-dismiss="modal" aria-label="Close">Close</button>
             </div>
         </form>
       </div>
