@@ -9,6 +9,7 @@ $userId = $_SESSION['auth_user']['user_id'];
 // Get the current month and year
 $currentMonth = date('Y-m');
 $currentYear = date('Y');
+$currentDate = date('m/d/y');
 
 // Function to fetch spending breakdown data
 function getSpendingBreakdown($conn, $userId, $month) {
@@ -137,13 +138,13 @@ if ($hasData) {
         <div class="col-lg-6 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h2 class="card-title">Spending Breakdown</h2>
+                    <h2 class="card-title">Spending Breakdown (<?= $currentDate?>) </h2>
                 </div>
                 <div class="card-body">
                     <?php if (!empty($spendingBreakdown)): ?>
                         <canvas id="spendingBreakdownChart"></canvas>
                     <?php else: ?>
-                        <p class="text-center">No spending data available for <?php echo date('F Y', strtotime($currentMonth)); ?></p>
+                        <p class="text-center">No spending data available for <?php echo date('F', strtotime($currentMonth)); ?></p>
                     <?php endif; ?>
                 </div>
             </div>
@@ -162,7 +163,7 @@ if ($hasData) {
                             </div>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <p class="text-center">No categories with spending for <?php echo date('F Y', strtotime($currentMonth)); ?></p>
+                        <p class="text-center">No categories with spending for <?php echo date('F', strtotime($currentMonth)); ?></p>
                     <?php endif; ?>
                 </div>
             </div>
