@@ -69,7 +69,7 @@ if ($hasData) {
 <link rel="stylesheet" href=".\assets\css\graphs.css">
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="reports-page.php" class="btn btn-outline-primary btn-sm">
+        <a href="reports-page.php" class="btn btn-outline-custom btn-sm">
             <i class="bi bi-arrow-left"></i> Reports
         </a>
         <h1 class="h4 mb-0">Graphs</h1>
@@ -96,7 +96,7 @@ if ($hasData) {
                     <?php foreach ($spendingBreakdown as $category): ?>
                         <div class="category-item" style="background-color: <?php echo htmlspecialchars($category['color']); ?>; color:#272727;">
                             <strong><?php echo htmlspecialchars($category['category']); ?></strong>
-                            <span class="float-end">₱<?php echo number_format($category['total_amount'], 2); ?></span>
+                            <strong><span class="float-end">₱<?php echo number_format($category['total_amount'], 2); ?></span></strong>
                         </div>
                     <?php endforeach; ?>
                 </div>

@@ -14,6 +14,12 @@ body {
     color: white;
 }
 
+.btn-outline-custom {
+    border-color: #433878; 
+    color: #433878; 
+    background-color: transparent; 
+}
+
 .pagination .page-item.active .page-link {
     background-color: #433878;
     border-color: #433878;
