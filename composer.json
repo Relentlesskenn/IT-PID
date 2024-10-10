@@ -2,6 +2,7 @@
     "require": {
         "phpmailer/phpmailer": "^6.9",
         "twbs/bootstrap": "5.3.3",
-        "tecnickcom/tcpdf": "^6.2.13"
+        "tecnickcom/tcpdf": "^6.2.13",
+        "twbs/bootstrap-icons": "^1.11"
     }
 }
