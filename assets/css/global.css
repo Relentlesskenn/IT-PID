@@ -1,8 +1,9 @@
 body {
-    background-color: #f8f9fa !important;
+    background-color: #F1F1F6 !important;
     color: #333 !important;
-    font-family: Lexend, sans-serif !important;
+    font-family: 'Lexend', sans-serif;
     font-size: 1rem !important;
+    font-weight: 500 !important;
 }
 
 .font-sm{
@@ -17,6 +18,12 @@ body {
 .btn-custom-primary:hover {
     background-color: #8E7AB5 !important;
     color: white !important;
+}
+
+.btn-custom-primary:disabled {
+    background-color: #433878 !important;
+    color: white !important;
+    cursor: not-allowed !important;
 }
 
 .btn-outline-custom {

@@ -1,0 +1,72 @@
+body {
+    animation: transitionIn 0.5s;
+}
+
+/*Transition every page*/
+@keyframes transitionIn {
+	from {
+		opacity: 0;
+		transform: translateY(0);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(-10px);
+	}
+}
+
+.logo-text {
+    font-size: 4.5rem;
+    font-weight: bold;
+    line-height: 0.95;
+  }
+
+.large-text {
+    display: block;
+	font-size: 5rem; /* Adjust size as needed */
+}
+
+.btn-custom-primary {
+    background-color: #A46DE2;
+    color: white;
+}
+
+.btn-custom-primary:hover {
+    background-color: #A46DE2;
+    color: rgba(255, 255, 255, 0.451);
+}
+
+
+.main {
+    flex-grow: .5;
+    background-image: url('../imgs/background.jpg');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+}
+
+/* IT-PID font on login page */
+.large-text {
+    font-size: 6rem;
+    font-weight: normal;
+    letter-spacing: 2px;
+}
+
+.it-text {
+    text-align: left; margin-left: 3px;
+    font-size: 6rem;
+    color: black;
+    margin-bottom: -10px;
+}
+
+.pid-text {
+    font-size: 6rem;
+    color: black;
+    text-align: center;
+}
