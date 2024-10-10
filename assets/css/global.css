@@ -1,45 +1,60 @@
 body {
-    background-color: #f8f9fa;
-    color: #333;
-    font-family: Lexend, sans-serif;
-    font-size: 1rem;
+    background-color: #f8f9fa !important;
+    color: #333 !important;
+    font-family: Lexend, sans-serif !important;
+    font-size: 1rem !important;
 }
 
 .font-sm{
-    font-size: 1rem;
+    font-size: 1rem !important;
 }
 
 .btn-custom-primary {
-    background-color: #8967B3;
+    background-color: #433878 !important;
     color: white;
 }
 
 .btn-custom-primary:hover {
-    background-color: black;
+    background-color: #8E7AB5 !important;
+    color: white !important;
 }
 
 .btn-outline-custom {
-    border-color: #433878; 
-    color: #433878; 
-    background-color: transparent; 
+    border-color: #433878 !important; 
+    color: #433878 !important; 
+    background-color: transparent !important; 
+}
+
+.btn-outline-custom:hover {
+    background-color: #433878 !important; 
+    color: white !important; 
 }
 
 .pagination .page-item.active .page-link {
-    background-color: #433878;
-    border-color: #433878;
-    color: white; 
+    background-color: #433878 !important;
+    border-color: #433878 !important;
+    color: white !important; 
 }
 
 .pagination .page-link {
-    color: #433878;
+    color: #433878 !important;
 }
 
 .pagination .page-link:hover {
-    color: #433878;
-    background-color: #e9ecef;
-    border-color: #dee2e6;
+    color: #433878 !important;
+    background-color: #e9ecef !important;
+    border-color: #dee2e6 !important;
 }
 
 .pagination .page-item.disabled .page-link {
-    color: #6c757d;
+    color: #6c757d !important;
+}
+
+.badge.rounded-pill-custom {
+    width: 12px !important;
+    height: 12px !important;
+    padding: 0 !important;
+    margin-left: 5px !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
 }

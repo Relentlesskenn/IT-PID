@@ -237,8 +237,6 @@ $hasExpenses = ($result->num_rows > 0);
 
 ?>
 
-<link rel="stylesheet" href=".\assets\css\global.css">
-
 <!-- HTML content -->
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">

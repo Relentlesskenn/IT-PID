@@ -153,19 +153,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
 
 ?>
 
-<!-- CSS for colored badges -->
-<style>
-   .badge.rounded-pill-custom {
-       width: 12px;
-       height: 12px;
-       padding: 0;
-       margin-left: 5px;
-       display: inline-block;
-       vertical-align: middle;
-   }
-</style>
-
-<!-- HTML -->
+<!-- HTML content -->
 <div class="py-3">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center flex-wrap">

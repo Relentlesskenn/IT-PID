@@ -287,7 +287,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 ?>
 
-<!-- HTML -->
+<!-- HTML content -->
 <div class="container-fluid vh-100 d-flex flex-column justify-content-center align-items-center">
     <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
         <div class="card-body">
