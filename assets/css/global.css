@@ -10,8 +10,12 @@ body {
 }
 
 .btn-custom-primary {
-    background-color: #433878;
+    background-color: #8967B3;
     color: white;
+}
+
+.btn-custom-primary:hover {
+    background-color: black;
 }
 
 .btn-outline-custom {

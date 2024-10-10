@@ -126,6 +126,7 @@ if ($hasData) {
 
 <!-- HTML content -->
 <link rel="stylesheet" href=".\assets\css\graphs.css">
+<link rel="stylesheet" href=".\assets\css\global.css">
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <a href="reports-page.php" class="btn btn-outline-custom btn-sm">
