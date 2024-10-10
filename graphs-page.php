@@ -138,7 +138,7 @@ if ($hasData) {
         <div class="col-lg-6 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h2 class="card-title">Spending Breakdown (<?= $currentDate?>) </h2>
+                    <h2 class="card-title">Spending Breakdown for <?= $currentDate?></h2>
                 </div>
                 <div class="card-body">
                     <?php if (!empty($spendingBreakdown)): ?>
@@ -152,7 +152,7 @@ if ($hasData) {
         <div class="col-lg-6 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h2 class="card-title">Categories</h2>
+                    <h2 class="card-title">Categories for <?= $currentDate?></h2>
                 </div>
                 <div class="card-body category-list">
                     <?php if (!empty($spendingBreakdown)): ?>
@@ -171,7 +171,7 @@ if ($hasData) {
         <div class="col-lg-6 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h2 class="card-title">Income vs. Expenses</h2>
+                    <h2 class="card-title">Income vs. Expenses for <?= $currentYear?></h2>
                 </div>
                 <div class="card-body">
                     <?php if ($hasIncomeExpenseData): ?>
@@ -185,7 +185,7 @@ if ($hasData) {
         <div class="col-lg-6 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h2 class="card-title">Expense Trend Over Time</h2>
+                    <h2 class="card-title">Expense Trend Over Time for <?= $currentYear?></h2>
                 </div>
                 <div class="card-body">
                     <?php if (!empty($expenseTrend)): ?>
@@ -241,21 +241,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     position: 'right',
                     labels: {
                         font: {
-                            size: 14,
-                            weight: 'bold'
+                            size: 16,
+                            weight: 'bold',
                         },
-                        padding: 15
+                        padding: 10
                     }
                 },
                 title: {
-                    display: true,
-                    text: 'Spending Breakdown for <?php echo date("F Y", strtotime($currentMonth)); ?>',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
-                    }
+                    disabled: true,
                 },
                 tooltip: {
+                    titleFont: {
+                        size: 16,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 14,
+                        weight: 'normal'
+                    },
                     callbacks: {
                         label: function(context) {
                             let label = context.label || '';
@@ -302,6 +305,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     ticks: {
                         callback: function(value, index, values) {
                             return '₱' + value.toLocaleString();
+                        },
+                        font: {
+                            size: 14,
+                            weight: 'normal',
                         }
                     }
                 }
@@ -309,16 +316,26 @@ document.addEventListener('DOMContentLoaded', function() {
             plugins: {
                 legend: {
                     position: 'top',
-                },
-                title: {
-                    display: true,
-                    text: 'Monthly Income vs Expenses for <?php echo date("Y"); ?>',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
+                    labels: {
+                        font: {
+                            size: 16,
+                            weight: 'bold',
+                        },
+                        padding: 10
                     }
                 },
+                title: {
+                    disabled: true,
+                },
                 tooltip: {
+                    titleFont: {
+                        size: 16,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 14,
+                        weight: 'normal'
+                    },
                     callbacks: {
                         label: function(context) {
                             let label = context.dataset.label || '';
@@ -369,11 +386,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     ticks: {
                         callback: function(value, index, values) {
                             return '₱' + value.toLocaleString();
-                        }
+                        },
+                        font: {
+                            size: 14,
+                            weight: 'normal',
+                        },
                     },
                     title: {
-                        display: true,
-                        text: 'Amount'
+                        display: false,
                     }
                 }
             },
@@ -382,12 +402,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     display: false
                 },
                 title: {
-                    display: true,
-                    text: 'Daily Expense Trend for <?php echo date("Y"); ?>',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
-                    }
+                    disabled: true,
                 },
                 tooltip: {
                     callbacks: {
