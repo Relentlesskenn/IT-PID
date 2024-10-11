@@ -64,7 +64,8 @@ body, html {
   margin-bottom: 1rem;
   border: none;
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+  font-family: 'Lexend Exa', sans-serif;
   text-transform: uppercase;
   cursor: pointer;
 }

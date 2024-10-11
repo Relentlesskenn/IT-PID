@@ -1,7 +1,6 @@
 body {
     animation: transitionIn 0.5s;
 }
-
 .logo-text {
     font-size: 4.5rem;
     font-weight: bold;
@@ -12,17 +11,6 @@ body {
     display: block;
 	font-size: 5rem; /* Adjust size as needed */
 }
-
-.btn-custom-primary {
-    background-color: #A46DE2;
-    color: white;
-}
-
-.btn-custom-primary:hover {
-    background-color: #A46DE2;
-    color: rgba(255, 255, 255, 0.451);
-}
-
 
 .main {
     flex-grow: .5;
