@@ -1,7 +1,3 @@
-<?php
-header("Content-Security-Policy: default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data:; font-src 'self'; form-action 'self'; frame-ancestors 'none';");
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>

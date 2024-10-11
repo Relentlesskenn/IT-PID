@@ -254,10 +254,10 @@ $hasExpenses = ($result->num_rows > 0);
     <form class="mb-4" method="get" id="viewForm">
         <div class="row g-3 align-items-center">
             <div class="col-auto">
-                <label class="col-form-label">View:</label>
+                <label for="view" class="col-form-label">View:</label>
             </div>
             <div class="col-auto">
-                <select name="view" class="form-select" onchange="document.getElementById('viewForm').submit();">
+                <select name="view" id="view" class="form-select" onchange="document.getElementById('viewForm').submit();">
                     <option value="daily" <?php echo $viewType == 'daily' ? 'selected' : ''; ?>>Daily</option>
                     <option value="monthly" <?php echo $viewType == 'monthly' ? 'selected' : ''; ?>>Monthly</option>
                     <option value="yearly" <?php echo $viewType == 'yearly' ? 'selected' : ''; ?>>Yearly</option>
