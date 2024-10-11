@@ -15,8 +15,17 @@ if (!isset($_SESSION['last_regeneration'])) {
     $_SESSION['last_regeneration'] = time();
 }
 require_once('_dbconnect.php');
+require_once('includes/rate_limiting.php');
 
 if (isset($_POST['login_btn'])) {
+
+    // Check rate limit
+    if (!check_rate_limit('login', 5, 300)) {
+        $_SESSION['status'] = "Too many login attempts. Please try again later.";
+        header("Location: login-page.php");
+        exit();
+    }
+
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 

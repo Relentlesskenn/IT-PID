@@ -15,6 +15,7 @@ if (!isset($_SESSION['last_regeneration'])) {
     $_SESSION['last_regeneration'] = time();
 }
 include('_dbconnect.php');
+require_once('includes/password_policy.php');
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
@@ -108,6 +109,24 @@ if(isset($_POST['register_btn']))
     $stmt = mysqli_prepare($conn, $query);
     mysqli_stmt_bind_param($stmt, "ssssss", $username, $f_name, $l_name, $email, $hashed_password, $verify_token);
     $query_run = mysqli_stmt_execute($stmt);
+
+    $password = $_POST['password'];
+    $c_password = $_POST['c_password'];
+
+    // Check password strength
+    $password_strength = is_password_strong($password);
+    if ($password_strength !== true) {
+        $_SESSION['status'] = "Password is not strong enough. Please ensure your password:\n- " . implode("\n- ", $password_strength);
+        header("Location: registration-page-2.php");
+        exit();
+    }
+
+    if($password !== $c_password)
+    {
+        $_SESSION['status'] = "Password and Confirm Password do not match!";
+        header("Location: registration-page-2.php");
+        exit();
+    }
 
     if($query_run)
     {

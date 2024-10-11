@@ -68,7 +68,9 @@ $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
                         </div>
                         <div class="form-group mb-3">
                             <label for="password" class="label-font">Password</label>
-                            <input type="password" name="password" id="password" placeholder="Enter Password" class="form-control form-control-lg input-margin" required>
+                            <input type="password" name="password" id="password" placeholder="Enter Password" class="form-control form-control-lg input-margin" required onkeyup="checkPasswordStrength()">
+                            <meter max="5" id="password-strength-meter"></meter>
+                            <p id="password-strength-message"></p>
                         </div>
                         <div class="form-group mb-3">
                             <label for="c_password" class="label-font">Confirm Password</label>
@@ -86,5 +88,68 @@ $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
 </div>
 
 <script src="./assets/js/page_transition.js"></script>
+<script>
+    function checkPasswordStrength() {
+        var password = document.getElementById('password').value;
+        var strength = 0;
+        var messages = [];
+
+        // Length check
+        if (password.length < 12) {
+            messages.push('Password should be at least 12 characters long');
+        } else {
+            strength += 1;
+        }
+
+        // Uppercase check
+        if (password.match(/[A-Z]/)) {
+            strength += 1;
+        } else {
+            messages.push('Add uppercase letters');
+        }
+
+        // Lowercase check
+        if (password.match(/[a-z]/)) {
+            strength += 1;
+        } else {
+            messages.push('Add lowercase letters');
+        }
+
+        // Number check
+        if (password.match(/\d/)) {
+            strength += 1;
+        } else {
+            messages.push('Add numbers');
+        }
+
+        // Special character check
+        if (password.match(/[^A-Za-z0-9]/)) {
+            strength += 1;
+        } else {
+            messages.push('Add special characters');
+        }
+
+        // Update the strength meter
+        var strengthMeter = document.getElementById('password-strength-meter');
+        var messageElement = document.getElementById('password-strength-message');
+
+        strengthMeter.value = strength;
+
+        if (strength < 2) {
+            messageElement.textContent = 'Weak password';
+            messageElement.style.color = 'red';
+        } else if (strength < 4) {
+            messageElement.textContent = 'Medium strength password';
+            messageElement.style.color = 'yellow';
+        } else {
+            messageElement.textContent = 'Strong password';
+            messageElement.style.color = 'green';
+        }
+
+        if (messages.length > 0) {
+            messageElement.textContent += ': ' + messages.join(', ');
+        }
+    }
+</script>
 
 <?php include('includes/footer.php'); ?>
