@@ -4,6 +4,7 @@ $page_title = "Register - Step 1";
 include('includes/header.php');
 ?>
 <link rel="stylesheet" href="./assets/css/login_register_page.css">
+<link rel="stylesheet" href="./assets/css/page_transition.css">
 
 <div class="py-5 vh-100 d-flex flex-column main" style="color: #433878;"> <!-- Set the text color for the entire container -->
     <div class="container flex-grow-1">
@@ -56,5 +57,7 @@ include('includes/header.php');
         </div>
     </div>
 </div>
+
+<script src="./assets/js/page_transition.js"></script>
 
 <?php include('includes/footer.php'); ?>

@@ -1,0 +1,50 @@
+/* Base styles for smooth transitions */
+body {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Prepare for page exit */
+.page-exit {
+    animation: fadeOut 0.3s ease-in forwards;
+}
+
+/* Fade out animation */
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
+/* Smooth transition for all interactive elements */
+a, button, input[type="submit"] {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Hover effect for interactive elements */
+a:hover, button:hover, input[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Active state for buttons */
+button:active, input[type="submit"]:active {
+    transform: translateY(1px);
+    box-shadow: none;
+}

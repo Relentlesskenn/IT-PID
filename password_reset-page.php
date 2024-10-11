@@ -4,7 +4,9 @@ session_start();
 $page_title = "Forgot Your Password?";
 include('includes/header.php');
 ?>
-<link rel="stylesheet" href=".\assets\css\bg.css">
+<link rel="stylesheet" href="/assets/css/login_register_page.css">
+<link rel="stylesheet" href="./assets/css/page_transition.css">
+
 <div class="py-5">
     <div class="container">
             <div class="row justify-content-center">
@@ -54,5 +56,7 @@ include('includes/header.php');
             </div>
     </div>
 </div>
+
+<script src="./assets/js/page_transition.js"></script>
 
 <?php include('includes/footer.php') ?>

@@ -3,6 +3,7 @@ $page_title = "IT-PID - Budget Smart, Live Well";
 include('includes/header.php');
 ?>
 <link rel="stylesheet" href="./assets/css/landing_page.css">
+<link rel="stylesheet" href="./assets/css/page_transition.css">
 
 <main class="main">
     <div class="logo-container">
@@ -19,5 +20,7 @@ include('includes/header.php');
         <a class="btn btn-light" href="login-page.php">Log in</a>
     </div>
 </main>
+
+<script src="./assets/js/page_transition.js"></script>
 
 <?php include('includes/footer.php'); ?>

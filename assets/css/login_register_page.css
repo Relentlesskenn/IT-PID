@@ -2,19 +2,6 @@ body {
     animation: transitionIn 0.5s;
 }
 
-/*Transition every page*/
-@keyframes transitionIn {
-	from {
-		opacity: 0;
-		transform: translateY(0);
-	}
-
-	to {
-		opacity: 1;
-		transform: translateY(-10px);
-	}
-}
-
 .logo-text {
     font-size: 4.5rem;
     font-weight: bold;
