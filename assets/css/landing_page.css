@@ -19,8 +19,8 @@ body, html {
 }
 
 .logo-container {
-  margin-top: 13rem;
-  margin-bottom: 14rem;
+  margin-top: 12rem;
+  margin-bottom: 13.5rem;
 }
 
 .logo-text-upper {
@@ -60,7 +60,7 @@ body, html {
 .btn {
   display: block;
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.9rem;
   margin-bottom: 1rem;
   border: none;
   border-radius: 8px;
