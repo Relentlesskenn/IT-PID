@@ -6,7 +6,7 @@ include('includes/header.php');
 <link rel="stylesheet" href="./assets/css/login_register_page.css">
 <link rel="stylesheet" href="./assets/css/page_transition.css">
 
-<div class="py-5 px-2 vh-100 d-flex flex-column main" style="color: #433878;"> <!-- Set the text color for the entire container -->
+<div class="py-5 px-2 vh-100 d-flex flex-column main">
     <div class="container flex-grow-1">
         <div class="row justify-content-center h-100">
             <div class="col-md-6 d-flex flex-column justify-content-between">
@@ -26,7 +26,6 @@ include('includes/header.php');
                         <i class="bi bi-arrow-left-circle icon-lg" style="color: black;"></i>
                     </a> 
                 </h1>
-                
                 <br>
                 <br>
                 <br>

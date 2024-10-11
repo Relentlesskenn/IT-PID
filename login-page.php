@@ -14,7 +14,7 @@ include('includes/header.php');
 <link rel="stylesheet" href="assets/css/login_register_page.css">
 <link rel="stylesheet" href="./assets/css/page_transition.css">
 
-<div class="py-5 vh-100 d-flex flex-column main" style="color: #5807B4;"> <!-- Set text color for the entire container -->
+<div class="py-5 px-2 vh-100 d-flex flex-column main">
     <div class="container flex-grow-1">
         <div class="row justify-content-center h-100">
             <div class="col-md-6 d-flex flex-column justify-content-between">
@@ -35,31 +35,33 @@ include('includes/header.php');
                 <!-- Login Form -->
                 <h1>
                     <a href="index.php" class="text-decoration-none">
-                        <i class="bi bi-arrow-left-circle" style="color: black;"></i>
+                        <i class="bi bi-arrow-left-circle icon-lg" style="color: black;"></i>
                     </a> 
                 </h1>
                 <!-- Centered Logo Section -->
-                <div class="align-items-center justify-content-center d-flex text-center mb-4">
-                    <h1 class="logo-text" style="color: black;">
-                        <span class="large-text d-block text-left it-text">IT</span> <!-- d-block and text-left for left alignment -->
-                        <span class="large-text pid-text">PID</span>
+                <div class="logo-container">
+                    <h1 class="logo-text-upper">
+                        IT
+                    </h1>
+                    <h1 class="logo-text-bottom">
+                        PID
                     </h1>
                 </div>
                 <br>
                 <form action="login-process.php" method="POST" class="d-flex flex-column flex-grow-1">
                     <div class="flex-grow-1">
                         <div class="form-group mb-3">
-                            <label for="username">Username</label>
-                            <input type="text" name="username" id="username" placeholder="Enter User Name" class="form-control" required autocomplete="username">
+                            <label for="username" class="label-font">Username</label>
+                            <input type="text" name="username" id="username" placeholder="Enter Username" class="form-control form-control-lg input-margin" required autocomplete="username">
                         </div>
                         <div class="form-group mb-3">
-                            <label for="password">Password</label>
-                            <input type="password" name="password" id="password" placeholder="Enter Password" class="form-control" required autocomplete="current-password">
+                            <label for="password" class="label-font">Password</label>
+                            <input type="password" name="password" id="password" placeholder="Enter Password" class="form-control form-control-lg" required autocomplete="current-password">
                         </div>
                     </div>
                     <!-- Button at the bottom -->
                     <div class="form-group">
-                        <button type="submit" name="login_btn" class="btn btn-custom-primary w-100 mt-auto">Login</button>
+                        <button type="submit" name="login_btn" class="btn btn-custom-primary w-100 mt-auto">Log in</button>
                         <br><br>
                         <a href="forgot_your_password-page.php" class="font-sm text-decoration-none" style="color: #7E60BF;">Forgot your Password?</a>
                     </div>

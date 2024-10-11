@@ -1,7 +1,3 @@
-body {
-    animation: transitionIn 0.5s;
-}
-
 .main {
     flex-grow: .5;
     background-image: url('../imgs/background.jpg');
@@ -65,4 +61,28 @@ body {
 
   .input-margin {
     margin-bottom: 1.1rem;
+  }
+
+  .logo-container {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+    text-align: center;
+}
+  
+  .logo-text-upper {
+    font-size: 6rem;
+    font-weight: 600;
+    font-family: 'Lexend Deca', sans-serif;
+    color: black;
+    line-height: 0.80;
+    margin-bottom: 0.1rem;
+  }
+  
+  .logo-text-bottom {
+    font-size: 6rem;
+    font-weight: 600;
+    font-family: 'Lexend Deca', sans-serif;
+    color: black;
+    line-height: 0.88;
+    margin-bottom: 0.5rem;
   }
