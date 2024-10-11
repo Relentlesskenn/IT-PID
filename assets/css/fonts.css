@@ -1,0 +1,60 @@
+/* Lexend Font */
+@font-face {
+    font-family: 'Lexend';
+    src: url('../fonts/Lexend/Lexend-VariableFont_wght.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Lexend Bold Font */
+@font-face {
+    font-family: 'Lexend';
+    src: url('../fonts/Lexend/static/Lexend-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+/* Lexend Deca Font */
+@font-face {
+    font-family: 'Lexend Deca';
+    src: url('../fonts/Lexend_Deca/LexendDeca-VariableFont_wght.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Lexend Deca Bold Font */
+@font-face {
+    font-family: 'Lexend Deca';
+    src: url('../fonts/Lexend_Deca/static/LexendDeca-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+/* Lexend Exa Font */
+@font-face {
+    font-family: 'Lexend Exa';
+    src: url('../fonts/Lexend_Exa/LexendExa-VariableFont_wght.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Lexend Exa Bold Font */
+@font-face {
+    font-family: 'Lexend Exa';
+    src: url('../fonts/Lexend_Exa/static/LexendExa-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+/* Apply fonts to elements */
+body {
+    font-family: 'Lexend', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Lexend Deca', sans-serif;
+}
+
+.special-text {
+    font-family: 'Lexend Exa', sans-serif;
+}
