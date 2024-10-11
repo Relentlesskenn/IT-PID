@@ -4,7 +4,7 @@ include('includes/authentication.php');
 include('includes/header.php');
 ?>
 
-<div class="py-3">
+<div class="py-4">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <a href="dashboard-page.php" class="btn btn-outline-custom btn-sm">

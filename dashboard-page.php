@@ -154,7 +154,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
 ?>
 
 <!-- HTML content -->
-<div class="py-3">
+<div class="py-4">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <span style="font-size: 1.1rem;">Hello, <?= $_SESSION['auth_user']['username']?>!</span>
@@ -170,7 +170,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
         </div>
         
         <!--Expenses, Incomes, and Balance-->
-        <div class="card my-3 text-center">
+        <div class="card my-4 text-center">
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-borderless">

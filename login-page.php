@@ -52,7 +52,7 @@ include('includes/header.php');
                         <i class="bi bi-arrow-left-circle icon-lg" style="color: black;"></i>
                     </a> 
                 </h1>
-                <!-- Centered Logo Section -->
+                <!-- Logo Section -->
                 <div class="logo-container">
                     <h1 class="logo-text-upper">
                         IT

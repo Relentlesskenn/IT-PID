@@ -28,7 +28,7 @@ body, html {
   font-weight: 600;
   font-family: 'Lexend Deca', sans-serif;
   color: black;
-  letter-spacing: 0.5rem;
+  letter-spacing: 0.35rem;
   line-height: 0.80;
   margin-left: 0.1rem;
   margin-bottom: 0.1rem;
@@ -44,7 +44,7 @@ body, html {
 }
 
 .tagline {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-family: 'Lexend Exa', sans-serif;
   font-weight: 500 ;
   margin-top: 0.5rem;

@@ -15,7 +15,7 @@ header("Permissions-Policy: geolocation=(), microphone=(), camera=()");
     <link rel="stylesheet" href="vendor/twbs/bootstrap-icons/font/bootstrap-icons.css">
     <link rel="stylesheet" href="assets/css/fonts.css">
     <link rel="stylesheet" href=".\assets\css\global.css">
-    <link rel="shortcut icon" href="assets\imgs\favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="assets\imgs\logo\favicon.ico" type="image/x-icon">
     <title>
         <?php if(isset($page_title)){echo "$page_title"; }?>
     </title>
