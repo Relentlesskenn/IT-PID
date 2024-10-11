@@ -1,3 +1,11 @@
+<?php
+header("X-Frame-Options: DENY");
+header("X-XSS-Protection: 1; mode=block");
+header("X-Content-Type-Options: nosniff");
+header("Referrer-Policy: strict-origin-when-cross-origin");
+header("Permissions-Policy: geolocation=(), microphone=(), camera=()");
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +15,7 @@
     <link rel="stylesheet" href="vendor/twbs/bootstrap-icons/font/bootstrap-icons.css">
     <link rel="stylesheet" href="assets/css/fonts.css">
     <link rel="stylesheet" href=".\assets\css\global.css">
+    <link rel="shortcut icon" href="assets\imgs\favicon.ico" type="image/x-icon">
     <title>
         <?php if(isset($page_title)){echo "$page_title"; }?>
     </title>
