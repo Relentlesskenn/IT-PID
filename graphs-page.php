@@ -1,7 +1,7 @@
 <?php
 $page_title = "Graphs · IT-PID";
 include('_dbconnect.php');
-include('authentication.php');
+include('includes/authentication.php');
 include('includes/header.php');
 
 $userId = $_SESSION['auth_user']['user_id'];

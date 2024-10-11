@@ -1,6 +1,6 @@
 <?php
 include('_dbconnect.php');
-include('authentication.php');
+include('includes/authentication.php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userId = $_POST['userId'];

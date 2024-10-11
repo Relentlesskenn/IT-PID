@@ -1,6 +1,6 @@
 <?php
 $page_title = "Goals · IT-PID";
-include('authentication.php');
+include('includes/authentication.php');
 include('includes/header.php');
 include('includes/navbar.php');
 ?>

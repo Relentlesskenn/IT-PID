@@ -1,7 +1,7 @@
 <?php
 $page_title = "Dashboard · IT-PID";
 include('_dbconnect.php');
-include('authentication.php');
+include('includes/authentication.php');
 include('includes/header.php');
 include('includes/navbar.php');
 
