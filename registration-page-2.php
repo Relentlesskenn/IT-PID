@@ -58,7 +58,7 @@ $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
                         </div>
                         <div class="form-group mb-3">
                             <label for="c_password" class="label-font">Confirm Password</label>
-                            <input type="password" name="c_password" id="c_password" placeholder="Enter Password" class="form-control form-control-lg" required>
+                            <input type="password" name="c_password" id="c_password" placeholder="Enter Confirm Password" class="form-control form-control-lg" required>
                         </div>
                     </div>
                     <!-- Button at the bottom -->
