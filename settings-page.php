@@ -1,5 +1,5 @@
 <?php
-$page_title = "Settings";
+$page_title = "Settings · IT-PID";
 include('authentication.php');
 include('includes/header.php');
 ?>

@@ -1,5 +1,5 @@
 <?php
-$page_title = "Learn";
+$page_title = "Learn · IT-PID";
 include('authentication.php');
 include('includes/header.php');
 include('includes/navbar.php');

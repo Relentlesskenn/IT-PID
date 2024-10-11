@@ -8,7 +8,7 @@ if (isset($_SESSION['authenticated'])) {
     exit();
 }
 
-$page_title = "Login";
+$page_title = "Login to IT-PID · IT-PID";
 include('includes/header.php');
 ?>
 <link rel="stylesheet" href="assets/css/login_register_page.css">

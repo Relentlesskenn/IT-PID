@@ -1,15 +1,16 @@
 <?php
 session_start();
 
-$page_title = "Forgot Your Password?";
+$page_title = "Forgot Your Password? · IT-PID";
 include('includes/header.php');
 ?>
 <link rel="stylesheet" href="./assets/css/login_register_page.css">
 <link rel="stylesheet" href="./assets/css/page_transition.css">
-<div class="py-5">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
+
+<div class="py-5 px-2 vh-100 d-flex flex-column main">
+    <div class="container flex-grow-1">
+        <div class="row justify-content-center h-100">
+            <div class="col-md-6 d-flex flex-column justify-content-between">
 
                 <!-- Alert -->
                 <?php
@@ -23,27 +24,23 @@ include('includes/header.php');
                     unset($_SESSION['status_type']);
                 }
                 ?>
-                
-                <div class="card shadow">
-                    <div class="card-header">
-                        <h3>
-                            <a href="login-page.php" class="text-decoration-none">
-                                <i class="bi bi-arrow-left-circle"></i>
-                            </a>
-                            Reset your password
-                        </h3>
-                    </div>
-                    <div class="card-body">
-                        <form action="password_reset-process.php" method="POST">
-                            <div class="form-group mb-3">
-                                <label for="email" class="form-label">Email Address</label>
-                                <input type="email" name="email" id="email" class="form-control" required autocomplete="email">
-                            </div>
-                            <div class="form-group">
-                                <button type="submit" name="password_reset_btn" class="btn btn-custom-primary w-100">Submit</button>
-                            </div>
-                        </form>
-                    </div>
+
+                <!-- Change Password Form -->
+                <div class="flex-grow-1">
+                    <a href="login-page.php" class="text-decoration-none">
+                        <i class="bi bi-arrow-left-circle icon-lg" style="color: black;"></i>
+                    </a>
+                    <h1 style="color: black; font-size: 2rem; margin-top: 10rem;">Reset your password</h1>
+                    <br>
+                    <form action="password_reset-process.php" method="POST">
+                        <div class="form-group mb-3">
+                            <label for="email" class="form-label label-font">Email Address</label>
+                            <input type="email" name="email" id="email" placeholder="Enter Email Address" class="form-control form-control-lg" required autocomplete="email">
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" name="password_reset_btn" class="btn btn-custom-primary w-100 reset-margin">Submit</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

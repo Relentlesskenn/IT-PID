@@ -1,6 +1,6 @@
 <?php
 session_start();
-$page_title = "Register - Step 1";
+$page_title = "Join IT-PID · IT-PID";
 include('includes/header.php');
 ?>
 <link rel="stylesheet" href="./assets/css/login_register_page.css">

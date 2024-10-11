@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-$page_title = "Forgot Your Password?";
+$page_title = "Forgot Your Password? · IT-PID";
 include('includes/header.php');
 ?>
 <link rel="stylesheet" href="/assets/css/login_register_page.css">

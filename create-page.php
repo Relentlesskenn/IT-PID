@@ -1,5 +1,5 @@
 <?php
-$page_title = "Create";
+$page_title = "Create · IT-PID";
 include('_dbconnect.php');
 include('authentication.php');
 include('includes/header.php'); 

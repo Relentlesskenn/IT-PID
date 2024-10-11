@@ -1,7 +1,7 @@
 <?php
 ob_start(); // Start output buffering
 require_once('vendor/tecnickcom/tcpdf/tcpdf.php');
-$page_title = "Reports";
+$page_title = "Reports · IT-PID";
 include('_dbconnect.php');
 include('authentication.php');
 include('includes/header.php');

@@ -1,6 +1,6 @@
 <?php
 session_start();
-$page_title = "Register - Step 2";
+$page_title = "Join IT-PID · IT-PID";
 include('includes/header.php');
 
 // Check if the user came from step 1

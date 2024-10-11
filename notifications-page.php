@@ -1,5 +1,5 @@
 <?php
-$page_title = "Notifications";
+$page_title = "Notifications · IT-PID";
 include('_dbconnect.php');
 include('authentication.php');
 include('includes/header.php');
