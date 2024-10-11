@@ -1,16 +1,6 @@
 body {
     animation: transitionIn 0.5s;
 }
-.logo-text {
-    font-size: 4.5rem;
-    font-weight: bold;
-    line-height: 0.95;
-  }
-
-.large-text {
-    display: block;
-	font-size: 5rem; /* Adjust size as needed */
-}
 
 .main {
     flex-grow: .5;
@@ -22,8 +12,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
-    margin: 0;
 }
 
 /* IT-PID font on login page */
@@ -45,3 +33,36 @@ body {
     color: black;
     text-align: center;
 }
+
+.icon-lg {
+    font-size: 2.5rem;
+}
+
+.btn {
+    display: block;
+    width: 100%;
+    padding: 0.9rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-family: 'Lexend Exa', sans-serif;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .register-btn {
+    margin-bottom: 1.5rem;
+  }
+
+  .label-font {
+    font-size: 1rem;
+    font-family: 'Lexend', sans-serif;
+    text-transform: uppercase;
+    color: #7A1CAC;
+    margin-left: 0.5rem;
+    margin-bottom: 0.1rem;
+  }
+
+  .input-margin {
+    margin-bottom: 1.1rem;
+  }

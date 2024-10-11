@@ -6,6 +6,12 @@ body {
     font-weight: 500 !important;
 }
 
+
+::placeholder {
+    font-family: 'Lexend Exa', sans-serif;
+    font-size: 0.85rem;
+  }
+
 .font-sm{
     font-size: 1rem !important;
 }

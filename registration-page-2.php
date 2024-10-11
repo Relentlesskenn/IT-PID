@@ -18,7 +18,7 @@ $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
 <link rel="stylesheet" href="./assets/css/login_register_page.css">
 <link rel="stylesheet" href="./assets/css/page_transition.css">
 
-<div class="py-5 vh-100 d-flex flex-column main" style="color: #433878;"> <!-- Set text color for the entire container -->
+<div class="py-5 px-2 vh-100 d-flex flex-column main" style="color: #433878;"> <!-- Set text color for the entire container -->
     <div class="container flex-grow-1">
         <div class="row justify-content-center h-100">
             <div class="col-md-6 d-flex flex-column justify-content-between">
@@ -34,7 +34,7 @@ $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
                 <!-- Registration Form -->
                 <h1>
                     <a href="registration-page-1.php" class="text-decoration-none">
-                        <i class="bi bi-arrow-left-circle hover-icon" style= "color:black;"></i>
+                        <i class="bi bi-arrow-left-circle icon-lg" style= "color:black;"></i>
                     </a> 
                 </h1>
                 <br>
@@ -46,24 +46,24 @@ $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
                 <br>
                 <br>
                     <div class="flex-grow-1">
-                        <h1><span style="color: black;">Register</span></h1>
+                        <h1 style="color: black; font-size: 2.5rem;">Register</h1>
                         <br>
                         <div class="form-group mb-3">
-                            <label for="username">Username</label>
-                            <input type="text" name="username" id="username" placeholder="Enter Username" class="form-control border border-3" required autocomplete="on">
+                            <label for="username" class="label-font">Username</label>
+                            <input type="text" name="username" id="username" placeholder="Enter Username" class="form-control form-control-lg input-margin" required autocomplete="on">
                         </div>
                         <div class="form-group mb-3">
-                            <label for="password">Password</label>
-                            <input type="password" name="password" id="password" placeholder="Enter Password" class="form-control border border-3" required>
+                            <label for="password" class="label-font">Password</label>
+                            <input type="password" name="password" id="password" placeholder="Enter Password" class="form-control form-control-lg input-margin" required>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="c_password">Confirm Password</label>
-                            <input type="password" name="c_password" id="c_password" placeholder="Enter Password" class="form-control border border-3" required>
+                            <label for="c_password" class="label-font">Confirm Password</label>
+                            <input type="password" name="c_password" id="c_password" placeholder="Enter Password" class="form-control form-control-lg" required>
                         </div>
                     </div>
                     <!-- Button at the bottom -->
                     <div class="form-group">
-                        <button type="submit" name="register_btn" class="btn btn-custom-primary w-100 mt-auto">Register</button>
+                        <button type="submit" name="register_btn" class="btn btn-custom-primary w-100 mt-auto register-btn">Register</button>
                     </div>
                 </form>
             </div>
