@@ -6,13 +6,21 @@ define('DB_PASS', '');
 define('DB_NAME', 'it-pid');
 
 // Attempt to establish a database connection
-$conn = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+try {
+    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
-// Check if the connection was successful
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
+    // Check connection
+    if ($conn->connect_error) {
+        throw new Exception("Connection failed: " . $conn->connect_error);
+    }
+
+    // Set character set to utf8mb4
+    if (!$conn->set_charset("utf8mb4")) {
+        throw new Exception("Error setting character set: " . $conn->error);
+    }
+} catch (Exception $e) {
+    // Log the error and display a user-friendly message
+    error_log("Database connection error: " . $e->getMessage());
+    die("We're experiencing technical difficulties. Please try again later.");
 }
-
-// Set character set to utf8mb4
-mysqli_set_charset($conn, "utf8mb4");
 ?>
