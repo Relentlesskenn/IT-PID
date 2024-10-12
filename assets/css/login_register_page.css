@@ -102,3 +102,14 @@
   .alert {
     margin-bottom: 0;
   }
+
+  .btn-container {
+    height: 50px;
+    overflow: hidden;
+    margin-top: 1rem;
+  }
+
+  .register-form-container {
+    height: 600px;
+    overflow: hidden;
+  }

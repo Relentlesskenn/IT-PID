@@ -38,6 +38,7 @@ $username = filter_var($username);
 
 <link rel="stylesheet" href="./assets/css/login_register_page.css">
 <link rel="stylesheet" href="./assets/css/page_transition.css">
+<link rel="stylesheet" href="./assets/css/custom-strength-meter.css">
 
 <div class="py-5 px-2 vh-100 d-flex flex-column main" style="color: #433878;">
     <div class="container flex-grow-1">
@@ -58,6 +59,7 @@ $username = filter_var($username);
                     <br>
                     <br>
                     <br>
+                    <div class="register-form-container">
                     <div class="flex-grow-1">
                         <h1 style="color: black; font-size: 2.5rem;">Register</h1>
                         <br>
@@ -68,8 +70,11 @@ $username = filter_var($username);
                         <div class="form-group mb-3">
                             <label for="password" class="label-font">Password</label>
                             <input type="password" name="password" id="password" placeholder="Enter Password" class="form-control form-control-lg input-margin" required onkeyup="checkPasswordStrength()">
-                            <meter max="5" id="password-strength-meter"></meter>
-                            <p id="password-strength-message"></p>
+                            <div class="password-strength-meter">
+                                <div id="password-strength-meter-fill" class="password-strength-meter-fill"></div>
+                            </div>
+                            <p id="password-strength-text" class="password-strength-text"></p>
+                            <div id="password-requirements" class="password-requirements"></div>
                         </div>
                         <div class="form-group mb-3">
                             <label for="c_password" class="label-font">Confirm Password</label>
@@ -96,9 +101,12 @@ $username = filter_var($username);
                         </div>
 
                     </div>
+                    </div>
                     <!-- Button at the bottom -->
-                    <div class="form-group">
-                        <button type="submit" name="register_btn" class="btn btn-custom-primary w-100 mt-auto register-btn">Register</button>
+                    <div class="btn-container">
+                        <div class="form-group">
+                            <button type="submit" name="register_btn" class="btn btn-custom-primary w-100 mt-auto register-btn">Register</button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -109,65 +117,51 @@ $username = filter_var($username);
 <script src="./assets/js/page_transition.js"></script>
 <script>
     function checkPasswordStrength() {
-        var password = document.getElementById('password').value;
-        var strength = 0;
-        var messages = [];
-
-        // Length check
-        if (password.length < 12) {
-            messages.push('Password should be at least 12 characters long');
+        const password = document.getElementById('password').value;
+        const strengthMeterFill = document.getElementById('password-strength-meter-fill');
+        const strengthText = document.getElementById('password-strength-text');
+        const requirementsElement = document.getElementById('password-requirements');
+        
+        let strength = 0;
+        const requirements = [
+            { regex: /.{12,}/, text: "At least 12 characters long" },
+            { regex: /[A-Z]/, text: "Contains uppercase letters" },
+            { regex: /[a-z]/, text: "Contains lowercase letters" },
+            { regex: /[0-9]/, text: "Contains numbers" },
+            { regex: /[^A-Za-z0-9]/, text: "Contains special characters" }
+        ];
+        
+        let requirementsHTML = "";
+        requirements.forEach(requirement => {
+            const isMet = requirement.regex.test(password);
+            strength += isMet ? 1 : 0;
+            requirementsHTML += `<div class="${isMet ? 'requirement-met' : 'requirement-unmet'}">
+                ${isMet ? '✓' : '✗'} ${requirement.text}
+            </div>`;
+        });
+        
+        requirementsElement.innerHTML = requirementsHTML;
+        
+        // Update strength meter
+        const percentage = (strength / requirements.length) * 100;
+        strengthMeterFill.style.width = `${percentage}%`;
+        
+        // Set color and text based on strength
+        let color, text;
+        if (strength <= 2) {
+            color = '#B8001F';
+            text = 'Weak';
+        } else if (strength <= 4) {
+            color = '#EC8305';
+            text = 'Medium';
         } else {
-            strength += 1;
+            color = '#347928';
+            text = 'Strong';
         }
-
-        // Uppercase check
-        if (password.match(/[A-Z]/)) {
-            strength += 1;
-        } else {
-            messages.push('Add uppercase letters');
-        }
-
-        // Lowercase check
-        if (password.match(/[a-z]/)) {
-            strength += 1;
-        } else {
-            messages.push('Add lowercase letters');
-        }
-
-        // Number check
-        if (password.match(/\d/)) {
-            strength += 1;
-        } else {
-            messages.push('Add numbers');
-        }
-
-        // Special character check
-        if (password.match(/[^A-Za-z0-9]/)) {
-            strength += 1;
-        } else {
-            messages.push('Add special characters');
-        }
-
-        // Update the strength meter
-        var strengthMeter = document.getElementById('password-strength-meter');
-        var messageElement = document.getElementById('password-strength-message');
-
-        strengthMeter.value = strength;
-
-        if (strength < 2) {
-            messageElement.textContent = 'Weak password';
-            messageElement.style.color = 'red';
-        } else if (strength < 4) {
-            messageElement.textContent = 'Medium strength password';
-            messageElement.style.color = 'yellow';
-        } else {
-            messageElement.textContent = 'Strong password';
-            messageElement.style.color = 'green';
-        }
-
-        if (messages.length > 0) {
-            messageElement.textContent += ': ' + messages.join(', ');
-        }
+        
+        strengthMeterFill.style.backgroundColor = color;
+        strengthText.textContent = `Password Strength: ${text}`;
+        strengthText.style.color = color;
     }
 </script>
 
