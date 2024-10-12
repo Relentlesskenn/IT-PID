@@ -44,7 +44,7 @@ function resend_email_verify($f_name, $email, $verify_token)
         $mail->Subject = "Verify Your Email - IT-PID";
 
         // Use the same email template as registration
-        $email_template = file_get_contents('path/to/email_verification_template.html');
+        $email_template = file_get_contents('assets/email_templates/email_verification_template.html');
         $email_template = str_replace('$f_name', $f_name, $email_template);
         $email_template = str_replace('$verify_token', urlencode($verify_token), $email_template);
 
