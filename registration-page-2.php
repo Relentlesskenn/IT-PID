@@ -17,33 +17,32 @@ if (!isset($_SESSION['last_regeneration'])) {
 $page_title = "Join IT-PID · IT-PID";
 include('includes/header.php');
 
-// Check if the user came from step 1
-if (!isset($_POST['f_name']) || !isset($_POST['l_name']) || !isset($_POST['email'])) {
+// Check if the user came from step 1 or if there's stored registration data
+if (!isset($_POST['f_name']) && !isset($_SESSION['registration_data'])) {
     header("Location: registration-page-1.php");
     exit();
 }
 
+// Use stored data if available, otherwise use POST data
+$f_name = $_SESSION['registration_data']['f_name'] ?? $_POST['f_name'];
+$l_name = $_SESSION['registration_data']['l_name'] ?? $_POST['l_name'];
+$email = $_SESSION['registration_data']['email'] ?? $_POST['email'];
+$username = $_SESSION['registration_data']['username'] ?? '';
+
 // Sanitize input
-$f_name = filter_input(INPUT_POST, 'f_name');
-$l_name = filter_input(INPUT_POST, 'l_name');
-$email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+$f_name = filter_var($f_name);
+$l_name = filter_var($l_name);
+$email = filter_var($email, FILTER_SANITIZE_EMAIL);
+$username = filter_var($username);
 ?>
 
 <link rel="stylesheet" href="./assets/css/login_register_page.css">
 <link rel="stylesheet" href="./assets/css/page_transition.css">
 
-<div class="py-5 px-2 vh-100 d-flex flex-column main" style="color: #433878;"> <!-- Set text color for the entire container -->
+<div class="py-5 px-2 vh-100 d-flex flex-column main" style="color: #433878;">
     <div class="container flex-grow-1">
         <div class="row justify-content-center h-100">
             <div class="col-md-6 d-flex flex-column justify-content-between">
-
-                <!-- Alert -->
-                <?php
-                if (isset($_SESSION['status'])) {
-                    echo '<div class="alert alert-primary"><h4>' . htmlspecialchars($_SESSION['status']) . '</h4></div>';
-                    unset($_SESSION['status']);
-                }
-                ?>
 
                 <!-- Registration Form -->
                 <h1>
@@ -57,14 +56,14 @@ $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
                     <input type="hidden" name="l_name" value="<?= htmlspecialchars($l_name) ?>">
                     <input type="hidden" name="email" value="<?= htmlspecialchars($email) ?>">
                     <br>
-                <br>
-                <br>
+                    <br>
+                    <br>
                     <div class="flex-grow-1">
                         <h1 style="color: black; font-size: 2.5rem;">Register</h1>
                         <br>
                         <div class="form-group mb-3">
                             <label for="username" class="label-font">Username</label>
-                            <input type="text" name="username" id="username" placeholder="Enter Username" class="form-control form-control-lg input-margin" required autocomplete="on">
+                            <input type="text" name="username" id="username" placeholder="Enter Username" class="form-control form-control-lg input-margin" required autocomplete="on" value="<?= htmlspecialchars($username) ?>">
                         </div>
                         <div class="form-group mb-3">
                             <label for="password" class="label-font">Password</label>
@@ -76,6 +75,26 @@ $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
                             <label for="c_password" class="label-font">Confirm Password</label>
                             <input type="password" name="c_password" id="c_password" placeholder="Enter Confirm Password" class="form-control form-control-lg" required>
                         </div>
+
+                        <!-- Alert -->
+                        <div class="alert-container">
+                        <?php
+                            include('includes/alert_helper.php');
+
+                            if (isset($_SESSION['status'])) {
+                                $status_type = $_SESSION['status_type'] ?? 'primary';
+                                echo generate_custom_alert($_SESSION['status'], $status_type);
+                                unset($_SESSION['status']);
+                                unset($_SESSION['status_type']);
+                            }
+
+                            if (isset($_SESSION['error'])) {
+                                echo generate_custom_alert($_SESSION['error'], 'danger');
+                                unset($_SESSION['error']);
+                            }
+                        ?>
+                        </div>
+
                     </div>
                     <!-- Button at the bottom -->
                     <div class="form-group">

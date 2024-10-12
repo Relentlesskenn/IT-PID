@@ -26,19 +26,6 @@ include('includes/header.php');
         <div class="row justify-content-center h-100">
             <div class="col-md-6 d-flex flex-column justify-content-between">
 
-                <!--Alerts-->
-                <?php
-                    if(isset($_SESSION['status']))
-                    {
-                        ?>
-                        <div class="alert alert-primary">
-                            <h5><?= $_SESSION['status']; ?></h5>
-                        </div>
-                <?php
-                    unset($_SESSION['status']);
-                    }
-                ?>
-
                 <!-- Change Password Form -->
                 <div class="flex-grow-1">
                 <h1 style="color: black; font-size: 2rem; margin-top: 10rem;">Reset your password</h1>
@@ -61,6 +48,26 @@ include('includes/header.php');
                         <div class="form-group">
                             <button type="submit" name="password_update_btn" class="btn btn-custom-primary w-100 reset-margin">Update</button>
                         </div>
+
+                        <!-- Alert -->
+                        <div class="alert-container">
+                        <?php
+                            include('includes/alert_helper.php');
+
+                            if (isset($_SESSION['status'])) {
+                                $status_type = $_SESSION['status_type'] ?? 'primary';
+                                echo generate_custom_alert($_SESSION['status'], $status_type);
+                                unset($_SESSION['status']);
+                                unset($_SESSION['status_type']);
+                            }
+
+                            if (isset($_SESSION['error'])) {
+                                echo generate_custom_alert($_SESSION['error'], 'danger');
+                                unset($_SESSION['error']);
+                            }
+                        ?>
+                        </div>
+
                     </form>
                 </div>
             </div>

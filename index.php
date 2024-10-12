@@ -1,5 +1,5 @@
 <?php
-$page_title = "IT-PID - Budget Smart, Live Well";
+$page_title = "IT-PID · Budget Smart, Live Well";
 include('includes/header.php');
 ?>
 <link rel="stylesheet" href="./assets/css/landing_page.css">

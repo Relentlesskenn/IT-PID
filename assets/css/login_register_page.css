@@ -91,3 +91,14 @@
   .reset-margin {
     margin-top: 1rem;
   }
+
+  .alert-container {
+    height: 80px;
+    overflow: hidden;
+    margin-top: 1.1rem;
+    margin-bottom: 6rem;
+  }
+
+  .alert {
+    margin-bottom: 0;
+  }

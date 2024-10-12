@@ -21,7 +21,7 @@ if (isset($_POST['login_btn'])) {
 
     // Check rate limit
     if (!check_rate_limit('login', 5, 300)) {
-        $_SESSION['status'] = "Too many login attempts. Please try again later.";
+        $_SESSION['error'] = "Too many login attempts! Please try again later";
         header("Location: login-page.php");
         exit();
     }
@@ -30,7 +30,7 @@ if (isset($_POST['login_btn'])) {
     $password = $_POST['password'] ?? '';
 
     if (empty($username) || empty($password)) {
-        setSessionStatus("All Fields are Required!");
+        $_SESSION['error'] = ("All Fields are Required!");
         redirectToLogin();
     }
 
@@ -57,15 +57,15 @@ if (isset($_POST['login_btn'])) {
                 header("Location: dashboard-page.php");
                 exit();
             } else {
-                setSessionStatus("Please Verify your Email Address to Login");
+                setSessionStatus("Please verify your email address to login");
                 redirectToLogin();
             }
         } else {
-            setSessionStatus("Invalid Username or Password!");
+            $_SESSION['error'] = ("Invalid Username or Password!");
             redirectToLogin();
         }
     } else {
-        setSessionStatus("Invalid Username or Password!");
+        $_SESSION['error'] = ("Invalid Username or Password!");
         redirectToLogin();
     }
 }

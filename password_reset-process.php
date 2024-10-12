@@ -73,20 +73,20 @@ if(isset($_POST['password_reset_btn']))
         if($update_token_run)
         {
             send_password_reset($get_username, $get_email, $token);
-            $_SESSION['status'] = "We sent you a password reset link";
+            $_SESSION['status'] = "We emailed you a link to reset your password";
             header("Location: login-page.php");
             exit(0);
         }
         else
         {
-            $_SESSION['status'] = "Something went wrong! #1";
+            $_SESSION['error'] = "Something went wrong!";
             header("Location: forgot_your_password-page.php");
             exit(0);
         }
     }
     else
     {
-        $_SESSION['status'] = "No Email Found!";
+        $_SESSION['error'] = "Email not found!";
         header("Location: forgot_your_password-page.php");
         exit(0);
     }
@@ -123,41 +123,41 @@ if(isset($_POST['password_update_btn']))
                         $new_token = md5(rand())."itpid";
                         $update_to_new_token = "UPDATE users SET verify_token='$new_token' WHERE verify_token='$token' LIMIT 1";
                         $update_to_new_token_run = mysqli_query($conn, $update_to_new_token);
-                        $_SESSION['status'] = "New Password Successfully Updated!";
+                        $_SESSION['success'] = "Updated new password successfully!";
                         header("Location: login-page.php");
                         exit(0);
                     }
                     else
                     {
-                        $_SESSION['status'] = "Did not update password. Something went wrong!";
+                        $_SESSION['error'] = "Password was not updated. Something went wrong!";
                         header("Location: password_reset-page.php?token=$token&email=$email");
                         exit(0);
                     }
                 }
                 else
                 {
-                    $_SESSION['status'] = "Password and Confirm Password does not match!";
+                    $_SESSION['error'] = "Password and Confirm Password does not match!";
                     header("Location: password_reset-page.php?token=$token&email=$email");
                     exit(0);
                 }
             }
             else
             {
-                $_SESSION['status'] = "Invalid Token";
+                $_SESSION['error'] = "Invalid Token!";
                 header("Location: password_reset-page.php?token=$token&email=$email");
                 exit(0);
             }
         }
         else
         {
-            $_SESSION['status'] = "All Fields are Required!";
+            $_SESSION['error'] = "All Fields are Required!";
             header("Location: password_reset-page.php?token=$token&email=$email");
             exit(0);
         }
     }
     else
     {
-        $_SESSION['status'] = "No Token Available!";
+        $_SESSION['error'] = "No Token Available!";
         header("Location: password_reset-page.php");
         exit(0);
     }

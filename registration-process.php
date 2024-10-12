@@ -35,7 +35,7 @@ function sendemail_verify($f_name, $email, $verify_token)
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
 
-        $mail->setFrom("it.pid.team@gmail.com", $f_name);
+        $mail->setFrom("it.pid.team@gmail.com", "IT-PID");
         $mail->addAddress($email);
 
         $mail->isHTML(true);
@@ -59,13 +59,21 @@ function sendemail_verify($f_name, $email, $verify_token)
 
 if(isset($_POST['register_btn'])) 
 {
-    $f_name = filter_input(INPUT_POST, 'f_name');
-    $l_name = filter_input(INPUT_POST, 'l_name');
+    $f_name = filter_input(INPUT_POST, 'f_name', FILTER_SANITIZE_STRING);
+    $l_name = filter_input(INPUT_POST, 'l_name', FILTER_SANITIZE_STRING);
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-    $username = filter_input(INPUT_POST, 'username');
+    $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_STRING);
     $password = $_POST['password'];
     $c_password = $_POST['c_password'];
-    $verify_token = bin2hex(random_bytes(16));
+    $verify_token = bin2hex(random_bytes(16))."itpid";
+
+    // Store form data in session for repopulating the form if needed
+    $_SESSION['registration_data'] = [
+        'f_name' => $f_name,
+        'l_name' => $l_name,
+        'email' => $email,
+        'username' => $username
+    ];
 
     // Check if email exists
     $check_email_query = "SELECT email FROM users WHERE email=? LIMIT 1";
@@ -76,7 +84,7 @@ if(isset($_POST['register_btn']))
 
     if(mysqli_stmt_num_rows($stmt) > 0)
     {
-        $_SESSION['status'] = "Email Address already Exists!";
+        $_SESSION['error'] = "Email address already exists!";
         header("Location: registration-page-1.php");
         exit();
     }
@@ -90,14 +98,22 @@ if(isset($_POST['register_btn']))
 
     if(mysqli_stmt_num_rows($stmt) > 0)
     {
-        $_SESSION['status'] = "Username already Exists!";
+        $_SESSION['error'] = "Username already exists!";
         header("Location: registration-page-2.php");
         exit();
     }
 
     if($password !== $c_password)
     {
-        $_SESSION['status'] = "Password and Confirm Password do not match!";
+        $_SESSION['error'] = "Password and Confirm Password do not match!";
+        header("Location: registration-page-2.php");
+        exit();
+    }
+
+    // Check password strength
+    $password_strength = is_password_strong($password);
+    if ($password_strength !== true) {
+        $_SESSION['error'] = "Password is not strong enough!";
         header("Location: registration-page-2.php");
         exit();
     }
@@ -110,43 +126,26 @@ if(isset($_POST['register_btn']))
     mysqli_stmt_bind_param($stmt, "ssssss", $username, $f_name, $l_name, $email, $hashed_password, $verify_token);
     $query_run = mysqli_stmt_execute($stmt);
 
-    $password = $_POST['password'];
-    $c_password = $_POST['c_password'];
-
-    // Check password strength
-    $password_strength = is_password_strong($password);
-    if ($password_strength !== true) {
-        $_SESSION['status'] = "Password is not strong enough. Please ensure your password:\n- " . implode("\n- ", $password_strength);
-        header("Location: registration-page-2.php");
-        exit();
-    }
-
-    if($password !== $c_password)
-    {
-        $_SESSION['status'] = "Password and Confirm Password do not match!";
-        header("Location: registration-page-2.php");
-        exit();
-    }
-
     if($query_run)
     {
         if(sendemail_verify($f_name, $email, $verify_token))
         {
-            $_SESSION['status'] = "Registered Successfully! Please verify your Email Address.";
+            unset($_SESSION['registration_data']);
+            $_SESSION['success'] = "You've successfully registered! Kindly confirm your email address";
             header("Location: login-page.php");
             exit();
         }
         else
         {
-            $_SESSION['status'] = "Registration Successful, but email verification failed. Please contact support.";
+            $_SESSION['error'] = "Email verification failed, but registration was successful. Kindly get in touch with support";
             header("Location: login-page.php");
             exit();
         }
     }
     else
     {
-        $_SESSION['status'] = "Registration Failed!";
-        header("Location: registration-page-1.php");
+        $_SESSION['error'] = "Registration Failed!";
+        header("Location: registration-page-2.php");
         exit();
     }
 }

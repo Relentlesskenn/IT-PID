@@ -26,18 +26,6 @@ include('includes/header.php');
         <div class="row justify-content-center h-100">
             <div class="col-md-6 d-flex flex-column justify-content-between">
 
-                <!-- Alert -->
-                <?php
-                if (isset($_SESSION['status'])) {
-                    $alertClass = ($_SESSION['status_code'] ?? '') === 'success' ? 'alert-success' : 'alert-danger';
-                    echo "<div class='alert {$alertClass}' role='alert'>";
-                    echo "<h5>" . htmlspecialchars($_SESSION['status']) . "</h5>";
-                    echo "</div>";
-                    unset($_SESSION['status']);
-                    unset($_SESSION['status_code']);
-                }
-                ?>
-                
                 <!-- Resend Email Verification Form -->
                 <div class="flex-grow-1">
                     <a href="login-page.php" class="text-decoration-none">
@@ -53,6 +41,25 @@ include('includes/header.php');
                         <div class="form-group">
                             <button type="submit" name="resend_email_verification_btn" class="btn btn-custom-primary w-100 reset-margin">Submit</button>
                         </div>
+
+                        <!-- Alert -->
+                        <div class="alert-container">
+                        <?php
+                            include('includes/alert_helper.php');
+
+                            if (isset($_SESSION['status'])) {
+                                $status_type = $_SESSION['status_type'] ?? 'primary';
+                                echo generate_custom_alert($_SESSION['status'], $status_type);
+                                unset($_SESSION['status']);
+                                unset($_SESSION['status_type']);
+                            }
+
+                            if (isset($_SESSION['error'])) {
+                                echo generate_custom_alert($_SESSION['error'], 'danger');
+                                unset($_SESSION['error']);
+                            }
+                        ?>
+
                     </form>
                 </div>
             </div>

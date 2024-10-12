@@ -70,27 +70,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_email_verifica
             $user = $result->fetch_assoc();
             if ($user['verify_status'] == "0") {
                 if (resend_email_verify($user['f_name'], $user['email'], $user['verify_token'])) {
-                    $_SESSION['status'] = "Verification Email Link has been sent to your email address!";
-                    $_SESSION['status_code'] = 'success';
+                    $_SESSION['status'] = "An email link for verification has been sent to your email address!";
                     header("Location: login-page.php");
                 } else {
-                    $_SESSION['status'] = "Email could not be sent. Please try again later.";
-                    $_SESSION['status_code'] = 'error';
+                    $_SESSION['error'] = "The email could not be sent. Please try again later!";
                     header("Location: resend_email_verification-page.php");
                 }
             } else {
-                $_SESSION['status'] = "Email already verified. Please Login!";
-                $_SESSION['status_code'] = 'info';
+                $_SESSION['status'] = "Email already verified. Please login";
                 header("Location: login-page.php");
             }
         } else {
-            $_SESSION['status'] = "Email is not registered. Please Register!";
-            $_SESSION['status_code'] = 'error';
-            header("Location: registration-page.php");
+            $_SESSION['error'] = "The email address is not registered. Please register!";
+            header("Location: registration-page-1.php");
         }
     } else {
-        $_SESSION['status'] = "Please enter a valid email address";
-        $_SESSION['status_code'] = 'error';
+        $_SESSION['error'] = "Please enter a valid email address!";
         header("Location: resend_email_verification-page.php");
     }
     exit();

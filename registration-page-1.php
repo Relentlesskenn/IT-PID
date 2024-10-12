@@ -25,15 +25,6 @@ include('includes/header.php');
         <div class="row justify-content-center h-100">
             <div class="col-md-6 d-flex flex-column justify-content-between">
 
-                <!-- Alert -->
-                <?php
-                if(isset($_SESSION['status']))
-                {
-                    echo '<div class="alert alert-primary"><h4>' . htmlspecialchars($_SESSION['status']) . '</h4></div>';
-                    unset($_SESSION['status']);
-                }
-                ?>
-
                 <!-- Registration Form -->
                 <h1>
                     <a href="index.php" class="text-decoration-none">
@@ -60,6 +51,26 @@ include('includes/header.php');
                             <label for="email" class="label-font">Email Address</label>
                             <input type="email" name="email" id="email" placeholder="Enter Email Address" class="form-control form-control-lg" required autocomplete="on">
                         </div>
+                        
+                        <!-- Alert -->
+                        <div class="alert-container">
+                        <?php
+                            include('includes/alert_helper.php');
+
+                            if (isset($_SESSION['status'])) {
+                                $status_type = $_SESSION['status_type'] ?? 'primary';
+                                echo generate_custom_alert($_SESSION['status'], $status_type);
+                                unset($_SESSION['status']);
+                                unset($_SESSION['status_type']);
+                            }
+
+                            if (isset($_SESSION['error'])) {
+                                echo generate_custom_alert($_SESSION['error'], 'danger');
+                                unset($_SESSION['error']);
+                            }
+                        ?>
+                        </div>
+                        
                     </div>
                     <!-- Button at the bottom -->
                     <div class="form-group">
