@@ -452,17 +452,7 @@ document.addEventListener('DOMContentLoaded', function() {
             spendingBreakdownChart.update();
         });
     });
-
-    // Add smooth scrolling to the page
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.querySelector(this.getAttribute('href')).scrollIntoView({
-                behavior: 'smooth'
-            });
-        });
-    });
-
+    
     // Add resize observer to adjust chart sizes when card size changes
     const resizeObserver = new ResizeObserver(entries => {
         for (let entry of entries) {
