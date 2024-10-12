@@ -231,7 +231,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
         </div>
         
         <!-- Budget Cards -->
-        <div class="row row-cols-2 g-4">
+        <div class="row row-cols-2 row-cols-sm-2 row-cols-lg-4 g-4">
 
         <?php
         // Fetch budget data from the database and calculate the remaining balance
