@@ -22,6 +22,17 @@ if (isset($_SESSION['authenticated'])) {
     exit();
 }
 
+// Check for logout message
+$logout_message = $_COOKIE['logout_message'] ?? null;
+if ($logout_message) {
+    // Clear the cookie
+    setcookie('logout_message', '', time() - 3600, '/', '', true, true);
+    
+    // Set the message to be displayed
+    $_SESSION['status'] = $logout_message;
+    $_SESSION['status_type'] = 'status';
+}
+
 $page_title = "Login to IT-PID · IT-PID";
 include('includes/header.php');
 ?>

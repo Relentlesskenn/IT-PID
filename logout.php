@@ -1,23 +1,41 @@
 <?php
-// Secure cookie settings
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', 1);
-
+// Start session
 session_start();
 
-// Regenerate session ID periodically
-if (!isset($_SESSION['last_regeneration'])) {
-    session_regenerate_id(true);
-    $_SESSION['last_regeneration'] = time();
-} elseif (time() - $_SESSION['last_regeneration'] > 300) {
-    session_regenerate_id(true);
-    $_SESSION['last_regeneration'] = time();
+// Unset all session variables
+$_SESSION = array();
+
+// If it's desired to kill the session, also delete the session cookie
+if (ini_get("session.use_cookies")) {
+    $params = session_get_cookie_params();
+    setcookie(session_name(), '', time() - 42000,
+        $params["path"], $params["domain"],
+        $params["secure"], $params["httponly"]
+    );
 }
 
-// Destroy the session variables
-unset($_SESSION['authenticated']);
-unset($_SESSION['auth_user']);
-header("Location: index.php");
+// Destroy the session
+session_destroy();
 
+// Regenerate the session ID to prevent session fixation attacks on the next login
+session_start();
+session_regenerate_id(true);
+session_destroy();
+
+// Clear any potential sensitive data in PHP's output buffer
+ob_clean();
+
+// Set a logout message in a temporary cookie (will be cleared after being read once)
+setcookie('logout_message', 'You have been successfully logged out.', [
+    'expires' => time() + 30,
+    'path' => '/',
+    'domain' => '',
+    'secure' => true,
+    'httponly' => true,
+    'samesite' => 'Strict'
+]);
+
+// Redirect to login page
+header("Location: login-page.php");
+exit();
 ?>

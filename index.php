@@ -1,6 +1,9 @@
 <?php
 $page_title = "IT-PID · Budget Smart, Live Well";
 include('includes/header.php');
+
+$meta_description = "IT-PID helps you budget smarter and live better. Start your journey to financial wellness today!";
+$meta_keywords = "budgeting, personal finance, financial planning, money management";
 ?>
 <link rel="stylesheet" href="./assets/css/landing_page.css">
 <link rel="stylesheet" href="./assets/css/page_transition.css">
