@@ -35,18 +35,16 @@ function sendemail_verify($f_name, $email, $verify_token)
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
 
-        $mail->setFrom("it.pid.team@gmail.com", "IT-PID");
-        $mail->addAddress($email);
+        $mail->setFrom("it.pid.team@gmail.com", "IT-PID Team");
+        $mail->addAddress($email, $f_name);
 
         $mail->isHTML(true);
-        $mail->Subject = "Email Verification from IT-PID";
+        $mail->Subject = "Verify Your Email - IT-PID";
 
-        $email_template = "
-            <h2>You have Registered with IT-PID!</h2>
-            <h5>Verify your email address to Login with the link given below</h5>
-            <br/><br/>
-            <a href='http://localhost/IT-PID/verify_email.php?token=" . urlencode($verify_token) . "'> Verify Email Address </a>
-        ";
+        // Use the new email template here
+        $email_template = file_get_contents('assets/email_templates/email_verification_template.html');
+        $email_template = str_replace('$f_name', $f_name, $email_template);
+        $email_template = str_replace('$verify_token', urlencode($verify_token), $email_template);
 
         $mail->Body = $email_template;
         $mail->send();
@@ -59,10 +57,10 @@ function sendemail_verify($f_name, $email, $verify_token)
 
 if(isset($_POST['register_btn'])) 
 {
-    $f_name = filter_input(INPUT_POST, 'f_name', FILTER_SANITIZE_STRING);
-    $l_name = filter_input(INPUT_POST, 'l_name', FILTER_SANITIZE_STRING);
+    $f_name = filter_input(INPUT_POST, 'f_name');
+    $l_name = filter_input(INPUT_POST, 'l_name');
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-    $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_STRING);
+    $username = filter_input(INPUT_POST, 'username');
     $password = $_POST['password'];
     $c_password = $_POST['c_password'];
     $verify_token = bin2hex(random_bytes(16))."itpid";

@@ -15,6 +15,7 @@ if (!isset($_SESSION['last_regeneration'])) {
     $_SESSION['last_regeneration'] = time();
 }
 include('_dbconnect.php');
+require_once('includes/password_policy.php');
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
@@ -25,7 +26,6 @@ require 'vendor/autoload.php';
 function send_password_reset($get_username, $get_email, $token)
 {
     $mail = new PHPMailer(true);
-    //$mail->SMTPDebug = 2;
     $mail->isSMTP();
     $mail->SMTPAuth = true;
 
@@ -36,18 +36,16 @@ function send_password_reset($get_username, $get_email, $token)
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port = 587;
 
-    $mail->setFrom("it.pid.team@gmail.com",$get_username);
+    $mail->setFrom("it.pid.team@gmail.com", "IT-PID Team");
     $mail->addAddress($get_email);
 
     $mail->isHTML(true);
-    $mail->Subject = "Reset Password - IT-PID";
+    $mail->Subject = "Reset Your Password - IT-PID";
 
-    $email_template = "
-        <h2>Greetings!</h2>
-        <h5>You recieved the email because we recieved a password reset request for your account.</h5>
-        <br/><br/>
-        <a href='localhost/IT-PID/password_reset-page.php?token=$token&email=$get_email'> Reset Password </a>
-    ";
+    // Use the new email template here
+    $email_template = file_get_contents('assets/email_templates/password_reset_template.html');
+    $email_template = str_replace('$token', urlencode($token), $email_template);
+    $email_template = str_replace('$get_email', urlencode($get_email), $email_template);
 
     $mail->Body = $email_template;
     $mail->send();

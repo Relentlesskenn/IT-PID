@@ -41,11 +41,11 @@ include('includes/header.php');
                     <br>
                         <div class="form-group mb-3">
                             <label for="f_name" class="label-font">First Name</label>
-                            <input type="text" name="f_name" id="f_name" placeholder="Enter First Name" class="form-control form-control-lg input-margin" required>
+                            <input type="text" name="f_name" id="f_name" placeholder="Enter First Name" class="form-control form-control-lg input-margin" required onblur="capitalizeFirstLetter(this)">
                         </div>
                         <div class="form-group mb-3">
                             <label for="l_name" class="label-font">Last Name</label>
-                            <input type="text" name="l_name" id="l_name" placeholder="Enter Last Name" class="form-control form-control-lg input-margin" required>
+                            <input type="text" name="l_name" id="l_name" placeholder="Enter Last Name" class="form-control form-control-lg input-margin" required onblur="capitalizeFirstLetter(this)">
                         </div>
                         <div class="form-group mb-3">
                             <label for="email" class="label-font">Email Address</label>
@@ -83,5 +83,10 @@ include('includes/header.php');
 </div>
 
 <script src="./assets/js/page_transition.js"></script>
+<script>
+function capitalizeFirstLetter(input) {
+    input.value = input.value.replace(/\b\w/g, function(l){ return l.toUpperCase() });
+}
+</script>
 
 <?php include('includes/footer.php'); ?>

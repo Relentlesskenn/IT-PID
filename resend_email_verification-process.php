@@ -31,7 +31,7 @@ function resend_email_verify($f_name, $email, $verify_token)
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
         $mail->Username   = 'it.pid.team@gmail.com';
-        $mail->Password   = 'qlotmbifugeutlyj'; // Consider using environment variables for sensitive data
+        $mail->Password   = 'qlotmbifugeutlyj';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
@@ -41,14 +41,14 @@ function resend_email_verify($f_name, $email, $verify_token)
 
         // Content
         $mail->isHTML(true);
-        $mail->Subject = "Resend - Email Verification from IT-PID";
-        $mail->Body    = "
-            <h2>You have Registered with IT-PID!</h2>
-            <h5>Verify your email address to Login with the link given below</h5>
-            <br/><br/>
-            <a href='http://localhost/IT-PID/verify_email.php?token=" . urlencode($verify_token) . "'>Verify Email Address</a>
-        ";
+        $mail->Subject = "Verify Your Email - IT-PID";
 
+        // Use the same email template as registration
+        $email_template = file_get_contents('path/to/email_verification_template.html');
+        $email_template = str_replace('$f_name', $f_name, $email_template);
+        $email_template = str_replace('$verify_token', urlencode($verify_token), $email_template);
+
+        $mail->Body = $email_template;
         $mail->send();
         return true;
     } catch (Exception $e) {
