@@ -278,7 +278,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                                     aria-valuemin="0" 
                                     aria-valuemax="100">
                                 </div>
-                            <span class="position-absolute top-50 start-50 translate-middle text-dark" style="font-size: 0.8rem; font-weight: bold;">
+                                <span class="position-absolute top-50 start-50 translate-middle <?php echo ($percentageUsed >= 90) ? 'text-white' : 'text-dark'; ?>" style="font-size: 0.8rem; font-weight: bold;">
                                 <?= number_format($percentageUsed, 1) ?>%
                             </span>
                             </div>
