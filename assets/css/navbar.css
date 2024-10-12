@@ -39,6 +39,11 @@
 .nav-item i {
     font-size: 1.8rem;
     margin-bottom: 4px;
+    transition: transform 0.1s ease;
+}
+
+.nav-item i.jumping {
+    animation: jump 0.3s ease;
 }
 
 .nav-item span {
@@ -63,9 +68,47 @@
     transform: scale(1.05);
 }
 
+.create-btn.jumping {
+    animation: jump 0.3s ease;
+}
+
+.create-btn.zoom-out {
+    animation: zoomOut 0.15s ease-out forwards;
+}
+
+.create-btn.zoom-in {
+    animation: zoomIn 0.15s ease-in forwards;
+}
+
 .create-btn i {
     color: white;
     font-size: 1.75rem;
+    transition: transform 0.3s ease, opacity 0.15s ease;
+}
+
+.create-btn i.rotate-out {
+    transform: rotate(135deg);
+    opacity: 0;
+}
+
+.create-btn i.rotate-in {
+    transform: rotate(0deg);
+    opacity: 1;
+}
+
+@keyframes jump {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes zoomOut {
+    0% { transform: scale(1); }
+    100% { transform: scale(0.5); }
+}
+
+@keyframes zoomIn {
+    0% { transform: scale(0.5); }
+    100% { transform: scale(1); }
 }
 
 body {
