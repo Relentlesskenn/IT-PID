@@ -8,7 +8,7 @@ include('includes/navbar.php');
 <div class="py-4">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h4">Learn</h1>
+            <h1 class="h4">Goals</h1>
         </div>
     </div>
 </div>

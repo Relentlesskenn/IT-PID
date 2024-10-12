@@ -238,144 +238,146 @@ $hasExpenses = ($result->num_rows > 0);
 ?>
 
 <!-- HTML content -->
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h4 mb-0">Reports</h1>
-    <a href="graphs-page.php" class="btn btn-custom-primary">
-        <i class="bi bi-graph-up"></i> Graphs
-    </a>
-    </div>
-    <h1 class="mb-4">Expense History</h1>
+<div class="py-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h4">Reports</h1>
+        <a href="graphs-page.php" class="btn btn-custom-primary">
+            <i class="bi bi-graph-up"></i> Graphs
+        </a>
+        </div>
+        <h1 class="mb-4">Expense History</h1>
 
-    <!-- View Type and Date Selection -->
-    <form class="mb-4" method="get" id="viewForm">
-        <div class="row g-3 align-items-center">
-            <div class="col-auto">
-                <label for="view" class="col-form-label">View:</label>
+        <!-- View Type and Date Selection -->
+        <form class="mb-4" method="get" id="viewForm">
+            <div class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <label for="view" class="col-form-label">View:</label>
+                </div>
+                <div class="col-auto">
+                    <select name="view" id="view" class="form-select" onchange="document.getElementById('viewForm').submit();">
+                        <option value="daily" <?php echo $viewType == 'daily' ? 'selected' : ''; ?>>Daily</option>
+                        <option value="monthly" <?php echo $viewType == 'monthly' ? 'selected' : ''; ?>>Monthly</option>
+                        <option value="yearly" <?php echo $viewType == 'yearly' ? 'selected' : ''; ?>>Yearly</option>
+                    </select>
+                </div>
+                <?php if ($viewType == 'daily'): ?>
+                <div class="col-auto">
+                    <input type="date" name="date" class="form-control" value="<?php echo $selectedDate; ?>" min="<?php echo $userCreationYear; ?>-01-01" max="<?php echo $currentDate; ?>" onchange="document.getElementById('viewForm').submit();">
+                </div>
+                <?php elseif ($viewType == 'monthly'): ?>
+                <div class="col-auto">
+                    <input type="month" name="month" class="form-control" value="<?php echo $selectedMonth; ?>" min="<?php echo $userCreationYear; ?>-01" max="<?php echo $currentMonth; ?>" onchange="document.getElementById('viewForm').submit();">
+                </div>
+                <?php elseif ($viewType == 'yearly'): ?>
+                <div class="col-auto">
+                    <select name="year" class="form-select" onchange="document.getElementById('viewForm').submit();">
+                        <?php
+                        for ($y = $currentYear; $y >= $userCreationYear; $y--) {
+                            $selected = $y == $selectedYear ? 'selected' : '';
+                            echo "<option value='$y' $selected>$y</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
+                <?php endif; ?>
             </div>
-            <div class="col-auto">
-                <select name="view" id="view" class="form-select" onchange="document.getElementById('viewForm').submit();">
-                    <option value="daily" <?php echo $viewType == 'daily' ? 'selected' : ''; ?>>Daily</option>
-                    <option value="monthly" <?php echo $viewType == 'monthly' ? 'selected' : ''; ?>>Monthly</option>
-                    <option value="yearly" <?php echo $viewType == 'yearly' ? 'selected' : ''; ?>>Yearly</option>
-                </select>
-            </div>
-            <?php if ($viewType == 'daily'): ?>
-            <div class="col-auto">
-                <input type="date" name="date" class="form-control" value="<?php echo $selectedDate; ?>" min="<?php echo $userCreationYear; ?>-01-01" max="<?php echo $currentDate; ?>" onchange="document.getElementById('viewForm').submit();">
-            </div>
-            <?php elseif ($viewType == 'monthly'): ?>
-            <div class="col-auto">
-                <input type="month" name="month" class="form-control" value="<?php echo $selectedMonth; ?>" min="<?php echo $userCreationYear; ?>-01" max="<?php echo $currentMonth; ?>" onchange="document.getElementById('viewForm').submit();">
-            </div>
-            <?php elseif ($viewType == 'yearly'): ?>
-            <div class="col-auto">
-                <select name="year" class="form-select" onchange="document.getElementById('viewForm').submit();">
+        </form>
+
+        <!-- PDF Generation Form -->
+        <form method="post" class="mb-3">
+            <input type="hidden" name="view" value="<?php echo $viewType; ?>">
+            <input type="hidden" name="date" value="<?php echo $selectedDate; ?>">
+            <input type="hidden" name="month" value="<?php echo $selectedMonth; ?>">
+            <input type="hidden" name="year" value="<?php echo $selectedYear; ?>">
+            <button type="submit" name="generate_pdf" class="btn btn-custom-primary w-100" <?php echo $hasExpenses ? '' : 'disabled'; ?>>
+                Generate PDF
+            </button>
+        </form>
+
+        <!-- Expenses Table -->
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Comment</th>
+                    </tr>
+                </thead>
+                <tbody>
                     <?php
-                    for ($y = $currentYear; $y >= $userCreationYear; $y--) {
-                        $selected = $y == $selectedYear ? 'selected' : '';
-                        echo "<option value='$y' $selected>$y</option>";
+                    if ($hasExpenses) {
+                        while ($row = $result->fetch_assoc()) {
+                            $categoryId = $row['category_id'];
+                            $amount = $row['amount'];
+                            $date = $row['date'];
+                            $comment = $row['comment'];
+
+                            // Fetch category name from the database
+                            $sqlCategory = "SELECT name FROM budgets WHERE id = ?";
+                            $stmtCategory = $conn->prepare($sqlCategory);
+                            $stmtCategory->bind_param("i", $categoryId);
+                            $stmtCategory->execute();
+                            $resultCategory = $stmtCategory->get_result();
+                            $rowCategory = $resultCategory->fetch_assoc();
+                            $categoryName = $rowCategory['name'];
+                    ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($categoryName); ?></td>
+                                <td>₱<?php echo number_format($amount, 2); ?></td>
+                                <td><?php echo date('Y-m-d', strtotime($date)); ?></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-custom-primary w-100" data-bs-toggle="modal" data-bs-target="#commentModal" data-comment="<?php echo htmlspecialchars($comment); ?>">
+                                        View
+                                    </button>
+                                </td>
+                            </tr>
+                    <?php
+                        }
+                    } else {
+                        echo "<tr><td colspan='4' class='text-center'>No expenses found for the selected period.</td></tr>";
                     }
                     ?>
-                </select>
-            </div>
-            <?php endif; ?>
+                </tbody>
+            </table>
         </div>
-    </form>
 
-    <!-- PDF Generation Form -->
-    <form method="post" class="mb-3">
-        <input type="hidden" name="view" value="<?php echo $viewType; ?>">
-        <input type="hidden" name="date" value="<?php echo $selectedDate; ?>">
-        <input type="hidden" name="month" value="<?php echo $selectedMonth; ?>">
-        <input type="hidden" name="year" value="<?php echo $selectedYear; ?>">
-        <button type="submit" name="generate_pdf" class="btn btn-custom-primary w-100" <?php echo $hasExpenses ? '' : 'disabled'; ?>>
-            Generate PDF
-        </button>
-    </form>
+        <!-- Pagination -->
+        <?php if ($hasExpenses): ?>
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-start">
+                <?php if ($page > 1): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?view=<?php echo $viewType; ?>&date=<?php echo $selectedDate; ?>&month=<?php echo $selectedMonth; ?>&year=<?php echo $selectedYear; ?>&page=<?php echo $page - 1; ?>" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                <?php endif; ?>
 
-    <!-- Expenses Table -->
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>Category</th>
-                    <th>Amount</th>
-                    <th>Date</th>
-                    <th>Comment</th>
-                </tr>
-            </thead>
-            <tbody>
                 <?php
-                if ($hasExpenses) {
-                    while ($row = $result->fetch_assoc()) {
-                        $categoryId = $row['category_id'];
-                        $amount = $row['amount'];
-                        $date = $row['date'];
-                        $comment = $row['comment'];
+                $startPage = max(1, $page - 2);
+                $endPage = min($totalPages, $page + 2);
+                
+                for ($i = $startPage; $i <= $endPage; $i++):
+                ?>
+                    <li class="page-item <?php echo $page == $i ? 'active' : ''; ?>">
+                        <a class="page-link" href="?view=<?php echo $viewType; ?>&date=<?php echo $selectedDate; ?>&month=<?php echo $selectedMonth; ?>&year=<?php echo $selectedYear; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                    </li>
+                <?php endfor; ?>
 
-                        // Fetch category name from the database
-                        $sqlCategory = "SELECT name FROM budgets WHERE id = ?";
-                        $stmtCategory = $conn->prepare($sqlCategory);
-                        $stmtCategory->bind_param("i", $categoryId);
-                        $stmtCategory->execute();
-                        $resultCategory = $stmtCategory->get_result();
-                        $rowCategory = $resultCategory->fetch_assoc();
-                        $categoryName = $rowCategory['name'];
-                ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($categoryName); ?></td>
-                            <td>₱<?php echo number_format($amount, 2); ?></td>
-                            <td><?php echo date('Y-m-d', strtotime($date)); ?></td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-custom-primary w-100" data-bs-toggle="modal" data-bs-target="#commentModal" data-comment="<?php echo htmlspecialchars($comment); ?>">
-                                    View
-                                </button>
-                            </td>
-                        </tr>
-                <?php
-                    }
-                } else {
-                    echo "<tr><td colspan='4' class='text-center'>No expenses found for the selected period.</td></tr>";
-                }
-                ?>
-            </tbody>
-        </table>
+                <?php if ($page < $totalPages): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?view=<?php echo $viewType; ?>&date=<?php echo $selectedDate; ?>&month=<?php echo $selectedMonth; ?>&year=<?php echo $selectedYear; ?>&page=<?php echo $page + 1; ?>" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                <?php endif; ?>
+            </ul>
+        </nav>
+        <?php endif; ?>
     </div>
-
-    <!-- Pagination -->
-    <?php if ($hasExpenses): ?>
-    <nav aria-label="Page navigation">
-        <ul class="pagination justify-content-start">
-            <?php if ($page > 1): ?>
-                <li class="page-item">
-                    <a class="page-link" href="?view=<?php echo $viewType; ?>&date=<?php echo $selectedDate; ?>&month=<?php echo $selectedMonth; ?>&year=<?php echo $selectedYear; ?>&page=<?php echo $page - 1; ?>" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
-                </li>
-            <?php endif; ?>
-
-            <?php
-            $startPage = max(1, $page - 2);
-            $endPage = min($totalPages, $page + 2);
-            
-            for ($i = $startPage; $i <= $endPage; $i++):
-            ?>
-                <li class="page-item <?php echo $page == $i ? 'active' : ''; ?>">
-                    <a class="page-link" href="?view=<?php echo $viewType; ?>&date=<?php echo $selectedDate; ?>&month=<?php echo $selectedMonth; ?>&year=<?php echo $selectedYear; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
-                </li>
-            <?php endfor; ?>
-
-            <?php if ($page < $totalPages): ?>
-                <li class="page-item">
-                    <a class="page-link" href="?view=<?php echo $viewType; ?>&date=<?php echo $selectedDate; ?>&month=<?php echo $selectedMonth; ?>&year=<?php echo $selectedYear; ?>&page=<?php echo $page + 1; ?>" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-            <?php endif; ?>
-        </ul>
-    </nav>
-    <?php endif; ?>
 </div>
 
 <!-- Modal for displaying the comment -->

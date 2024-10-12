@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 },
                 title: {
-                    disabled: true,
+                    display: false,
                 },
                 tooltip: {
                     titleFont: {
@@ -379,8 +379,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 x: {
                     type: 'time',
                     time: {
-                        type: 'time',
-                    time: {
                         unit: 'day',
                         tooltipFormat: 'MMM D, YYYY'
                     },
@@ -398,10 +396,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         font: {
                             size: 14,
                             weight: 'normal',
-                        },
+                        }
                     },
                     title: {
-                        display: false,
+                        display: false
                     }
                 }
             },
@@ -410,7 +408,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     display: false
                 },
                 title: {
-                    disabled: true,
+                    display: false
                 },
                 tooltip: {
                     callbacks: {
