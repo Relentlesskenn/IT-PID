@@ -256,7 +256,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
 
                 <!-- Budget Card Content -->
                 <div class="col">
-                    <div class="card h-100 casr-budget-card">
+                    <div class="card h-100">
                         <div class="card-body d-flex flex-column p-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 class="card-title mb-0" style="font-size: 1rem; font-weight: bold;">
