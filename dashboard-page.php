@@ -153,7 +153,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
 
 ?>
 
-<link rel="stylesheet" href=".\assets\css\custom-cards.css">
+<link rel="stylesheet" href=".\assets\css\dashboard.css">
 
 <!-- HTML content -->
 <div class="py-4">
@@ -270,15 +270,17 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                                 <p class="card-text mb-0" style="font-size: 0.85rem; line-height: 1.6;">Spent - ₱<?= number_format($totalExpenses, 2) ?></p>
                                 <p class="card-text mb-1" style="font-size: 0.85rem; line-height: 1.6;">Remaining - ₱<?= number_format($remainingBalance, 2) ?></p>
                             </div>
-                            <div class="progress mt-auto">
-                                <div class="progress-bar <?php if ($percentageUsed >= 90) { echo 'bg-danger'; } elseif ($percentageUsed >= 70) { echo 'bg-warning'; } else { echo 'bg-success'; } ?>" 
+                            <div class="progress mt-auto position-relative">
+                                <div class="progress-bar <?php if ($percentageUsed >= 90) { echo 'bg-custom-danger'; } elseif ($percentageUsed >= 70) { echo 'bg-warning'; } else { echo 'bg-success'; } ?>" 
                                     role="progressbar" 
                                     style="width: <?= $percentageUsed ?>%;" 
                                     aria-valuenow="<?= $percentageUsed ?>" 
                                     aria-valuemin="0" 
                                     aria-valuemax="100">
-                                    <?= number_format($percentageUsed, 1) ?>%
                                 </div>
+                            <span class="position-absolute top-50 start-50 translate-middle text-dark" style="font-size: 0.8rem; font-weight: bold;">
+                                <?= number_format($percentageUsed, 1) ?>%
+                            </span>
                             </div>
                         </div>
                     </div>
