@@ -14,7 +14,7 @@ include('includes/header.php');
     </div>
     
     <div class="d-flex justify-content-between align-items-center">
-        <a class="btn btn-danger btn-sm w-100" href="logout.php">Log out</a>
+        <a class="btn btn-danger w-100" href="logout.php">Log out</a>
     </div>
 </div>
 

@@ -41,14 +41,14 @@ function showIncome() {
 
 // Predefined budget categories with colors
 $budgetCategories = [
-    'General' => '#624E88',             // *Purple
-    'Food' => '#87431D',                // *Brown
-    'Groceries' => '#4E9F3D',           // *Green
+    'General' => '#640D6B',             // *Purple
+    'Food' => '#90D26D',                // *Green
+    'Groceries' => '#808836',           // *Sage
     'Rent' => '#2B2B2B',                // *Black
-    'Transportation' => '#F6C90E',      // *Yellow
-    'Health' => '#D21312',              // *Red
-    'Utilities' => '#0F4C75',           // *Blue
-    'Entertainment' => '#FF6500'        // *Orange
+    'Transportation' => '#F3C623',      // *Yellow
+    'Health' => '#B31312',              // *Red
+    'Utilities' => '#2B3499',           // *Blue
+    'Entertainment' => '#EE7214'        // *Orange
 ];
 
 function showBudget() {

@@ -11,7 +11,7 @@
 }
 
 .card-header {
-    background-color: #433878;
+    background: linear-gradient(135deg, #2c0047 0%, #1e8c8c 100%) !important;
     border-bottom: none;
     padding: 1.25rem 1.5rem;
     border-top-left-radius: 15px;

@@ -153,6 +153,8 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
 
 ?>
 
+<link rel="stylesheet" href=".\assets\css\custom-cards.css">
+
 <!-- HTML content -->
 <div class="py-4">
     <div class="container">
@@ -170,28 +172,25 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
         </div>
         
         <!--Expenses, Incomes, and Balance-->
-        <div class="card my-4 text-center">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-borderless">
-                        <thead>
-                            <tr>
-                                <th scope="col">Income</th>
-                                <th scope="col">Expenses</th>
-                                <th scope="col">Balance</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="font-size: 1.06rem;">₱<?= number_format($totalIncomes, 2) ?></td>
-                                <td style="font-size: 1.06rem;">₱<?= number_format($totalExpenses, 2) ?></td>
-                                <td style="font-size: 1.06rem;">₱<?= number_format($balance, 2) ?></td>
-                            </tr>
-                        </tbody>
-                    </table>
+        <div class="card my-4 card-custom">
+            <div class="p-2">
+                <div class="finance-summary">
+                    <div class="finance-item">
+                        <div class="finance-label">Income</div>
+                        <div class="finance-value">₱<?= number_format($totalIncomes, 2) ?></div>
+                    </div>
+                    <div class="finance-item">
+                        <div class="finance-label">Expenses</div>
+                        <div class="finance-value">₱<?= number_format($totalExpenses, 2) ?></div>
+                    </div>
+                    <div class="finance-item">
+                        <div class="finance-label">Balance</div>
+                        <div class="finance-value">₱<?= number_format($balance, 2) ?></div>
+                    </div>
                 </div>
             </div>
         </div>
+
         
         <!-- Month and Year selection -->
         <div class="mb-4">
@@ -257,7 +256,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
 
                 <!-- Budget Card Content -->
                 <div class="col">
-                    <div class="card h-100">
+                    <div class="card h-100 casr-budget-card">
                         <div class="card-body d-flex flex-column p-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 class="card-title mb-0" style="font-size: 1rem; font-weight: bold;">
