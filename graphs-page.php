@@ -214,6 +214,7 @@ if ($hasData) {
     <?php endif; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     <?php if ($hasData): ?>
@@ -221,6 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
     Chart.defaults.color = '#272727';
 
     // Spending Breakdown Chart
+    <?php if (!empty($spendingBreakdown)): ?>
     var ctxSpending = document.getElementById('spendingBreakdownChart').getContext('2d');
     var spendingBreakdownChart = new Chart(ctxSpending, {
         type: 'doughnut',
@@ -274,8 +276,10 @@ document.addEventListener('DOMContentLoaded', function() {
             cutout: '60%'
         }
     });
+    <?php endif; ?>
 
     // Income vs Expenses Chart
+    <?php if ($hasIncomeExpenseData): ?>
     var ctxIncome = document.getElementById('incomeExpensesChart').getContext('2d');
     var incomeExpensesChart = new Chart(ctxIncome, {
         type: 'bar',
@@ -350,8 +354,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    <?php endif; ?>
 
     // Expense Trend Chart
+    <?php if (!empty($expenseTrend)): ?>
     var ctxTrend = document.getElementById('expenseTrendChart').getContext('2d');
     var expenseTrendChart = new Chart(ctxTrend, {
         type: 'line',
@@ -372,6 +378,8 @@ document.addEventListener('DOMContentLoaded', function() {
             scales: {
                 x: {
                     type: 'time',
+                    time: {
+                        type: 'time',
                     time: {
                         unit: 'day',
                         tooltipFormat: 'MMM D, YYYY'
@@ -419,6 +427,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    <?php endif; ?>
 
     // Function to update chart sizes based on screen width
     function updateChartSizes() {
@@ -427,10 +436,13 @@ document.addEventListener('DOMContentLoaded', function() {
             var containerWidth = container.offsetWidth;
             var aspectRatio = window.innerWidth < 768 ? 1 : 2;  // 1:1 aspect ratio on mobile, 2:1 on larger screens
             
-            var chart = Chart.getChart(container.querySelector('canvas'));
-            if (chart) {
-                chart.options.aspectRatio = aspectRatio;
-                chart.resize();
+            var canvas = container.querySelector('canvas');
+            if (canvas) {
+                var chart = Chart.getChart(canvas);
+                if (chart) {
+                    chart.options.aspectRatio = aspectRatio;
+                    chart.resize();
+                }
             }
         });
     }
@@ -442,6 +454,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('resize', updateChartSizes);
 
     // Highlight corresponding chart segment when hovering over category item
+    <?php if (!empty($spendingBreakdown)): ?>
     document.querySelectorAll('.category-item').forEach((item, index) => {
         item.addEventListener('mouseenter', () => {
             spendingBreakdownChart.setActiveElements([{datasetIndex: 0, index: index}]);
@@ -452,13 +465,17 @@ document.addEventListener('DOMContentLoaded', function() {
             spendingBreakdownChart.update();
         });
     });
+    <?php endif; ?>
     
     // Add resize observer to adjust chart sizes when card size changes
     const resizeObserver = new ResizeObserver(entries => {
         for (let entry of entries) {
-            const chart = Chart.getChart(entry.target.querySelector('canvas'));
-            if (chart) {
-                chart.resize();
+            const canvas = entry.target.querySelector('canvas');
+            if (canvas) {
+                const chart = Chart.getChart(canvas);
+                if (chart) {
+                    chart.resize();
+                }
             }
         }
     });
@@ -495,10 +512,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Call the function to update totals
     updateCategoryTotals();
 
-    <?php endif; ?>
+    <?php endif; // End of if ($hasData) ?>
 });
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 
 <?php include('includes/footer.php'); ?>
