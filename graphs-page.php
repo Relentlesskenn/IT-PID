@@ -1,5 +1,6 @@
 <?php
 $page_title = "Graphs · IT-PID";
+$is_graphs_page = true;
 include('_dbconnect.php');
 include('includes/authentication.php');
 include('includes/header.php');
@@ -125,6 +126,7 @@ if ($hasData) {
 ?>
 
 <!-- HTML content -->
+<body class="graphs-page">
 <link rel="stylesheet" href=".\assets\css\graphs.css">
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">

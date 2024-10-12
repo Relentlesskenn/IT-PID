@@ -1,7 +1,8 @@
-<!-- Scroll to Top Button -->
-<button id="scrollToTopBtn" class="btn btn-custom-primary btn-lg" style="position: fixed; bottom: 20px; right: 20px; display: none;">
+<?php if (!isset($is_graphs_page)): ?>
+<button id="scrollToTopBtn" title="Go to top">
     <i class="bi bi-arrow-up"></i>
 </button>
+<?php endif; ?>
 
 <script src="assets/js/smooth-scroll.js"></script>
 <script src="assets/js/bootstrap/bootstrap.bundle.min.js"></script>

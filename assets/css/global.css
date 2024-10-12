@@ -72,16 +72,15 @@ body {
     vertical-align: middle !important;
 }
 
-/* Scroll-to-Top Button Styles */
 #scrollToTopBtn {
     display: none;
     position: fixed;
-    bottom: 20px;
     right: 20px;
-    z-index: 99;
+    bottom: 90px;
+    z-index: 999; 
     border: none;
     outline: none;
-    background-color: var(--custom-primary);
+    background-color: #433878;
     color: white;
     cursor: pointer;
     padding: 10px 15px;
@@ -91,14 +90,18 @@ body {
 }
 
 #scrollToTopBtn:hover {
-    background-color: var(--custom-primary-dark);
+    background-color: #8E7AB5;
 }
 
 @media (max-width: 768px) {
     #scrollToTopBtn {
-        bottom: 15px;
-        right: 15px;
+        right: 10px;
+        bottom: 90px; 
         padding: 8px 12px;
         font-size: 16px;
     }
+}
+
+body.graphs-page #scrollToTopBtn {
+    bottom: 20px;
 }
