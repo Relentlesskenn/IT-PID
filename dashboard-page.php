@@ -160,8 +160,8 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
     <div class="container">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <span style="font-size: 1.1rem;">Hello, <?= $_SESSION['auth_user']['username']?>!</span>
-            <a class="btn btn-custom-primary btn-sm position-relative" href="notifications-page.php">
-                <i class="bi bi-bell-fill"></i>
+            <a id="notificationBtn" class="btn btn-custom-primary btn-sm position-relative" href="notifications-page.php">
+                <i id="notificationIcon" class="bi bi-bell-fill"></i>
                 <?php if ($unreadNotificationsCount > 0): ?>
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                     <?= $unreadNotificationsCount ?>
@@ -353,6 +353,25 @@ function showBudgetAlerts(alerts) {
 document.addEventListener('DOMContentLoaded', () => {
     const budgetAlerts = <?php echo json_encode($budgetAlerts); ?>;
     showBudgetAlerts(budgetAlerts);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const notificationBtn = document.getElementById('notificationBtn');
+    const notificationIcon = document.getElementById('notificationIcon');
+    
+    notificationBtn.addEventListener('click', function(e) {
+        e.preventDefault(); // Prevent the default link behavior
+        
+        // Add the shake-icon class to trigger the animation on the icon
+        notificationIcon.classList.add('shake-icon');
+        
+        // Remove the shake-icon class after the animation completes
+        setTimeout(() => {
+            notificationIcon.classList.remove('shake-icon');
+            // Navigate to the notifications page after the animation
+            window.location.href = this.href;
+        }, 500); // 500ms matches the duration of our shake animation
+    });
 });
 </script>
 
