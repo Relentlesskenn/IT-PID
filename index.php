@@ -16,7 +16,7 @@ $meta_keywords = "budgeting, personal finance, financial planning, money managem
         <h1 class="logo-text-bottom">
             PID
         </h1>
-        <p class="tagline">Budget Smart, Live Well</p>
+        <p class="tagline anim-typewriter">Budget Smart, Live Well</p>
     </div>
     <div class="cta-buttons">
         <a class="btn btn-custom-primary" href="registration-page-1.php">Create an Account</a>

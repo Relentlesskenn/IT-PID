@@ -44,12 +44,37 @@ body, html {
 }
 
 .tagline {
-  font-size: 0.88rem;
   font-family: 'Lexend Exa', sans-serif;
-  font-weight: 500 ;
-  margin-top: 0.5rem;
-  margin-left: 0.5rem;
-  color: black;
+  font-size: 0.85rem;
+  font-weight: 600;
+  position: relative;
+  width: 20em;
+  margin: 0 auto;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.anim-typewriter {
+  animation: fadeIn 0.9s ease-out 0.5s forwards,
+             typewriter 4s steps(44) 1.5s 1 normal both,
+             blinkTextCursor 0.75s steps(44) infinite normal;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 13.5rem; }
+}
+
+@keyframes blinkTextCursor {
+  from, to { border-right: 2px solid rgba(0,0,0,0.75); }
+  50% { border-right: 2px solid transparent; }
 }
 
 .cta-buttons {
