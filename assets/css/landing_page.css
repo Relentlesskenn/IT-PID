@@ -97,5 +97,5 @@ body, html {
 
 /* New styles for zoom effect */
 .zoom-in {
-  transform: scale(1.2);
+  transform: scale(1.1);
 }
