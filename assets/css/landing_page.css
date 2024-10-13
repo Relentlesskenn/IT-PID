@@ -21,6 +21,7 @@ body, html {
 .logo-container {
   margin-top: 12rem;
   margin-bottom: 13.5rem;
+  transition: transform 1s ease-out;
 }
 
 .logo-text-upper {
@@ -92,4 +93,9 @@ body, html {
   font-family: 'Lexend Exa', sans-serif;
   text-transform: uppercase;
   cursor: pointer;
+}
+
+/* New styles for zoom effect */
+.zoom-in {
+  transform: scale(1.2);
 }
