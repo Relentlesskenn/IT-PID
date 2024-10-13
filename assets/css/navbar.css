@@ -48,6 +48,7 @@
 
 .nav-item span {
     display: block;
+    font-weight: bold;
 }
 
 .create-btn {
