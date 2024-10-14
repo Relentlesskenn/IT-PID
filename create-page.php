@@ -321,8 +321,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </div>
 
 <!-- Toast container -->
-<div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050">
-    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+<div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 11">
+    <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
             <strong class="me-auto">Notification</strong>
             <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -385,12 +385,30 @@ if (addCategoryBtn) {
 window.addEventListener('DOMContentLoaded', (event) => {
     const toastLiveExample = document.getElementById('liveToast');
     if (toastLiveExample) {
-        const toast = new bootstrap.Toast(toastLiveExample);
+        const toast = new bootstrap.Toast(toastLiveExample, {
+            animation: true,
+            autohide: true,
+            delay: 5000
+        });
         <?php if (!empty($toast_message)): ?>
-        document.querySelector('.toast-body').textContent = '<?php echo addslashes($toast_message); ?>';
-        document.querySelector('.toast').classList.remove('bg-success', 'bg-warning', 'bg-danger');
-        document.querySelector('.toast').classList.add('bg-<?php echo $toast_type; ?>');
-        document.querySelector('.toast').classList.add('text-white');
+        const toastBody = document.querySelector('.toast-body');
+        const toastElement = document.querySelector('.toast');
+        
+        toastBody.textContent = '<?php echo addslashes($toast_message); ?>';
+        toastElement.classList.remove('border-primary', 'border-warning', 'border-danger');
+        
+        switch ('<?php echo $toast_type; ?>') {
+            case 'primary':
+                toastElement.classList.add('border-primary');
+                break;
+            case 'warning':
+                toastElement.classList.add('border-warning');
+                break;
+            case 'danger':
+                toastElement.classList.add('border-danger');
+                break;
+        }
+        
         toast.show();
         <?php endif; ?>
     }

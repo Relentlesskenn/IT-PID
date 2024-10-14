@@ -109,3 +109,68 @@ body.graphs-page #scrollToTopBtn {
 body.notifications-page #scrollToTopBtn {
     bottom: 20px;
 }
+
+/* Modern Highly Translucent Toast Styles */
+.toast {
+    backdrop-filter: blur(8px); /* Frosted glass effect */
+    -webkit-backdrop-filter: blur(8px); /* For Safari */
+    border-left: 4px solid;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    transform: translateY(100%);
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast.border-primary {
+    background-color: rgba(201, 228, 255, 0.7);
+    border-left-color: rgba(0, 123, 255, 0.8);
+}
+
+.toast.border-warning {
+    background-color: rgba(255, 238, 199, 0.7);
+    border-left-color: rgba(255, 193, 7, 0.8);
+}
+
+.toast.border-danger {
+    background-color: rgba(253, 183, 193, 0.7);
+    border-left-color: rgba(220, 53, 69, 0.8);
+}
+
+.toast-header {
+    background-color: transparent;
+    border-bottom: none;
+    padding-bottom: 0;
+    color: #000;
+    font-size: 1rem;
+}
+
+.toast-body {
+    padding-top: 0.5rem;
+    color: #000;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.btn-close {
+    font-size: 0.7rem;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.toast.show {
+    animation: fadeInDown 0.3s ease-out;
+}

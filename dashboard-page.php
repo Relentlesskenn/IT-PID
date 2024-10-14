@@ -303,8 +303,8 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
     </div>
 
     <!-- Toast container for budget alerts -->
-    <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050">
-        <div id="budgetAlertToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 11">
+        <div id="budgetAlertToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
                 <strong class="me-auto">Budget Alert</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -315,18 +315,35 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
 </div>
 
 <script>
-// Function to show budget alert toasts
 function showBudgetAlerts(alerts) {
     const toastContainer = document.getElementById('budgetAlertToast');
-    const toast = new bootstrap.Toast(toastContainer);
+    const toast = new bootstrap.Toast(toastContainer, {
+        animation: true,
+        autohide: true,
+        delay: 5000
+    });
 
     function showNextAlert(index) {
         if (index >= alerts.length) return;
 
         const alert = alerts[index];
-        toastContainer.querySelector('.toast-body').textContent = alert.message;
-        toastContainer.classList.remove('bg-info', 'bg-warning', 'bg-danger', 'bg-success');
-        toastContainer.classList.add(`bg-${alert.type}`, 'text-white');
+        const toastBody = toastContainer.querySelector('.toast-body');
+        toastBody.textContent = alert.message;
+        
+        toastContainer.classList.remove('border-primary', 'border-warning', 'border-danger');
+        
+        switch (alert.type) {
+            case 'info':
+                toastContainer.classList.add('border-primary');
+                break;
+            case 'warning':
+                toastContainer.classList.add('border-warning');
+                break;
+            case 'danger':
+                toastContainer.classList.add('border-danger');
+                break;
+        }
+
         toast.show();
 
         // Mark the alert as shown
@@ -340,9 +357,10 @@ function showBudgetAlerts(alerts) {
 
         // Wait for the toast to hide before showing the next one
         toastContainer.addEventListener('hidden.bs.toast', () => {
+            // Short delay before showing the next toast for smoother transition
             setTimeout(() => {
                 showNextAlert(index + 1);
-            }, 500);
+            }, 400);
         }, { once: true });
     }
 
