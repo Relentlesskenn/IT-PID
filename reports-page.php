@@ -18,16 +18,16 @@ $currentYear = date('Y');
 $userCreationYear = getUserCreationYear($conn, $userId);
 
 // Check if date, month, and year are set in GET parameters
-$selectedDate = isset($_GET['date']) ? $_GET['date'] : $currentDate;
-$selectedMonth = isset($_GET['month']) ? $_GET['month'] : $currentMonth;
-$selectedYear = isset($_GET['year']) ? $_GET['year'] : $currentYear;
+$selectedDate = isset($_GET['date']) ? filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING) : $currentDate;
+$selectedMonth = isset($_GET['month']) ? filter_input(INPUT_GET, 'month', FILTER_SANITIZE_STRING) : $currentMonth;
+$selectedYear = isset($_GET['year']) ? filter_input(INPUT_GET, 'year', FILTER_VALIDATE_INT) : $currentYear;
 
 // Check if the view type is set (daily, monthly, or yearly)
-$viewType = isset($_GET['view']) ? $_GET['view'] : 'daily';
+$viewType = isset($_GET['view']) ? filter_input(INPUT_GET, 'view', FILTER_SANITIZE_STRING) : 'daily';
 
 // Pagination variables
 $perPage = 10; // Number of expenses per page
-$page = isset($_GET['page']) ? intval($_GET['page']) : 1; // Get the current page number
+$page = isset($_GET['page']) ? filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]) : 1;
 $offset = ($page - 1) * $perPage; // Calculate the offset for the SQL query
 
 // Function to get user's creation year
@@ -35,10 +35,13 @@ function getUserCreationYear($conn, $userId) {
     $sql = "SELECT YEAR(created_at) as creation_year FROM users WHERE user_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $userId);
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        error_log("Database error: " . $stmt->error);
+        return date('Y'); // Return current year as fallback
+    }
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
-    return $row['creation_year'];
+    return $row['creation_year'] ?? date('Y');
 }
 
 // Function to get expenses based on view type
@@ -89,7 +92,10 @@ function getExpenses($conn, $userId, $viewType, $selectedDate, $selectedMonth, $
             }
             break;
     }
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        error_log("Database error: " . $stmt->error);
+        return false;
+    }
     return $stmt->get_result();
 }
 
@@ -120,10 +126,13 @@ function getTotalExpenses($conn, $userId, $viewType, $selectedDate, $selectedMon
             $stmt->bind_param("ii", $userId, $selectedYear);
             break;
     }
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        error_log("Database error: " . $stmt->error);
+        return 0;
+    }
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
-    return $row['total'];
+    return $row['total'] ?? 0;
 }
 
 // Get expenses and calculate total pages
@@ -196,13 +205,13 @@ function generatePDF($conn, $userId, $viewType, $selectedDate, $selectedMonth, $
             $stmtCategory->execute();
             $resultCategory = $stmtCategory->get_result();
             $rowCategory = $resultCategory->fetch_assoc();
-            $categoryName = $rowCategory['name'];
+            $categoryName = $rowCategory['name'] ?? 'Unknown Category';
 
             $html .= '<tr>
-                        <td>'.htmlspecialchars($categoryName).'</td>
-                        <td>P'.number_format($row['amount'], 2).'</td>
-                        <td>'.date('Y-m-d', strtotime($row['date'])).'</td>
-                        <td>'.htmlspecialchars($row['comment']).'</td>
+                        <td>' . htmlspecialchars($categoryName) . '</td>
+                        <td>P' . number_format($row['amount'], 2) . '</td>
+                        <td>' . date('Y-m-d', strtotime($row['date'])) . '</td>
+                        <td>' . htmlspecialchars($row['comment']) . '</td>
                       </tr>';
         }
 
@@ -224,16 +233,16 @@ function generatePDF($conn, $userId, $viewType, $selectedDate, $selectedMonth, $
 // Check if PDF generation is requested
 if (isset($_POST['generate_pdf'])) {
     $userId = $_SESSION['auth_user']['user_id'];
-    $viewType = $_POST['view'];
-    $selectedDate = $_POST['date'];
-    $selectedMonth = $_POST['month'];
-    $selectedYear = $_POST['year'];
+    $viewType = filter_input(INPUT_POST, 'view', FILTER_SANITIZE_STRING);
+    $selectedDate = filter_input(INPUT_POST, 'date', FILTER_SANITIZE_STRING);
+    $selectedMonth = filter_input(INPUT_POST, 'month', FILTER_SANITIZE_STRING);
+    $selectedYear = filter_input(INPUT_POST, 'year', FILTER_VALIDATE_INT);
     
     generatePDF($conn, $userId, $viewType, $selectedDate, $selectedMonth, $selectedYear);
 }
 
 // After fetching expenses and before HTML output
-$hasExpenses = ($result->num_rows > 0);
+$hasExpenses = ($result && $result->num_rows > 0);
 
 ?>
 
@@ -256,26 +265,26 @@ $hasExpenses = ($result->num_rows > 0);
                 </div>
                 <div class="col-auto">
                     <select name="view" id="view" class="form-select" onchange="document.getElementById('viewForm').submit();">
-                        <option value="daily" <?php echo $viewType == 'daily' ? 'selected' : ''; ?>>Daily</option>
-                        <option value="monthly" <?php echo $viewType == 'monthly' ? 'selected' : ''; ?>>Monthly</option>
-                        <option value="yearly" <?php echo $viewType == 'yearly' ? 'selected' : ''; ?>>Yearly</option>
+                        <option value="daily" <?php echo $viewType === 'daily' ? 'selected' : ''; ?>>Daily</option>
+                        <option value="monthly" <?php echo $viewType === 'monthly' ? 'selected' : ''; ?>>Monthly</option>
+                        <option value="yearly" <?php echo $viewType === 'yearly' ? 'selected' : ''; ?>>Yearly</option>
                     </select>
                 </div>
-                <?php if ($viewType == 'daily'): ?>
+                <?php if ($viewType === 'daily'): ?>
                 <div class="col-auto">
-                    <input type="date" name="date" class="form-control" value="<?php echo $selectedDate; ?>" min="<?php echo $userCreationYear; ?>-01-01" max="<?php echo $currentDate; ?>" onchange="document.getElementById('viewForm').submit();">
+                    <input type="date" name="date" class="form-control" value="<?php echo htmlspecialchars($selectedDate); ?>" min="<?php echo htmlspecialchars($userCreationYear); ?>-01-01" max="<?php echo htmlspecialchars($currentDate); ?>" onchange="document.getElementById('viewForm').submit();">
                 </div>
-                <?php elseif ($viewType == 'monthly'): ?>
+                <?php elseif ($viewType === 'monthly'): ?>
                 <div class="col-auto">
-                    <input type="month" name="month" class="form-control" value="<?php echo $selectedMonth; ?>" min="<?php echo $userCreationYear; ?>-01" max="<?php echo $currentMonth; ?>" onchange="document.getElementById('viewForm').submit();">
+                    <input type="month" name="month" class="form-control" value="<?php echo htmlspecialchars($selectedMonth); ?>" min="<?php echo htmlspecialchars($userCreationYear); ?>-01" max="<?php echo htmlspecialchars($currentMonth); ?>" onchange="document.getElementById('viewForm').submit();">
                 </div>
-                <?php elseif ($viewType == 'yearly'): ?>
+                <?php elseif ($viewType === 'yearly'): ?>
                 <div class="col-auto">
                     <select name="year" class="form-select" onchange="document.getElementById('viewForm').submit();">
                         <?php
                         for ($y = $currentYear; $y >= $userCreationYear; $y--) {
                             $selected = $y == $selectedYear ? 'selected' : '';
-                            echo "<option value='$y' $selected>$y</option>";
+                            echo "<option value='" . htmlspecialchars($y) . "' $selected>" . htmlspecialchars($y) . "</option>";
                         }
                         ?>
                     </select>
@@ -286,10 +295,10 @@ $hasExpenses = ($result->num_rows > 0);
 
         <!-- PDF Generation Form -->
         <form method="post" class="mb-3">
-            <input type="hidden" name="view" value="<?php echo $viewType; ?>">
-            <input type="hidden" name="date" value="<?php echo $selectedDate; ?>">
-            <input type="hidden" name="month" value="<?php echo $selectedMonth; ?>">
-            <input type="hidden" name="year" value="<?php echo $selectedYear; ?>">
+            <input type="hidden" name="view" value="<?php echo htmlspecialchars($viewType); ?>">
+            <input type="hidden" name="date" value="<?php echo htmlspecialchars($selectedDate); ?>">
+            <input type="hidden" name="month" value="<?php echo htmlspecialchars($selectedMonth); ?>">
+            <input type="hidden" name="year" value="<?php echo htmlspecialchars($selectedYear); ?>">
             <button type="submit" name="generate_pdf" class="btn btn-custom-primary w-100" <?php echo $hasExpenses ? '' : 'disabled'; ?>>
                 Generate PDF
             </button>
@@ -322,7 +331,7 @@ $hasExpenses = ($result->num_rows > 0);
                             $stmtCategory->execute();
                             $resultCategory = $stmtCategory->get_result();
                             $rowCategory = $resultCategory->fetch_assoc();
-                            $categoryName = $rowCategory['name'];
+                            $categoryName = $rowCategory['name'] ?? 'Unknown Category';
                     ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($categoryName); ?></td>
@@ -350,7 +359,7 @@ $hasExpenses = ($result->num_rows > 0);
             <ul class="pagination justify-content-start">
                 <?php if ($page > 1): ?>
                     <li class="page-item">
-                        <a class="page-link" href="?view=<?php echo $viewType; ?>&date=<?php echo $selectedDate; ?>&month=<?php echo $selectedMonth; ?>&year=<?php echo $selectedYear; ?>&page=<?php echo $page - 1; ?>" aria-label="Previous">
+                        <a class="page-link" href="?view=<?php echo htmlspecialchars($viewType); ?>&date=<?php echo htmlspecialchars($selectedDate); ?>&month=<?php echo htmlspecialchars($selectedMonth); ?>&year=<?php echo htmlspecialchars($selectedYear); ?>&page=<?php echo $page - 1; ?>" aria-label="Previous">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
@@ -363,13 +372,13 @@ $hasExpenses = ($result->num_rows > 0);
                 for ($i = $startPage; $i <= $endPage; $i++):
                 ?>
                     <li class="page-item <?php echo $page == $i ? 'active' : ''; ?>">
-                        <a class="page-link" href="?view=<?php echo $viewType; ?>&date=<?php echo $selectedDate; ?>&month=<?php echo $selectedMonth; ?>&year=<?php echo $selectedYear; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                        <a class="page-link" href="?view=<?php echo htmlspecialchars($viewType); ?>&date=<?php echo htmlspecialchars($selectedDate); ?>&month=<?php echo htmlspecialchars($selectedMonth); ?>&year=<?php echo htmlspecialchars($selectedYear); ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
                     </li>
                 <?php endfor; ?>
 
                 <?php if ($page < $totalPages): ?>
                     <li class="page-item">
-                        <a class="page-link" href="?view=<?php echo $viewType; ?>&date=<?php echo $selectedDate; ?>&month=<?php echo $selectedMonth; ?>&year=<?php echo $selectedYear; ?>&page=<?php echo $page + 1; ?>" aria-label="Next">
+                        <a class="page-link" href="?view=<?php echo htmlspecialchars($viewType); ?>&date=<?php echo htmlspecialchars($selectedDate); ?>&month=<?php echo htmlspecialchars($selectedMonth); ?>&year=<?php echo htmlspecialchars($selectedYear); ?>&page=<?php echo $page + 1; ?>" aria-label="Next">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>
@@ -397,13 +406,13 @@ $hasExpenses = ($result->num_rows > 0);
 
 <script>
     // JavaScript to handle the comment modal
-    var commentModal = document.getElementById('commentModal')
+    const commentModal = document.getElementById('commentModal');
     commentModal.addEventListener('show.bs.modal', function (event) {
-        var button = event.relatedTarget
-        var comment = button.getAttribute('data-comment')
-        var modalBody = commentModal.querySelector('.modal-body p')
-        modalBody.textContent = comment
-    })
+        const button = event.relatedTarget;
+        const comment = button.getAttribute('data-comment');
+        const modalBody = commentModal.querySelector('.modal-body p');
+        modalBody.textContent = comment;
+    });
 </script>
 
 <?php 
