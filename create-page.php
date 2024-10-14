@@ -8,117 +8,117 @@ $selected_page = isset($_POST['page']) ? $_POST['page'] : (isset($_GET['page']) 
 
 // Functions
 function showIncome() {
-    echo"
-        <form method='post'>
-            <div class='mb-3'>
-                <label for='income_name' class='form-label'>Income Type</label>
-                <select class='form-select form-select-lg' name='income_name' id='income_name'>
-                    <option value='Salary'>Salary</option>
-                    <option value='Bonus'>Bonus</option>
-                    <option value='Commission'>Commission</option>
-                    <option value='Overtime Pay'>Overtime Pay</option>
-                    <option value='Tips'>Tips</option>
-                    <option value='Freelance Payment'>Freelance Payment</option>
-                    <option value='Allowance'>Allowance</option>
+    echo '
+        <form method="post">
+            <div class="mb-3">
+                <label for="income_name" class="form-label">Income Type</label>
+                <select class="form-select form-select-lg" name="income_name" id="income_name">
+                    <option value="Salary">Salary</option>
+                    <option value="Bonus">Bonus</option>
+                    <option value="Commission">Commission</option>
+                    <option value="Overtime Pay">Overtime Pay</option>
+                    <option value="Tips">Tips</option>
+                    <option value="Freelance Payment">Freelance Payment</option>
+                    <option value="Allowance">Allowance</option>
                 </select>
             </div>
-            <div class='mb-4'>
-                <label for='income_amount' class='form-label'>Amount</label>
-                <div class='input-group input-group-lg'>
-                    <span class='input-group-text'>₱</span>
-                    <input type='number' step='0.01' class='form-control' name='income_amount' id='income_amount' required inputmode='decimal'>
+            <div class="mb-4">
+                <label for="income_amount" class="form-label">Amount</label>
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text">₱</span>
+                    <input type="number" step="0.01" class="form-control" name="income_amount" id="income_amount" required inputmode="decimal">
                 </div>
             </div>
-            <button type='submit' class='btn btn-custom-primary btn-lg w-100 mb-2' name='income_btn'>
+            <button type="submit" class="btn btn-custom-primary btn-lg w-100 mb-2" name="income_btn">
                 + Add Income
             </button>
-            <a class='btn btn-outline-secondary btn-lg w-100 mb-2' href='dashboard-page.php'>
+            <a class="btn btn-outline-secondary btn-lg w-100 mb-2" href="dashboard-page.php">
                 Back
             </a>
         </form>
-        ";
+        ';
 }
 
 // Predefined budget categories with colors
 $budgetCategories = [
-    'General' => '#640D6B',             // *Purple
-    'Food' => '#90D26D',                // *Green
-    'Groceries' => '#808836',           // *Sage
-    'Rent' => '#2B2B2B',                // *Black
-    'Transportation' => '#F3C623',      // *Yellow
-    'Health' => '#B31312',              // *Red
-    'Utilities' => '#2B3499',           // *Blue
-    'Entertainment' => '#EE7214'        // *Orange
+    'General' => '#640D6B',
+    'Food' => '#90D26D',
+    'Groceries' => '#808836',
+    'Rent' => '#2B2B2B',
+    'Transportation' => '#F3C623',
+    'Health' => '#B31312',
+    'Utilities' => '#2B3499',
+    'Entertainment' => '#EE7214'
 ];
 
 function showBudget() {
     global $budgetCategories;
     $current_month = date('Y-m');
-    echo "   
-        <form method='post'>
-        <input type='hidden' name='budget_month' value='$current_month'>
-            <div class='mb-3'>
-                <label for='budget_name' class='form-label'>Budget Category</label>
-                <div class='input-group input-group-lg'>
-                    <select class='form-select' name='budget_name' id='budget_name' required>
-                        <option value=''>Select a category</option>";
+    echo '   
+        <form method="post">
+        <input type="hidden" name="budget_month" value="' . $current_month . '">
+            <div class="mb-3">
+                <label for="budget_name" class="form-label">Budget Category</label>
+                <div class="input-group input-group-lg">
+                    <select class="form-select" name="budget_name" id="budget_name" required>
+                        <option value="">Select a category</option>';
     foreach ($budgetCategories as $category => $color) {
-        echo "<option value='$category' data-color='$color'>$category</option>";
+        echo '<option value="' . htmlspecialchars($category) . '" data-color="' . htmlspecialchars($color) . '">' . htmlspecialchars($category) . '</option>';
     }
-    echo "          </select>
-                    <button type='button' class='btn btn-outline-secondary' id='add-category-btn'>
+    echo '          </select>
+                    <button type="button" class="btn btn-outline-secondary" id="add-category-btn">
                         +
                     </button>
                 </div>
             </div>
-            <div class='mb-4'>
-                <label for='budget_amount' class='form-label'>Amount</label>
-                <div class='input-group input-group-lg'>
-                    <span class='input-group-text'>₱</span>
-                    <input type='number' step='0.01' class='form-control' name='budget_amount' id='budget_amount' required inputmode='decimal'>
+            <div class="mb-4">
+                <label for="budget_amount" class="form-label">Amount</label>
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text">₱</span>
+                    <input type="number" step="0.01" class="form-control" name="budget_amount" id="budget_amount" required inputmode="decimal">
                 </div>
             </div>
-            <button type='submit' class='btn btn-custom-primary btn-lg w-100 mb-2' name='budget_btn'>
+            <button type="submit" class="btn btn-custom-primary btn-lg w-100 mb-2" name="budget_btn">
                 + Add Budget
             </button>
-            <a class='btn btn-outline-secondary btn-lg w-100 mb-2' href='dashboard-page.php'>
+            <a class="btn btn-outline-secondary btn-lg w-100 mb-2" href="dashboard-page.php">
                 Back
             </a>
         </form>
-        ";
+        ';
 }
 
 function showExpense() {
     $current_month = date('Y-m');
-    echo"
-        <form method='post'>
-            <div class='mb-3'>
-                <label for='budget_category' class='form-label'>Budget Category</label>
-                <select class='form-select form-select-lg' name='budget_category' id='budget_category'>
-                    ";
+    echo '
+        <form method="post">
+            <div class="mb-3">
+                <label for="budget_category" class="form-label">Budget Category</label>
+                <select class="form-select form-select-lg" name="budget_category" id="budget_category">
+                    ';
                     fetchBudgetCategories();
-                    echo "
+                    echo '
                 </select>
             </div>
-            <div class='mb-3'>
-                <label for='expense_amount' class='form-label'>Amount</label>
-                <div class='input-group input-group-lg'>
-                    <span class='input-group-text'>₱</span>
-                    <input type='number' step='0.01' class='form-control' name='expense_amount' id='expense_amount' required inputmode='decimal'>
+            <div class="mb-3">
+                <label for="expense_amount" class="form-label">Amount</label>
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text">₱</span>
+                    <input type="number" step="0.01" class="form-control" name="expense_amount" id="expense_amount" required inputmode="decimal">
                 </div>
             </div>
-            <div class='mb-4'>
-                <label for='expense_comment' class='form-label'>Comment</label>
-                <textarea class='form-control' name='expense_comment' id='expense_comment' rows='3' maxlength='100' placeholder='Max 100 characters'></textarea>
+            <div class="mb-4">
+                <label for="expense_comment" class="form-label">Comment</label>
+                <textarea class="form-control" name="expense_comment" id="expense_comment" rows="3" maxlength="100" placeholder="Max 100 characters"></textarea>
             </div>
-            <button type='submit' class='btn btn-custom-primary btn-lg w-100 mb-2' name='expense_btn'>
+            <button type="submit" class="btn btn-custom-primary btn-lg w-100 mb-2" name="expense_btn">
                 + Add Expense
             </button>
-            <a class='btn btn-outline-secondary btn-lg w-100 mb-2' href='dashboard-page.php'>
+            <a class="btn btn-outline-secondary btn-lg w-100 mb-2" href="dashboard-page.php">
                 Back
             </a>
         </form>
-        ";
+        ';
 }
 
 // Fetch Budget Categories
@@ -126,16 +126,19 @@ function fetchBudgetCategories() {
     global $conn;
     $userId = $_SESSION['auth_user']['user_id'];
     $current_month = date('Y-m');
-    $sql = "SELECT id, name FROM budgets WHERE user_id = '$userId' AND month = '$current_month'";
-    $result = mysqli_query($conn, $sql);
+    $stmt = $conn->prepare("SELECT id, name FROM budgets WHERE user_id = ? AND month = ?");
+    $stmt->bind_param("is", $userId, $current_month);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-    if (mysqli_num_rows($result) > 0) {
-        while ($row = mysqli_fetch_assoc($result)) {
-            echo "<option value='" . $row['id'] . "'>" . $row['name'] . "</option>";
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            echo '<option value="' . htmlspecialchars($row['id']) . '">' . htmlspecialchars($row['name']) . '</option>';
         }
     } else {
-        echo "<option value=''>No categories found</option>";
+        echo '<option value="">No categories found</option>';
     }
+    $stmt->close();
 }
 
 // Function to add a notification
@@ -155,55 +158,55 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Add New Budget Process
     if (isset($_POST['budget_btn'])) {
-        $budgetName = $_POST['budget_name'];
-        $budgetAmount = $_POST['budget_amount'];
-        $budgetMonth = $_POST['budget_month'];
-        $userId = $_SESSION['auth_user']['user_id']; 
-    
-        // Get the color from predefined categories, or use a default color
+        $budgetName = mysqli_real_escape_string($conn, $_POST['budget_name']);
+        $budgetAmount = floatval($_POST['budget_amount']);
+        $budgetMonth = mysqli_real_escape_string($conn, $_POST['budget_month']);
+        $userId = $_SESSION['auth_user']['user_id'];
+
         $budgetColor = isset($budgetCategories[$budgetName]) ? $budgetCategories[$budgetName] : '#6c757d';
-    
-        $checkSql = "SELECT * FROM budgets WHERE user_id = '$userId' AND name = '$budgetName' AND month = '$budgetMonth'";
-        $checkResult = mysqli_query($conn, $checkSql);
-    
-        if (mysqli_num_rows($checkResult) > 0) {
+
+        $stmt = $conn->prepare("SELECT * FROM budgets WHERE user_id = ? AND name = ? AND month = ?");
+        $stmt->bind_param("iss", $userId, $budgetName, $budgetMonth);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
             $toast_message = 'A budget with this name already exists for the current month!';
             $toast_type = 'warning';
         } else {
-            $sql = "INSERT INTO budgets (user_id, name, amount, month, color) VALUES ('$userId', '$budgetName', '$budgetAmount', '$budgetMonth', '$budgetColor')";
-            $result = mysqli_query($conn, $sql);
-    
-            if ($result) {
-                $toast_message = "A budget of ₱" . number_format($budgetAmount, 2) . " for '$budgetName' has been set for " . date('F Y', strtotime($budgetMonth)) . "!";
+            $stmt = $conn->prepare("INSERT INTO budgets (user_id, name, amount, month, color) VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("isdss", $userId, $budgetName, $budgetAmount, $budgetMonth, $budgetColor);
+            
+            if ($stmt->execute()) {
+                $toast_message = "A budget of ₱" . number_format($budgetAmount, 2) . " for '" . htmlspecialchars($budgetName) . "' has been set for " . date('F Y', strtotime($budgetMonth)) . "!";
                 $toast_type = 'primary';
                 $notificationMessage = sprintf("A new budget '%s' of ₱%.2f has been successfully set for %s", 
-                    mysqli_real_escape_string($conn, $budgetName),
+                    $budgetName,
                     $budgetAmount,
                     date('F Y', strtotime($budgetMonth))
                 );
                 addNotification($userId, 'budget', $notificationMessage);
             } else {
-                $toast_message = 'Error adding budget: ' . mysqli_error($conn);
+                $toast_message = 'Error adding budget: ' . $stmt->error;
                 $toast_type = 'danger';
             }
         }
+        $stmt->close();
     }
 
     // Add New Category Process
     if (isset($_POST['addCategoryBtn'])) {
         $newCategoryName = mysqli_real_escape_string($conn, $_POST['newCategoryName']);
         $newCategoryAmount = floatval($_POST['newCategoryAmount']);
-        $newCategoryColor = $_POST['newCategoryColor'];
+        $newCategoryColor = mysqli_real_escape_string($conn, $_POST['newCategoryColor']);
         $userId = $_SESSION['auth_user']['user_id'];
         $currentMonth = date('Y-m');
     
         $stmt = $conn->prepare("INSERT INTO budgets (user_id, name, amount, month, color) VALUES (?, ?, ?, ?, ?)");
         $stmt->bind_param("isdss", $userId, $newCategoryName, $newCategoryAmount, $currentMonth, $newCategoryColor);
-        $result = $stmt->execute();
-        $stmt->close();
-    
-        if ($result) {
-            $toast_message = "A custom Budget of ₱" . number_format($newCategoryAmount, 2) . " for '$newCategoryName' has been set for " . date('F Y', strtotime($currentMonth)) . "!";
+        
+        if ($stmt->execute()) {
+            $toast_message = "A custom Budget of ₱" . number_format($newCategoryAmount, 2) . " for '" . htmlspecialchars($newCategoryName) . "' has been set for " . date('F Y', strtotime($currentMonth)) . "!";
             $toast_type = 'primary';
             $notificationMessage = sprintf("A new custom budget '%s' of ₱%.2f has been successfully set for %s", 
                 $newCategoryName,
@@ -212,76 +215,83 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             );
             addNotification($userId, 'budget', $notificationMessage);
         } else {
-            $toast_message = 'Error adding category!';
+            $toast_message = 'Error adding category: ' . $stmt->error;
             $toast_type = 'danger';
         }
+        $stmt->close();
     }
 
     // Add New Expense Process
     if (isset($_POST['expense_btn'])) {
-        $budgetCategory = $_POST['budget_category'];
-        $expenseAmount = $_POST['expense_amount'];
-        $expenseComment = substr($_POST['expense_comment'], 0, 100);
+        $budgetCategory = intval($_POST['budget_category']);
+        $expenseAmount = floatval($_POST['expense_amount']);
+        $expenseComment = substr(mysqli_real_escape_string($conn, $_POST['expense_comment']), 0, 100);
         $userId = $_SESSION['auth_user']['user_id'];
         $currentDate = date('Y-m-d');
         $currentMonth = date('Y-m');
 
-        // Fetch the category name
-        $categoryNameSql = "SELECT name FROM budgets WHERE id = '$budgetCategory' AND user_id = '$userId'";
-        $categoryNameResult = mysqli_query($conn, $categoryNameSql);
+        $stmt = $conn->prepare("SELECT name FROM budgets WHERE id = ? AND user_id = ?");
+        $stmt->bind_param("ii", $budgetCategory, $userId);
+        $stmt->execute();
+        $categoryNameResult = $stmt->get_result();
         $categoryName = '';
-        if ($categoryNameRow = mysqli_fetch_assoc($categoryNameResult)) {
+        if ($categoryNameRow = $categoryNameResult->fetch_assoc()) {
             $categoryName = $categoryNameRow['name'];
         }
+        $stmt->close();
 
-        $checkBudgetSql = "SELECT id FROM budgets WHERE id = '$budgetCategory' AND user_id = '$userId' AND month = '$currentMonth'";
-        $checkBudgetResult = mysqli_query($conn, $checkBudgetSql);
+        $stmt = $conn->prepare("SELECT id FROM budgets WHERE id = ? AND user_id = ? AND month = ?");
+        $stmt->bind_param("iis", $budgetCategory, $userId, $currentMonth);
+        $stmt->execute();
+        $checkBudgetResult = $stmt->get_result();
 
-        if (mysqli_num_rows($checkBudgetResult) > 0) {
-            $sql = "INSERT INTO expenses (user_id, amount, category_id, date, comment) VALUES ('$userId', '$expenseAmount', '$budgetCategory', '$currentDate', '$expenseComment')";
-            $result = mysqli_query($conn, $sql);
-
-            if ($result) {
-                $toast_message = "A expense of ₱" . number_format($expenseAmount, 2) . " has been recorded for '$categoryName' category on " . date('F j, Y', strtotime($currentDate)) . "!";
+        if ($checkBudgetResult->num_rows > 0) {
+            $stmt = $conn->prepare("INSERT INTO expenses (user_id, amount, category_id, date, comment) VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("idiss", $userId, $expenseAmount, $budgetCategory, $currentDate, $expenseComment);
+            
+            if ($stmt->execute()) {
+                $toast_message = "An expense of ₱" . number_format($expenseAmount, 2) . " has been recorded for '" . htmlspecialchars($categoryName) . "' category on " . date('F j, Y', strtotime($currentDate)) . "!";
                 $toast_type = 'primary';
                 $notificationMessage = sprintf("A new expense of ₱%.2f has been successfully recorded to '%s' category",
                     $expenseAmount,
-                    mysqli_real_escape_string($conn, $categoryName)
+                    $categoryName
                 );
                 addNotification($userId, 'expense', $notificationMessage);
             } else {
-                $toast_message = 'Error adding expense!';
+                $toast_message = 'Error adding expense: ' . $stmt->error;
                 $toast_type = 'danger';
             }
         } else {
             $toast_message = 'Error: The selected budget category does not exist for the current month.';
             $toast_type = 'warning';
         }
+        $stmt->close();
         $selected_page = 'expense';
     }
 
     // Add New Income Process
     if (isset($_POST['income_btn'])) {
-        $incomeName = $_POST['income_name'];
-        $incomeAmount = $_POST['income_amount'];
+        $incomeName = mysqli_real_escape_string($conn, $_POST['income_name']);
+        $incomeAmount = floatval($_POST['income_amount']);
         $userId = $_SESSION['auth_user']['user_id'];
         $currentDate = date('Y-m-d');
 
-        $sql = "INSERT INTO incomes (user_id, name, amount, date) VALUES ('$userId', '$incomeName', '$incomeAmount', '$currentDate')";
-        $result = mysqli_query($conn, $sql);
-
-        if ($result) {
-            $toast_message = "A income of ₱" . number_format($incomeAmount, 2) . " has been successfully recorded for '$incomeName' on " . date('F j, Y', strtotime($currentDate)) . "!";
+        $stmt = $conn->prepare("INSERT INTO incomes (user_id, name, amount, date) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("isds", $userId, $incomeName, $incomeAmount, $currentDate);
+        
+        if ($stmt->execute()) {
+            $toast_message = "An income of ₱" . number_format($incomeAmount, 2) . " has been successfully recorded for '" . htmlspecialchars($incomeName) . "' on " . date('F j, Y', strtotime($currentDate)) . "!";
             $toast_type = 'primary';
             $notificationMessage = sprintf("A new income of ₱%.2f has been successfully recorded for '%s'",
                 $incomeAmount,
-                mysqli_real_escape_string($conn, $incomeName)
+                $incomeName
             );
             addNotification($userId, 'income', $notificationMessage);
         } else {
-            $toast_message = 'Error adding income!';
+            $toast_message = 'Error adding income: ' . $stmt->error;
             $toast_type = 'danger';
         }
+        $stmt->close();
         $selected_page = 'income';
     }
 }
@@ -292,9 +302,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
         <div class="card-body">
             <form method="post" action="" id="pageForm" class="mt-2 mb-4">
-                <input type="hidden" name="submitted_page" value="<?php echo $selected_page; ?>">
+                <input type="hidden" name="submitted_page" value="<?php echo htmlspecialchars($selected_page); ?>">
                 <div class="btn-group w-100" role="group" aria-label="Page Selection">
-                    <input type="radio" class="btn-check" name="page" id="income" value="income" autocomplete="off" <?php echo ($selected_page == 'income') ? 'checked' : ''; ?>>
+                <input type="radio" class="btn-check" name="page" id="income" value="income" autocomplete="off" <?php echo ($selected_page == 'income') ? 'checked' : ''; ?>>
                     <label class="btn btn-outline-primary" for="income">Income</label>
 
                     <input type="radio" class="btn-check" name="page" id="budget" value="budget" autocomplete="off" <?php echo ($selected_page == 'budget') ? 'checked' : ''; ?>>
@@ -394,10 +404,10 @@ window.addEventListener('DOMContentLoaded', (event) => {
         const toastBody = document.querySelector('.toast-body');
         const toastElement = document.querySelector('.toast');
         
-        toastBody.textContent = '<?php echo addslashes($toast_message); ?>';
+        toastBody.textContent = <?php echo json_encode($toast_message); ?>;
         toastElement.classList.remove('border-primary', 'border-warning', 'border-danger');
         
-        switch ('<?php echo $toast_type; ?>') {
+        switch (<?php echo json_encode($toast_type); ?>) {
             case 'primary':
                 toastElement.classList.add('border-primary');
                 break;
