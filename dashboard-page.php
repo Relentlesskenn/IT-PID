@@ -90,13 +90,16 @@ function checkBudgetStatus($userId, $month, $year) {
             $alertMessage = "You have exceeded your budget for {$row['name']}!";
         } elseif ($percentageUsed == 100) {
             $alertType = '100_percent';
-            $alertMessage = "You have reached 100% of your budget for {$row['name']}.";
+            $alertMessage = "You have reached 100% of your budget for {$row['name']}";
         } elseif ($percentageUsed >= 90) {
             $alertType = '90_percent';
-            $alertMessage = "You have reached 90% of your budget for {$row['name']}.";
+            $alertMessage = "You have reached 90% of your budget for {$row['name']}";
         } elseif ($percentageUsed >= 70) {
             $alertType = '70_percent';
-            $alertMessage = "You have reached 70% of your budget for {$row['name']}.";
+            $alertMessage = "You have reached 70% of your budget for {$row['name']}";
+        } elseif ($percentageUsed >= 50) {
+            $alertType = '50_percent';
+            $alertMessage = "You have reached 50% of your budget for {$row['name']}";
         }
 
         if ($alertType && !isAlertShown($userId, $budgetId, $alertType)) {
@@ -104,7 +107,8 @@ function checkBudgetStatus($userId, $month, $year) {
                 'message' => $alertMessage,
                 'type' => $alertType == 'exceed' ? 'danger' : 
                          ($alertType == '100_percent' ? 'danger' : 
-                         ($alertType == '90_percent' ? 'warning' : 'info')),
+                         ($alertType == '90_percent' ? 'warning' : 
+                         ($alertType == '70_percent' ? 'info' : 'info'))),
                 'budgetId' => $budgetId,
                 'alertType' => $alertType
             );
@@ -258,19 +262,18 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                 <div class="col">
                     <div class="card h-100">
                         <div class="card-body d-flex flex-column p-2">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
                                 <h6 class="card-title mb-0" style="font-size: 1rem; font-weight: bold;">
-                                    <!-- Add the colored badge here -->
-                                    <span class="badge rounded-pill-custom" style="background-color: <?= $row['color'] ?>;">&nbsp;</span>
+                                    <span class="badge rounded-pill-custom" style="background-color: <?= $row['color'] ?>; margin-bottom: 0.2rem;">&nbsp;</span>
                                     <?= $budgetName ?>
                                 </h6>
                             </div>
                             <div class="budget-info">
-                                <p class="card-text mb-0" style="font-size: 0.85rem; line-height: 1.6;">Budget - ₱<?= number_format($budgetAmount, 2) ?></p>
-                                <p class="card-text mb-0" style="font-size: 0.85rem; line-height: 1.6;">Spent - ₱<?= number_format($totalExpenses, 2) ?></p>
-                                <p class="card-text mb-1" style="font-size: 0.85rem; line-height: 1.6;">Remaining - ₱<?= number_format($remainingBalance, 2) ?></p>
+                                <p class="card-text mb-0" style="font-size: 0.8rem; line-height: 1.6;">Budget - <strong>₱<?= number_format($budgetAmount, 2) ?></strong></p>
+                                <p class="card-text mb-0" style="font-size: 0.8rem; line-height: 1.6;">Spent - <strong>₱<?= number_format($totalExpenses, 2) ?></strong></p>
+                                <p class="card-text mb-1" style="font-size: 0.8rem; line-height: 1.6;">Balance - <strong>₱<?= number_format($remainingBalance, 2) ?></strong></p>
                             </div>
-                            <div class="progress mt-auto position-relative">
+                            <div class="progress mt-auto position-relative" style="height: 0.4rem;">
                                 <div class="progress-bar <?php if ($percentageUsed >= 90) { echo 'bg-custom-danger'; } elseif ($percentageUsed >= 70) { echo 'bg-warning'; } else { echo 'bg-success'; } ?>" 
                                     role="progressbar" 
                                     style="width: <?= $percentageUsed ?>%;" 
@@ -278,9 +281,6 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                                     aria-valuemin="0" 
                                     aria-valuemax="100">
                                 </div>
-                                <span class="position-absolute top-50 start-50 translate-middle <?php echo ($percentageUsed >= 90) ? 'text-white' : 'text-dark'; ?>" style="font-size: 0.8rem; font-weight: bold;">
-                                <?= number_format($percentageUsed, 1) ?>%
-                            </span>
                             </div>
                         </div>
                     </div>
@@ -325,7 +325,7 @@ function showBudgetAlerts(alerts) {
 
         const alert = alerts[index];
         toastContainer.querySelector('.toast-body').textContent = alert.message;
-        toastContainer.classList.remove('bg-info', 'bg-warning', 'bg-danger');
+        toastContainer.classList.remove('bg-info', 'bg-warning', 'bg-danger', 'bg-success');
         toastContainer.classList.add(`bg-${alert.type}`, 'text-white');
         toast.show();
 
