@@ -8,78 +8,55 @@ $userId = $_SESSION['auth_user']['user_id'];
 
 // Handle notification deletion
 if (isset($_POST['delete_notification'])) {
-    $notificationId = mysqli_real_escape_string($conn, $_POST['notification_id']);
-    $deleteSql = "DELETE FROM notifications WHERE id = '$notificationId' AND user_id = '$userId'";
-    mysqli_query($conn, $deleteSql);
+    $notificationId = filter_input(INPUT_POST, 'notification_id', FILTER_SANITIZE_NUMBER_INT);
+    $stmt = $conn->prepare("DELETE FROM notifications WHERE id = ? AND user_id = ?");
+    $stmt->bind_param("ii", $notificationId, $userId);
+    $stmt->execute();
 }
 
 // Handle clearing all notifications
 if (isset($_POST['clear_all_notifications'])) {
-    $clearAllSql = "DELETE FROM notifications WHERE user_id = '$userId'";
-    mysqli_query($conn, $clearAllSql);
+    $stmt = $conn->prepare("DELETE FROM notifications WHERE user_id = ?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
 }
 
 // Fetch notifications
-$sql = "SELECT * FROM notifications WHERE user_id = '$userId' ORDER BY created_at DESC";
-$result = mysqli_query($conn, $sql);
+$stmt = $conn->prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC");
+$stmt->bind_param("i", $userId);
+$stmt->execute();
+$result = $stmt->get_result();
 
 // Mark all notifications as read
-$updateSql = "UPDATE notifications SET is_read = TRUE WHERE user_id = '$userId'";
-mysqli_query($conn, $updateSql);
+$stmt = $conn->prepare("UPDATE notifications SET is_read = TRUE WHERE user_id = ?");
+$stmt->bind_param("i", $userId);
+$stmt->execute();
 
 // Function to determine the icon and title based on the notification type
 function getNotificationDetails($type, $message) {
+    $budgetAlerts = [
+        '50%' => ['icon' => 'bi-exclamation-triangle-fill text-warning', 'title' => 'Budget Alert'],
+        '70%' => ['icon' => 'bi-exclamation-triangle-fill text-warning', 'title' => 'Budget Alert'],
+        '90%' => ['icon' => 'bi-exclamation-triangle-fill text-warning', 'title' => 'Budget Alert'],
+        '100%' => ['icon' => 'bi-exclamation-triangle-fill text-danger', 'title' => 'Budget Alert'],
+        'exceeded' => ['icon' => 'bi-exclamation-triangle-fill text-danger', 'title' => 'Budget Alert'],
+    ];
+
     if ($type === 'budget_alert') {
-        if (strpos($message, '50% of your budget') !== false) {
-            return [
-                'icon' => 'bi-exclamation-triangle-fill text-warning',
-                'title' => 'Budget Alert'
-            ];
-        } elseif (strpos($message, '70% of your budget') !== false) {
-            return [
-                'icon' => 'bi-exclamation-triangle-fill text-warning',
-                'title' => 'Budget Alert'
-            ];
-        } elseif (strpos($message, '90% of your budget') !== false) {
-            return [
-                'icon' => 'bi-exclamation-triangle-fill text-warning',
-                'title' => 'Budget Alert'
-            ];
-        } elseif (strpos($message, '100% of your budget') !== false) {
-            return [
-                'icon' => 'bi-exclamation-triangle-fill text-danger',
-                'title' => 'Budget Alert'
-            ];
-        } elseif (strpos($message, 'exceeded your budget') !== false) {
-            return [
-                'icon' => 'bi-exclamation-triangle-fill text-danger',
-                'title' => 'Budget Alert'
-            ];
+        foreach ($budgetAlerts as $keyword => $details) {
+            if (strpos($message, $keyword) !== false) {
+                return $details;
+            }
         }
     }
     
-    switch ($type) {
-        case 'budget':
-            return [
-                'icon' => 'bi-piggy-bank text-primary',
-                'title' => 'Budget Notification'
-            ];
-        case 'income':
-            return [
-                'icon' => 'bi-cash-coin text-success',
-                'title' => 'Income Notification'
-            ];
-        case 'expense':
-            return [
-                'icon' => 'bi-credit-card text-danger',
-                'title' => 'Expense Notification'
-            ];
-        default:
-            return [
-                'icon' => 'bi-bell-fill text-secondary',
-                'title' => 'Notification'
-            ];
-    }
+    $notificationTypes = [
+        'budget' => ['icon' => 'bi-piggy-bank text-primary', 'title' => 'Budget Notification'],
+        'income' => ['icon' => 'bi-cash-coin text-success', 'title' => 'Income Notification'],
+        'expense' => ['icon' => 'bi-credit-card text-danger', 'title' => 'Expense Notification'],
+    ];
+
+    return $notificationTypes[$type] ?? ['icon' => 'bi-bell-fill text-secondary', 'title' => 'Notification'];
 }
 ?>
 
@@ -94,7 +71,7 @@ function getNotificationDetails($type, $message) {
                     <i class="bi bi-arrow-left"></i> Dashboard
                 </a>
                 <h1 class="h4 mb-0">Notifications</h1>
-                <?php if (mysqli_num_rows($result) > 0): ?>
+                <?php if ($result->num_rows > 0): ?>
                     <form method="POST" class="d-inline">
                         <button type="submit" name="clear_all_notifications" class="btn btn-danger btn-sm">
                             <i class="bi bi-trash3"></i> Clear All
@@ -106,31 +83,31 @@ function getNotificationDetails($type, $message) {
             </div>
 
             <!-- Notifications List -->
-            <?php if (mysqli_num_rows($result) > 0): ?>
+            <?php if ($result->num_rows > 0): ?>
                 <div class="list-group mb-4">
-                    <?php while ($row = mysqli_fetch_assoc($result)): 
+                    <?php while ($row = $result->fetch_assoc()): 
                         $notificationDetails = getNotificationDetails($row['type'], $row['message']);
                     ?>
                         <div class="list-group-item">
                             <div class="d-flex w-100 justify-content-between align-items-center">
                                 <h5 class="mb-1">
-                                    <i class="bi <?php echo $notificationDetails['icon']; ?> me-2"></i>
-                                    <?php echo $notificationDetails['title']; ?>
+                                    <i class="bi <?= htmlspecialchars($notificationDetails['icon']) ?> me-2"></i>
+                                    <?= htmlspecialchars($notificationDetails['title']) ?>
                                 </h5>
                                 <form method="POST" class="d-inline">
-                                    <input type="hidden" name="notification_id" value="<?php echo $row['id']; ?>">
+                                    <input type="hidden" name="notification_id" value="<?= $row['id'] ?>">
                                     <button type="submit" name="delete_notification" class="btn btn-sm btn-outline-danger">
                                         <i class="bi bi-trash3"></i>
                                     </button>
                                 </form>
                             </div>
-                            <p class="mb-1 mt-2"><?php echo $row['message']; ?></p>
-                            <small class="text-muted"><?php echo date('M d, Y H:i', strtotime($row['created_at'])); ?></small>
+                            <p class="mb-1 mt-2"><?= htmlspecialchars($row['message']) ?></p>
+                            <small class="text-muted"><?= date('M d, Y H:i', strtotime($row['created_at'])) ?></small>
                         </div>
                     <?php endwhile; ?>
                 </div>
             <?php else: ?>
-                <div class="alert alert-info" role="alert">
+                <div class="alert alert-custom-info" role="alert">
                     <i class="bi bi-info-circle-fill me-2"></i> No notifications found.
                 </div>
             <?php endif; ?>

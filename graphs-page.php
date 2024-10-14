@@ -184,17 +184,17 @@ if ($hasData) {
             </div>
         <?php else: ?>
             <div class="col-12">
-                <div class="alert alert-info mt-1" role="alert">
+                <div class="alert alert-custom-info mt-1" role="alert">
                     <h4 class="alert-heading">No Financial Data Available</h4>
                     <p>There is currently no financial data to display graphs for <?= date("Y", strtotime($currentYear)) ?>.</p>
                     <hr>
                     <p class="mb-0">To start seeing your financial graphs:</p>
                     <ul>
                         <li>Add some income entries</li>
-                        <li>Record your expenses</li>
                         <li>Create budget categories</li>
+                        <li>Record your expenses</li>
                     </ul>
-                    <a href="create-page.php" class="btn btn-primary mt-3">Add Financial Data</a>
+                    <a href="create-page.php" class="btn btn-custom-primary mt-3">Add Financial Data</a>
                 </div>
             </div>
         <?php endif; ?>

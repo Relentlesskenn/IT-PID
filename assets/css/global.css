@@ -1,6 +1,6 @@
 body {
     background-color: #F1F1F6 !important;
-    color: #333 !important;
+    color: #000 !important;
     font-family: 'Lexend', sans-serif;
     font-size: 1rem !important;
     font-weight: 500 !important;
@@ -173,4 +173,10 @@ body.notifications-page #scrollToTopBtn {
 
 .toast.show {
     animation: fadeInDown 0.3s ease-out;
+}
+
+.alert-custom-info {
+    color: #000;
+    background-color: #dbc9ff !important;
+    border: 1px solid #c4a7ff !important;
 }
