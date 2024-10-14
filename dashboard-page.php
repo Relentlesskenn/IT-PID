@@ -16,6 +16,7 @@ function getExpensesTotal($userId, $month, $year) {
     return $row['total_expenses'] ?? 0;
 }
 
+// Function to fetch and sum incomes for a specific month and year
 function getIncomesTotal($userId, $month, $year) {
     global $conn;
     $stmt = $conn->prepare("SELECT SUM(i.amount) AS total_incomes FROM incomes i WHERE i.user_id = ? AND MONTH(i.date) = ? AND YEAR(i.date) = ?");
@@ -26,6 +27,7 @@ function getIncomesTotal($userId, $month, $year) {
     return $row['total_incomes'] ?? 0;
 }
 
+// Function to update or insert the monthly balance
 function getOrUpdateMonthlyBalance($userId, $month, $year, $balance) {
     global $conn;
     $stmt = $conn->prepare("SELECT balance FROM balances WHERE user_id = ? AND month = ? AND year = ?");
@@ -51,6 +53,7 @@ function getOrUpdateMonthlyBalance($userId, $month, $year, $balance) {
     return $balance;
 }
 
+// Function to get the number of unread notifications for a user
 function getUnreadNotificationsCount($userId) {
     global $conn;
     $stmt = $conn->prepare("SELECT COUNT(*) AS unread_count FROM notifications WHERE user_id = ? AND is_read = 0");
@@ -61,6 +64,7 @@ function getUnreadNotificationsCount($userId) {
     return $row['unread_count'];
 }
 
+// Function to add a notification
 function addNotification($userId, $type, $message) {
     global $conn;
     $stmt = $conn->prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, ?, ?)");
@@ -68,6 +72,7 @@ function addNotification($userId, $type, $message) {
     $stmt->execute();
 }
 
+// Function to check budget status and generate alerts
 function checkBudgetStatus($userId, $month, $year) {
     global $conn;
     $alerts = array();
@@ -126,6 +131,7 @@ function checkBudgetStatus($userId, $month, $year) {
     return $alerts;
 }
 
+// Function to check if an alert has been shown
 function isAlertShown($userId, $budgetId, $alertType) {
     global $conn;
     $stmt = $conn->prepare("SELECT * FROM budget_alerts WHERE user_id = ? AND budget_id = ? AND alert_type = ?");
@@ -135,6 +141,7 @@ function isAlertShown($userId, $budgetId, $alertType) {
     return $result->num_rows > 0;
 }
 
+// Function to mark an alert as shown
 function markAlertAsShown($userId, $budgetId, $alertType) {
     global $conn;
     $stmt = $conn->prepare("INSERT INTO budget_alerts (user_id, budget_id, alert_type) VALUES (?, ?, ?)");
@@ -324,6 +331,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
 </div>
 
 <script>
+// Show budget alerts when the page loads
 function showBudgetAlerts(alerts) {
     const toastContainer = document.getElementById('budgetAlertToast');
     const toast = new bootstrap.Toast(toastContainer, {
@@ -332,6 +340,7 @@ function showBudgetAlerts(alerts) {
         delay: 5000
     });
 
+    // Function to show the next alert
     function showNextAlert(index) {
         if (index >= alerts.length) return;
 

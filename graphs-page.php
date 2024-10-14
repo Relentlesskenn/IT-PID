@@ -24,14 +24,7 @@ function getSpendingBreakdown($conn, $userId, $month) {
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("is", $userId, $month);
     $stmt->execute();
-    $result = $stmt->get_result();
-    
-    $data = array();
-    while ($row = $result->fetch_assoc()) {
-        $data[] = $row;
-    }
-    
-    return $data;
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
 // Function to fetch monthly income and expenses
@@ -53,12 +46,9 @@ function getMonthlyIncomeExpenses($conn, $userId, $year) {
     $stmt->execute();
     $result = $stmt->get_result();
     
-    $data = array_fill(1, 12, ['income' => 0, 'expense' => 0]); // Initialize all months
+    $data = array_fill(1, 12, ['income' => 0, 'expense' => 0]);
     while ($row = $result->fetch_assoc()) {
-        $data[$row['month']] = [
-            'income' => $row['income'],
-            'expense' => $row['expense']
-        ];
+        $data[$row['month']] = $row;
     }
     
     return $data;
@@ -75,14 +65,7 @@ function getExpenseTrend($conn, $userId, $year) {
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ii", $userId, $year);
     $stmt->execute();
-    $result = $stmt->get_result();
-    
-    $data = array();
-    while ($row = $result->fetch_assoc()) {
-        $data[] = $row;
-    }
-    
-    return $data;
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
 // Fetch data for all graphs
@@ -96,12 +79,12 @@ $hasIncomeExpenseData = !empty(array_filter($monthlyIncomeExpenses, function($mo
 }));
 
 // Check if there's any data
-$hasData = !empty($spendingBreakdown) || !empty(array_filter($monthlyIncomeExpenses)) || !empty($expenseTrend);
+$hasData = !empty($spendingBreakdown) || $hasIncomeExpenseData || !empty($expenseTrend);
 
 // Prepare data for Chart.js
-$labels = $amounts = $backgroundColor = array();
+$labels = $amounts = $backgroundColor = [];
 $incomeData = $expenseData = array_fill(1, 12, 0);
-$trendDates = $trendAmounts = array();
+$trendDates = $trendAmounts = [];
 
 if ($hasData) {
     // Spending Breakdown data
@@ -127,7 +110,7 @@ if ($hasData) {
 
 <!-- HTML content -->
 <body class="graphs-page">
-<link rel="stylesheet" href=".\assets\css\graphs.css">
+<link rel="stylesheet" href="./assets/css/graphs.css">
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <a href="reports-page.php" class="btn btn-custom-primary btn-sm">
@@ -137,83 +120,86 @@ if ($hasData) {
     </div>
     
     <div class="row">
-        <div class="col-lg-6 mb-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h2 class="card-title">Spending Breakdown for <?= $currentDate?></h2>
-                </div>
-                <div class="card-body">
-                    <?php if (!empty($spendingBreakdown)): ?>
-                        <canvas id="spendingBreakdownChart"></canvas>
-                    <?php else: ?>
-                        <p class="text-center">No spending data available for <?php echo date('F', strtotime($currentMonth)); ?></p>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6 mb-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h2 class="card-title">Categories for <?= $currentDate?></h2>
-                </div>
-                <div class="card-body category-list">
-                    <?php if (!empty($spendingBreakdown)): ?>
-                        <?php foreach ($spendingBreakdown as $category): ?>
-                            <div class="category-item" style="background-color: <?php echo htmlspecialchars($category['color']); ?>; color:white;">
-                                <strong><?php echo htmlspecialchars($category['category']); ?></strong>
-                                <strong><span class="float-end">₱<?php echo number_format($category['total_amount'], 2); ?></span></strong>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <p class="text-center">No categories with spending for <?php echo date('F', strtotime($currentMonth)); ?></p>
-                    <?php endif; ?>
+        <?php if ($hasData): ?>
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h2 class="card-title">Spending Breakdown for <?= htmlspecialchars($currentDate) ?></h2>
+                    </div>
+                    <div class="card-body">
+                        <?php if (!empty($spendingBreakdown)): ?>
+                            <canvas id="spendingBreakdownChart"></canvas>
+                        <?php else: ?>
+                            <p class="text-center">No spending data available for <?= date('F', strtotime($currentMonth)) ?></p>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-lg-6 mb-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h2 class="card-title">Income vs. Expenses for <?= $currentYear?></h2>
-                </div>
-                <div class="card-body">
-                    <?php if ($hasIncomeExpenseData): ?>
-                        <canvas id="incomeExpensesChart"></canvas>
-                    <?php else: ?>
-                        <p class="text-center">No income or expense data available for <?php echo date('Y'); ?></p>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6 mb-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h2 class="card-title">Expense Trend Over Time for <?= $currentYear?></h2>
-                </div>
-                <div class="card-body">
-                    <?php if (!empty($expenseTrend)): ?>
-                        <canvas id="expenseTrendChart"></canvas>
-                    <?php else: ?>
-                        <p class="text-center">No expense trend data available for <?php echo date('Y'); ?></p>
-                    <?php endif; ?>
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h2 class="card-title">Categories for <?= htmlspecialchars($currentDate) ?></h2>
+                    </div>
+                    <div class="card-body category-list">
+                        <?php if (!empty($spendingBreakdown)): ?>
+                            <?php foreach ($spendingBreakdown as $category): ?>
+                                <div class="category-item" style="background-color: <?= htmlspecialchars($category['color']) ?>; color:white;">
+                                    <strong><?= htmlspecialchars($category['category']) ?></strong>
+                                    <strong><span class="float-end">₱<?= number_format($category['total_amount'], 2) ?></span></strong>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p class="text-center">No categories with spending for <?= date('F', strtotime($currentMonth)) ?></p>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
-        </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h2 class="card-title">Income vs. Expenses for <?= htmlspecialchars($currentYear) ?></h2>
+                    </div>
+                    <div class="card-body">
+                        <?php if ($hasIncomeExpenseData): ?>
+                            <canvas id="incomeExpensesChart"></canvas>
+                        <?php else: ?>
+                            <p class="text-center">No income or expense data available for <?= date('Y') ?></p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h2 class="card-title">Expense Trend Over Time for <?= htmlspecialchars($currentYear) ?></h2>
+                    </div>
+                    <div class="card-body">
+                        <?php if (!empty($expenseTrend)): ?>
+                            <canvas id="expenseTrendChart"></canvas>
+                        <?php else: ?>
+                            <p class="text-center">No expense trend data available for <?= date('Y') ?></p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="col-12">
+                <div class="alert alert-info mt-4" role="alert">
+                    <h4 class="alert-heading">No Financial Data Available</h4>
+                    <p>There is currently no financial data to display graphs for <?= date("Y", strtotime($currentYear)) ?>.</p>
+                    <hr>
+                    <p class="mb-0">To start seeing your financial graphs:</p>
+                    <ul>
+                        <li>Add some income entries</li>
+                        <li>Record your expenses</li>
+                        <li>Create budget categories</li>
+                    </ul>
+                    <a href="create-page.php" class="btn btn-primary mt-3">Add Financial Data</a>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
-
-    <?php if (!$hasData): ?>
-    <div class="alert alert-info mt-4" role="alert">
-        <h4 class="alert-heading">No Financial Data Available</h4>
-        <p>There is currently no financial data to display graphs for <?php echo date("Y", strtotime($currentYear)); ?>.</p>
-        <hr>
-        <p class="mb-0">To start seeing your financial graphs:</p>
-        <ul>
-            <li>Add some income entries</li>
-            <li>Record your expenses</li>
-            <li>Create budget categories</li>
-        </ul>
-        <a href="create-page.php" class="btn btn-primary mt-3">Add Financial Data</a>
-    </div>
-    <?php endif; ?>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
@@ -223,58 +209,61 @@ document.addEventListener('DOMContentLoaded', function() {
     Chart.defaults.font.family = "'Lexend', 'sans-serif'";
     Chart.defaults.color = '#272727';
 
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right',
+                labels: {
+                    font: {
+                        size: 16,
+                        weight: 'bold',
+                    },
+                    padding: 10
+                }
+            },
+            title: {
+                display: false,
+            },
+            tooltip: {
+                titleFont: {
+                    size: 16,
+                    weight: 'bold'
+                },
+                bodyFont: {
+                    size: 14,
+                    weight: 'normal'
+                },
+                callbacks: {
+                    label: function(context) {
+                        let label = context.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        label += '₱' + context.parsed.toFixed(2);
+                        return label;
+                    }
+                }
+            }
+        }
+    };
+
     // Spending Breakdown Chart
     <?php if (!empty($spendingBreakdown)): ?>
-    var ctxSpending = document.getElementById('spendingBreakdownChart').getContext('2d');
-    var spendingBreakdownChart = new Chart(ctxSpending, {
+    new Chart(document.getElementById('spendingBreakdownChart').getContext('2d'), {
         type: 'doughnut',
         data: {
-            labels: <?php echo json_encode($labels); ?>,
+            labels: <?= json_encode($labels) ?>,
             datasets: [{
-                data: <?php echo json_encode($amounts); ?>,
-                backgroundColor: <?php echo json_encode($backgroundColor); ?>,
+                data: <?= json_encode($amounts) ?>,
+                backgroundColor: <?= json_encode($backgroundColor) ?>,
                 borderColor: '#ffffff',
                 borderWidth: 2
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'right',
-                    labels: {
-                        font: {
-                            size: 16,
-                            weight: 'bold',
-                        },
-                        padding: 10
-                    }
-                },
-                title: {
-                    display: false,
-                },
-                tooltip: {
-                    titleFont: {
-                        size: 16,
-                        weight: 'bold'
-                    },
-                    bodyFont: {
-                        size: 14,
-                        weight: 'normal'
-                    },
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            label += '₱' + context.parsed.toFixed(2);
-                            return label;
-                        }
-                    }
-                }
-            },
+            ...chartOptions,
             cutout: '60%'
         }
     });
@@ -282,74 +271,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Income vs Expenses Chart
     <?php if ($hasIncomeExpenseData): ?>
-    var ctxIncome = document.getElementById('incomeExpensesChart').getContext('2d');
-    var incomeExpensesChart = new Chart(ctxIncome, {
+    new Chart(document.getElementById('incomeExpensesChart').getContext('2d'), {
         type: 'bar',
         data: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
             datasets: [{
                 label: 'Income',
-                data: <?php echo json_encode(array_values($incomeData)); ?>,
+                data: <?= json_encode(array_values($incomeData)) ?>,
                 backgroundColor: 'rgba(75, 192, 192, 0.6)',
                 borderColor: 'rgba(75, 192, 192, 1)',
                 borderWidth: 1
             },
             {
                 label: 'Expenses',
-                data: <?php echo json_encode(array_values($expenseData)); ?>,
+                data: <?= json_encode(array_values($expenseData)) ?>,
                 backgroundColor: 'rgba(255, 99, 132, 0.6)',
                 borderColor: 'rgba(255, 99, 132, 1)',
                 borderWidth: 1
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
+            ...chartOptions,
             scales: {
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        callback: function(value, index, values) {
+                        callback: function(value) {
                             return '₱' + value.toLocaleString();
                         },
                         font: {
                             size: 14,
                             weight: 'normal',
-                        }
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    position: 'top',
-                    labels: {
-                        font: {
-                            size: 16,
-                            weight: 'bold',
-                        },
-                        padding: 10
-                    }
-                },
-                title: {
-                    disabled: true,
-                },
-                tooltip: {
-                    titleFont: {
-                        size: 16,
-                        weight: 'bold'
-                    },
-                    bodyFont: {
-                        size: 14,
-                        weight: 'normal'
-                    },
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            label += '₱' + context.parsed.y.toFixed(2);
-                            return label;
                         }
                     }
                 }
@@ -360,14 +312,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Expense Trend Chart
     <?php if (!empty($expenseTrend)): ?>
-    var ctxTrend = document.getElementById('expenseTrendChart').getContext('2d');
-    var expenseTrendChart = new Chart(ctxTrend, {
+    new Chart(document.getElementById('expenseTrendChart').getContext('2d'), {
         type: 'line',
         data: {
-            labels: <?php echo json_encode($trendDates); ?>,
+            labels: <?= json_encode($trendDates) ?>,
             datasets: [{
                 label: 'Daily Expenses',
-                data: <?php echo json_encode($trendAmounts); ?>,
+                data: <?= json_encode($trendAmounts) ?>,
                 borderColor: 'rgba(54, 162, 235, 1)',
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
                 borderWidth: 2,
@@ -375,8 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
+            ...chartOptions,
             scales: {
                 x: {
                     type: 'time',
@@ -392,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        callback: function(value, index, values) {
+                        callback: function(value) {
                             return '₱' + value.toLocaleString();
                         },
                         font: {
@@ -408,21 +358,6 @@ document.addEventListener('DOMContentLoaded', function() {
             plugins: {
                 legend: {
                     display: false
-                },
-                title: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            label += '₱' + context.parsed.y.toFixed(2);
-                            return label;
-                        }
-                    }
                 }
             }
         }
@@ -431,16 +366,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to update chart sizes based on screen width
     function updateChartSizes() {
-        var chartContainers = document.querySelectorAll('.card-body');
-        chartContainers.forEach(function(container) {
-            var containerWidth = container.offsetWidth;
-            var aspectRatio = window.innerWidth < 768 ? 1 : 2;  // 1:1 aspect ratio on mobile, 2:1 on larger screens
-            
-            var canvas = container.querySelector('canvas');
+        document.querySelectorAll('.card-body').forEach(container => {
+            const canvas = container.querySelector('canvas');
             if (canvas) {
-                var chart = Chart.getChart(canvas);
+                const chart = Chart.getChart(canvas);
                 if (chart) {
-                    chart.options.aspectRatio = aspectRatio;
+                    chart.options.aspectRatio = window.innerWidth < 768 ? 1 : 2;
                     chart.resize();
                 }
             }
@@ -455,6 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Highlight corresponding chart segment when hovering over category item
     <?php if (!empty($spendingBreakdown)): ?>
+    const spendingBreakdownChart = Chart.getChart('spendingBreakdownChart');
     document.querySelectorAll('.category-item').forEach((item, index) => {
         item.addEventListener('mouseenter', () => {
             spendingBreakdownChart.setActiveElements([{datasetIndex: 0, index: index}]);

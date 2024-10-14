@@ -18,12 +18,12 @@ $currentYear = date('Y');
 $userCreationYear = getUserCreationYear($conn, $userId);
 
 // Check if date, month, and year are set in GET parameters
-$selectedDate = isset($_GET['date']) ? filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING) : $currentDate;
-$selectedMonth = isset($_GET['month']) ? filter_input(INPUT_GET, 'month', FILTER_SANITIZE_STRING) : $currentMonth;
+$selectedDate = isset($_GET['date']) ? filter_input(INPUT_GET, 'date') : $currentDate;
+$selectedMonth = isset($_GET['month']) ? filter_input(INPUT_GET, 'month') : $currentMonth;
 $selectedYear = isset($_GET['year']) ? filter_input(INPUT_GET, 'year', FILTER_VALIDATE_INT) : $currentYear;
 
 // Check if the view type is set (daily, monthly, or yearly)
-$viewType = isset($_GET['view']) ? filter_input(INPUT_GET, 'view', FILTER_SANITIZE_STRING) : 'daily';
+$viewType = isset($_GET['view']) ? filter_input(INPUT_GET, 'view') : 'daily';
 
 // Pagination variables
 $perPage = 10; // Number of expenses per page
@@ -233,9 +233,9 @@ function generatePDF($conn, $userId, $viewType, $selectedDate, $selectedMonth, $
 // Check if PDF generation is requested
 if (isset($_POST['generate_pdf'])) {
     $userId = $_SESSION['auth_user']['user_id'];
-    $viewType = filter_input(INPUT_POST, 'view', FILTER_SANITIZE_STRING);
-    $selectedDate = filter_input(INPUT_POST, 'date', FILTER_SANITIZE_STRING);
-    $selectedMonth = filter_input(INPUT_POST, 'month', FILTER_SANITIZE_STRING);
+    $viewType = filter_input(INPUT_POST, 'view');
+    $selectedDate = filter_input(INPUT_POST, 'date');
+    $selectedMonth = filter_input(INPUT_POST, 'month');
     $selectedYear = filter_input(INPUT_POST, 'year', FILTER_VALIDATE_INT);
     
     generatePDF($conn, $userId, $viewType, $selectedDate, $selectedMonth, $selectedYear);
