@@ -184,7 +184,7 @@ if ($hasData) {
             </div>
         <?php else: ?>
             <div class="col-12">
-                <div class="alert alert-info mt-4" role="alert">
+                <div class="alert alert-info mt-1" role="alert">
                     <h4 class="alert-heading">No Financial Data Available</h4>
                     <p>There is currently no financial data to display graphs for <?= date("Y", strtotime($currentYear)) ?>.</p>
                     <hr>
