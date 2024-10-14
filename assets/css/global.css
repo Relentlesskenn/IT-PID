@@ -176,7 +176,8 @@ body.notifications-page #scrollToTopBtn {
 }
 
 .alert-custom-info {
-    color: #000;
-    background-color: #dbc9ff !important;
-    border: 1px solid #c4a7ff !important;
+    color: black;
+    background-color: #cdc1ff;
+    background-image: linear-gradient(316deg, #cdc1ff 0%, #e5d9f2 74%);
+    border: 1px solid #d1bbfc !important;
 }
