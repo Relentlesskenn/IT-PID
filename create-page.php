@@ -4,7 +4,22 @@ include('_dbconnect.php');
 include('includes/authentication.php');
 include('includes/header.php'); 
 
-$selected_page = isset($_POST['page']) ? $_POST['page'] : (isset($_GET['page']) ? $_GET['page'] : 'budget');
+// Initialize variables
+$selected_page = isset($_GET['page']) ? $_GET['page'] : 'budget';
+$toast_message = isset($_GET['message']) ? urldecode($_GET['message']) : '';
+$toast_type = isset($_GET['type']) ? $_GET['type'] : '';
+
+// Predefined budget categories with colors
+$budgetCategories = [
+    'General' => '#640D6B',
+    'Food' => '#90D26D',
+    'Groceries' => '#808836',
+    'Rent' => '#2B2B2B',
+    'Transportation' => '#F3C623',
+    'Health' => '#B31312',
+    'Utilities' => '#2B3499',
+    'Entertainment' => '#EE7214'
+];
 
 // Functions
 function showIncome() {
@@ -36,20 +51,8 @@ function showIncome() {
                 Back
             </a>
         </form>
-        ';
+    ';
 }
-
-// Predefined budget categories with colors
-$budgetCategories = [
-    'General' => '#640D6B',             //Purple
-    'Food' => '#90D26D',                //Green
-    'Groceries' => '#808836',           //Sage
-    'Rent' => '#2B2B2B',                //Black
-    'Transportation' => '#F3C623',      //Yellow
-    'Health' => '#B31312',              //Red
-    'Utilities' => '#2B3499',           //Blue
-    'Entertainment' => '#EE7214'        //Orange
-];
 
 function showBudget() {
     global $budgetCategories;
@@ -85,7 +88,7 @@ function showBudget() {
                 Back
             </a>
         </form>
-        ';
+    ';
 }
 
 function showExpense() {
@@ -118,7 +121,7 @@ function showExpense() {
                 Back
             </a>
         </form>
-        ';
+    ';
 }
 
 // Fetch Budget Categories
@@ -150,11 +153,9 @@ function addNotification($userId, $type, $message) {
     $stmt->close();
 }
 
-$toast_message = '';
-$toast_type = '';
-
-// Process
+// Process form submissions
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $redirect_url = 'create-page.php?page=' . $selected_page;
 
     // Add New Budget Process
     if (isset($_POST['budget_btn'])) {
@@ -171,15 +172,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
-            $toast_message = 'A budget with this name already exists for the current month!';
-            $toast_type = 'warning';
+            $redirect_url .= '&message=' . urlencode('A budget with this name already exists for the current month!') . '&type=warning';
         } else {
             $stmt = $conn->prepare("INSERT INTO budgets (user_id, name, amount, month, color) VALUES (?, ?, ?, ?, ?)");
             $stmt->bind_param("isdss", $userId, $budgetName, $budgetAmount, $budgetMonth, $budgetColor);
             
             if ($stmt->execute()) {
-                $toast_message = "A budget of ₱" . number_format($budgetAmount, 2) . " for '" . htmlspecialchars($budgetName) . "' has been set for " . date('F Y', strtotime($budgetMonth)) . "!";
-                $toast_type = 'primary';
+                $redirect_url .= '&message=' . urlencode("A budget of ₱" . number_format($budgetAmount, 2) . " for '" . $budgetName . "' has been set for " . date('F Y', strtotime($budgetMonth)) . "!") . '&type=primary';
                 $notificationMessage = sprintf("A new budget '%s' of ₱%.2f has been successfully set for %s", 
                     $budgetName,
                     $budgetAmount,
@@ -187,8 +186,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 );
                 addNotification($userId, 'budget', $notificationMessage);
             } else {
-                $toast_message = 'Error adding budget: ' . $stmt->error;
-                $toast_type = 'danger';
+                $redirect_url .= '&message=' . urlencode('Error adding budget: ' . $stmt->error) . '&type=danger';
             }
         }
         $stmt->close();
@@ -206,8 +204,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bind_param("isdss", $userId, $newCategoryName, $newCategoryAmount, $currentMonth, $newCategoryColor);
         
         if ($stmt->execute()) {
-            $toast_message = "A custom Budget of ₱" . number_format($newCategoryAmount, 2) . " for '" . htmlspecialchars($newCategoryName) . "' has been set for " . date('F Y', strtotime($currentMonth)) . "!";
-            $toast_type = 'primary';
+            $redirect_url .= '&message=' . urlencode("A custom Budget of ₱" . number_format($newCategoryAmount, 2) . " for '" . $newCategoryName . "' has been set for " . date('F Y', strtotime($currentMonth)) . "!") . '&type=primary';
             $notificationMessage = sprintf("A new custom budget '%s' of ₱%.2f has been successfully set for %s", 
                 $newCategoryName,
                 $newCategoryAmount,
@@ -215,8 +212,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             );
             addNotification($userId, 'budget', $notificationMessage);
         } else {
-            $toast_message = 'Error adding category: ' . $stmt->error;
-            $toast_type = 'danger';
+            $redirect_url .= '&message=' . urlencode('Error adding category: ' . $stmt->error) . '&type=danger';
         }
         $stmt->close();
     }
@@ -250,23 +246,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->bind_param("idiss", $userId, $expenseAmount, $budgetCategory, $currentDate, $expenseComment);
             
             if ($stmt->execute()) {
-                $toast_message = "An expense of ₱" . number_format($expenseAmount, 2) . " has been recorded for '" . htmlspecialchars($categoryName) . "' category on " . date('F j, Y', strtotime($currentDate)) . "!";
-                $toast_type = 'primary';
+                $redirect_url .= '&message=' . urlencode("An expense of ₱" . number_format($expenseAmount, 2) . " has been recorded for '" . $categoryName . "' category on " . date('F j, Y', strtotime($currentDate)) . "!") . '&type=primary';
                 $notificationMessage = sprintf("A new expense of ₱%.2f has been successfully recorded to '%s' category",
                     $expenseAmount,
                     $categoryName
                 );
                 addNotification($userId, 'expense', $notificationMessage);
             } else {
-                $toast_message = 'Error adding expense: ' . $stmt->error;
-                $toast_type = 'danger';
+                $redirect_url .= '&message=' . urlencode('Error adding expense: ' . $stmt->error) . '&type=danger';
             }
         } else {
-            $toast_message = 'Error: The selected budget category does not exist for the current month.';
-            $toast_type = 'warning';
+            $redirect_url .= '&message=' . urlencode('Error: The selected budget category does not exist for the current month.') . '&type=warning';
         }
         $stmt->close();
-        $selected_page = 'expense';
     }
 
     // Add New Income Process
@@ -280,20 +272,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bind_param("isds", $userId, $incomeName, $incomeAmount, $currentDate);
         
         if ($stmt->execute()) {
-            $toast_message = "An income of ₱" . number_format($incomeAmount, 2) . " has been successfully recorded for '" . htmlspecialchars($incomeName) . "' on " . date('F j, Y', strtotime($currentDate)) . "!";
-            $toast_type = 'primary';
+            $redirect_url .= '&message=' . urlencode("An income of ₱" . number_format($incomeAmount, 2) . " has been successfully recorded for '" . $incomeName . "' on " . date('F j, Y', strtotime($currentDate)) . "!") . '&type=primary';
             $notificationMessage = sprintf("A new income of ₱%.2f has been successfully recorded for '%s'",
                 $incomeAmount,
                 $incomeName
             );
             addNotification($userId, 'income', $notificationMessage);
         } else {
-            $toast_message = 'Error adding income: ' . $stmt->error;
-            $toast_type = 'danger';
+            $redirect_url .= '&message=' . urlencode('Error adding income: ' . $stmt->error) . '&type=danger';
         }
         $stmt->close();
-        $selected_page = 'income';
     }
+
+    // Redirect after processing
+    header("Location: $redirect_url");
+    exit();
 }
 ?>
 
@@ -304,7 +297,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <form method="post" action="" id="pageForm" class="mt-2 mb-4">
                 <input type="hidden" name="submitted_page" value="<?php echo htmlspecialchars($selected_page); ?>">
                 <div class="btn-group w-100" role="group" aria-label="Page Selection">
-                <input type="radio" class="btn-check" name="page" id="income" value="income" autocomplete="off" <?php echo ($selected_page == 'income') ? 'checked' : ''; ?>>
+                    <input type="radio" class="btn-check" name="page" id="income" value="income" autocomplete="off" <?php echo ($selected_page == 'income') ? 'checked' : ''; ?>>
                     <label class="btn btn-outline-primary" for="income">Income</label>
 
                     <input type="radio" class="btn-check" name="page" id="budget" value="budget" autocomplete="off" <?php echo ($selected_page == 'budget') ? 'checked' : ''; ?>>
@@ -378,7 +371,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <script>
 document.querySelectorAll('input[name="page"]').forEach(radio => {
     radio.addEventListener('change', function() {
-        document.getElementById('pageForm').submit();
+        window.location.href = 'create-page.php?page=' + this.value;
     });
 });
 
@@ -400,27 +393,38 @@ window.addEventListener('DOMContentLoaded', (event) => {
             autohide: true,
             delay: 5000
         });
-        <?php if (!empty($toast_message)): ?>
-        const toastBody = document.querySelector('.toast-body');
-        const toastElement = document.querySelector('.toast');
-        
-        toastBody.textContent = <?php echo json_encode($toast_message); ?>;
-        toastElement.classList.remove('border-primary', 'border-warning', 'border-danger');
-        
-        switch (<?php echo json_encode($toast_type); ?>) {
-            case 'primary':
-                toastElement.classList.add('border-primary');
-                break;
-            case 'warning':
-                toastElement.classList.add('border-warning');
-                break;
-            case 'danger':
-                toastElement.classList.add('border-danger');
-                break;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const toastMessage = urlParams.get('message');
+        const toastType = urlParams.get('type');
+
+        if (toastMessage) {
+            const toastBody = document.querySelector('.toast-body');
+            const toastElement = document.querySelector('.toast');
+            
+            toastBody.textContent = decodeURIComponent(toastMessage);
+            toastElement.classList.remove('border-primary', 'border-warning', 'border-danger');
+            
+            switch (toastType) {
+                case 'primary':
+                    toastElement.classList.add('border-primary');
+                    break;
+                case 'warning':
+                    toastElement.classList.add('border-warning');
+                    break;
+                case 'danger':
+                    toastElement.classList.add('border-danger');
+                    break;
+            }
+            
+            toast.show();
+
+            // Remove the message and type from the URL
+            urlParams.delete('message');
+            urlParams.delete('type');
+            const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+            history.replaceState(null, '', newUrl);
         }
-        
-        toast.show();
-        <?php endif; ?>
     }
 });
 </script>
