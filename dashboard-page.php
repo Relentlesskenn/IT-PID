@@ -6,77 +6,83 @@ include('includes/header.php');
 include('includes/navbar.php');
 
 // Functions
-// Function to fetch and sum expenses for a specific month and year
 function getExpensesTotal($userId, $month, $year) {
     global $conn;
-    $sql = "SELECT SUM(e.amount) AS total_expenses FROM expenses e WHERE e.user_id = '$userId' AND MONTH(e.date) = '$month' AND YEAR(e.date) = '$year'";
-    $result = mysqli_query($conn, $sql);
-    $row = mysqli_fetch_assoc($result);
+    $stmt = $conn->prepare("SELECT SUM(e.amount) AS total_expenses FROM expenses e WHERE e.user_id = ? AND MONTH(e.date) = ? AND YEAR(e.date) = ?");
+    $stmt->bind_param("iii", $userId, $month, $year);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
     return $row['total_expenses'] ?? 0;
 }
 
-// Function to fetch and sum incomes for a specific month and year
 function getIncomesTotal($userId, $month, $year) {
     global $conn;
-    $sql = "SELECT SUM(i.amount) AS total_incomes FROM incomes i WHERE i.user_id = '$userId' AND MONTH(i.date) = '$month' AND YEAR(i.date) = '$year'";
-    $result = mysqli_query($conn, $sql);
-    $row = mysqli_fetch_assoc($result);
+    $stmt = $conn->prepare("SELECT SUM(i.amount) AS total_incomes FROM incomes i WHERE i.user_id = ? AND MONTH(i.date) = ? AND YEAR(i.date) = ?");
+    $stmt->bind_param("iii", $userId, $month, $year);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
     return $row['total_incomes'] ?? 0;
 }
 
-// Function to update or insert the monthly balance
 function getOrUpdateMonthlyBalance($userId, $month, $year, $balance) {
     global $conn;
-    $sql = "SELECT balance FROM balances WHERE user_id = '$userId' AND month = '$month' AND year = '$year'";
-    $result = mysqli_query($conn, $sql);
+    $stmt = $conn->prepare("SELECT balance FROM balances WHERE user_id = ? AND month = ? AND year = ?");
+    $stmt->bind_param("iii", $userId, $month, $year);
+    $stmt->execute();
+    $result = $stmt->get_result();
     
-    if (mysqli_num_rows($result) > 0) {
-        $row = mysqli_fetch_assoc($result);
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
         $storedBalance = $row['balance'];
         
         if ($storedBalance != $balance) {
-            $updateSql = "UPDATE balances SET balance = '$balance' WHERE user_id = '$userId' AND month = '$month' AND year = '$year'";
-            mysqli_query($conn, $updateSql);
+            $updateStmt = $conn->prepare("UPDATE balances SET balance = ? WHERE user_id = ? AND month = ? AND year = ?");
+            $updateStmt->bind_param("diii", $balance, $userId, $month, $year);
+            $updateStmt->execute();
         }
     } else {
-        $insertSql = "INSERT INTO balances (user_id, year, month, balance) VALUES ('$userId', '$year', '$month', '$balance')";
-        mysqli_query($conn, $insertSql);
+        $insertStmt = $conn->prepare("INSERT INTO balances (user_id, year, month, balance) VALUES (?, ?, ?, ?)");
+        $insertStmt->bind_param("iiid", $userId, $year, $month, $balance);
+        $insertStmt->execute();
     }
     
     return $balance;
 }
 
-// Function to get the number of unread notifications for a user
 function getUnreadNotificationsCount($userId) {
     global $conn;
-    $sql = "SELECT COUNT(*) AS unread_count FROM notifications WHERE user_id = '$userId' AND is_read = 0";
-    $result = mysqli_query($conn, $sql);
-    $row = mysqli_fetch_assoc($result);
+    $stmt = $conn->prepare("SELECT COUNT(*) AS unread_count FROM notifications WHERE user_id = ? AND is_read = 0");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
     return $row['unread_count'];
 }
 
-// Function to add a notification
 function addNotification($userId, $type, $message) {
     global $conn;
     $stmt = $conn->prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, ?, ?)");
     $stmt->bind_param("iss", $userId, $type, $message);
     $stmt->execute();
-    $stmt->close();
 }
 
-// Function to check budget status and generate alerts
 function checkBudgetStatus($userId, $month, $year) {
     global $conn;
     $alerts = array();
 
-    $sql = "SELECT b.id, b.name, b.amount, SUM(e.amount) AS total_expenses 
+    $stmt = $conn->prepare("SELECT b.id, b.name, b.amount, SUM(e.amount) AS total_expenses 
             FROM budgets b 
-            LEFT JOIN expenses e ON b.id = e.category_id AND MONTH(e.date) = '$month' AND YEAR(e.date) = '$year'
-            WHERE b.user_id = '$userId' AND b.month = '$year-$month'
-            GROUP BY b.id, b.name, b.amount";
-    $result = mysqli_query($conn, $sql);
+            LEFT JOIN expenses e ON b.id = e.category_id AND MONTH(e.date) = ? AND YEAR(e.date) = ?
+            WHERE b.user_id = ? AND b.month = ?
+            GROUP BY b.id, b.name, b.amount");
+    $yearMonth = "$year-$month";
+    $stmt->bind_param("iisi", $month, $year, $userId, $yearMonth);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-    while ($row = mysqli_fetch_assoc($result)) {
+    while ($row = $result->fetch_assoc()) {
         $budgetId = $row['id'];
         $budgetAmount = $row['amount'];
         $totalExpenses = $row['total_expenses'] ?? 0;
@@ -113,7 +119,6 @@ function checkBudgetStatus($userId, $month, $year) {
                 'alertType' => $alertType
             );
             
-            // Add notification
             addNotification($userId, 'budget_alert', $alertMessage);
         }
     }
@@ -121,25 +126,26 @@ function checkBudgetStatus($userId, $month, $year) {
     return $alerts;
 }
 
-// Function to check if an alert has been shown
 function isAlertShown($userId, $budgetId, $alertType) {
     global $conn;
-    $sql = "SELECT * FROM budget_alerts WHERE user_id = '$userId' AND budget_id = '$budgetId' AND alert_type = '$alertType'";
-    $result = mysqli_query($conn, $sql);
-    return mysqli_num_rows($result) > 0;
+    $stmt = $conn->prepare("SELECT * FROM budget_alerts WHERE user_id = ? AND budget_id = ? AND alert_type = ?");
+    $stmt->bind_param("iis", $userId, $budgetId, $alertType);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    return $result->num_rows > 0;
 }
 
-// Function to mark an alert as shown
 function markAlertAsShown($userId, $budgetId, $alertType) {
     global $conn;
-    $sql = "INSERT INTO budget_alerts (user_id, budget_id, alert_type) VALUES ('$userId', '$budgetId', '$alertType')";
-    mysqli_query($conn, $sql);
+    $stmt = $conn->prepare("INSERT INTO budget_alerts (user_id, budget_id, alert_type) VALUES (?, ?, ?)");
+    $stmt->bind_param("iis", $userId, $budgetId, $alertType);
+    $stmt->execute();
 }
 
 // Get current month, year, and set default year
-$currentMonth = isset($_GET['month']) ? $_GET['month'] : date('m');
-$currentYear = isset($_GET['year']) ? $_GET['year'] : date('Y');
-$defaultYear = date('Y');
+$currentMonth = isset($_GET['month']) ? intval($_GET['month']) : intval(date('m'));
+$currentYear = isset($_GET['year']) ? intval($_GET['year']) : intval(date('Y'));
+$defaultYear = intval(date('Y'));
 
 $userId = $_SESSION['auth_user']['user_id'];
 $totalExpenses = getExpensesTotal($userId, $currentMonth, $currentYear);
@@ -157,13 +163,13 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
 
 ?>
 
-<link rel="stylesheet" href=".\assets\css\dashboard.css">
+<link rel="stylesheet" href="./assets/css/dashboard.css">
 
 <!-- HTML content -->
 <div class="py-4">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
-            <span style="font-size: 1.1rem;">Hello, <?= $_SESSION['auth_user']['username']?>!</span>
+            <span style="font-size: 1.1rem;">Hello, <?= htmlspecialchars($_SESSION['auth_user']['username']) ?>!</span>
             <a id="notificationBtn" class="btn btn-custom-primary btn-sm position-relative" href="notifications-page.php">
                 <i id="notificationIcon" class="bi bi-bell-fill"></i>
                 <?php if ($unreadNotificationsCount > 0): ?>
@@ -208,7 +214,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                         for ($i = 1; $i <= 12; $i++) {
                             $monthName = date('F', mktime(0, 0, 0, $i, 1));
                             $selected = ($i == $currentMonth) ? 'selected' : '';
-                            echo "<option value='{$i}' {$selected}>{$monthName}</option>";
+                            echo "<option value='" . $i . "' " . $selected . ">" . htmlspecialchars($monthName) . "</option>";
                         }
                         ?>
                     </select>
@@ -220,10 +226,10 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                     <select name="year" id="year" class="form-select">
                         <?php
                         $startYear = 2024;
-                        $endYear = date('Y') + 1; 
+                        $endYear = intval(date('Y')) + 1; 
                         for ($i = $startYear; $i <= $endYear; $i++) {
                             $selected = ($i == $currentYear) ? 'selected' : '';
-                            echo "<option value='{$i}' {$selected}>{$i}</option>";
+                            echo "<option value='" . $i . "' " . $selected . ">" . $i . "</option>";
                         }
                         ?>
                     </select>
@@ -240,15 +246,18 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
         <?php
         // Fetch budget data from the database and calculate the remaining balance
         $userId = $_SESSION['auth_user']['user_id'];
-        $sql = "SELECT b.id, b.name, b.amount, b.month, b.color, SUM(e.amount) AS total_expenses 
+        $stmt = $conn->prepare("SELECT b.id, b.name, b.amount, b.month, b.color, SUM(e.amount) AS total_expenses 
                 FROM budgets b 
-                LEFT JOIN expenses e ON b.id = e.category_id AND MONTH(e.date) = '$currentMonth' AND YEAR(e.date) = '$currentYear'
-                WHERE b.user_id = '$userId' AND b.month = '$currentYear-$currentMonth'
-                GROUP BY b.id, b.name, b.amount, b.month, b.color";
-        $result = mysqli_query($conn, $sql);
+                LEFT JOIN expenses e ON b.id = e.category_id AND MONTH(e.date) = ? AND YEAR(e.date) = ?
+                WHERE b.user_id = ? AND b.month = ?
+                GROUP BY b.id, b.name, b.amount, b.month, b.color");
+        $yearMonth = "$currentYear-$currentMonth";
+        $stmt->bind_param("iisi", $currentMonth, $currentYear, $userId, $yearMonth);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-        if (mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
                 $budgetId = $row['id'];
                 $budgetName = $row['name'];
                 $budgetAmount = $row['amount'];
@@ -264,8 +273,8 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                         <div class="card-body d-flex flex-column p-2">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <h6 class="card-title mb-0" style="font-size: 1rem; font-weight: bold;">
-                                    <span class="badge rounded-pill-custom" style="background-color: <?= $row['color'] ?>; margin-bottom: 0.2rem;">&nbsp;</span>
-                                    <?= $budgetName ?>
+                                    <span class="badge rounded-pill-custom" style="background-color: <?= htmlspecialchars($row['color']) ?>; margin-bottom: 0.2rem;">&nbsp;</span>
+                                    <?= htmlspecialchars($budgetName) ?>
                                 </h6>
                             </div>
                             <div class="budget-info">
@@ -274,7 +283,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                                 <p class="card-text mb-1" style="font-size: 0.8rem; line-height: 1.6;">Balance - <strong>₱<?= number_format($remainingBalance, 2) ?></strong></p>
                             </div>
                             <div class="progress mt-auto position-relative" style="height: 0.4rem;">
-                                <div class="progress-bar <?php if ($percentageUsed >= 90) { echo 'bg-custom-danger'; } elseif ($percentageUsed >= 70) { echo 'bg-warning'; } else { echo 'bg-success'; } ?>" 
+                                <div class="progress-bar <?php echo $percentageUsed >= 90 ? 'bg-custom-danger' : ($percentageUsed >= 70 ? 'bg-warning' : 'bg-success'); ?>" 
                                     role="progressbar" 
                                     style="width: <?= $percentageUsed ?>%;" 
                                     aria-valuenow="<?= $percentageUsed ?>" 
