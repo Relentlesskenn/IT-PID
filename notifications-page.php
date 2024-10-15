@@ -78,7 +78,6 @@ function getNotificationDetails($type, $message) {
                         </button>
                     </form>
                 <?php else: ?>
-                    <div></div> <!-- Empty div for layout balance -->
                 <?php endif; ?>
             </div>
 
