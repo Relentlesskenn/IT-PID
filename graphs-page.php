@@ -83,7 +83,7 @@ $hasData = !empty($spendingBreakdown) || $hasIncomeExpenseData || !empty($expens
 
 // Prepare data for Chart.js
 $labels = $amounts = $backgroundColor = [];
-$incomeData = $expenseData = array_fill(1, 12, 0);
+$incomeData = $expenseData = array_fill(0, 12, 0);
 $trendDates = $trendAmounts = [];
 
 if ($hasData) {
@@ -96,14 +96,19 @@ if ($hasData) {
 
     // Income vs Expenses data
     foreach ($monthlyIncomeExpenses as $month => $data) {
-        $incomeData[$month] = $data['income'];
-        $expenseData[$month] = $data['expense'];
+        $incomeData[$month - 1] = $data['income'] ?? 0;
+        $expenseData[$month - 1] = $data['expense'] ?? 0;
     }
 
+    // Convert to indexed arrays for Chart.js
+    $incomeData = array_values($incomeData);
+    $expenseData = array_values($expenseData);
+
     // Expense Trend data
+    $trendDates = $trendAmounts = [];
     foreach ($expenseTrend as $item) {
         $trendDates[] = $item['date'];
-        $trendAmounts[] = $item['total_amount'];
+        $trendAmounts[] = floatval($item['total_amount']);
     }
 }
 ?>
@@ -278,21 +283,27 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [{
                 label: 'Income',
                 data: <?= json_encode(array_values($incomeData)) ?>,
-                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                backgroundColor: 'rgba(75, 192, 192, 0.8)',
                 borderColor: 'rgba(75, 192, 192, 1)',
                 borderWidth: 1
             },
             {
                 label: 'Expenses',
                 data: <?= json_encode(array_values($expenseData)) ?>,
-                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                backgroundColor: 'rgba(255, 99, 132, 0.8)',
                 borderColor: 'rgba(255, 99, 132, 1)',
                 borderWidth: 1
             }]
         },
         options: {
-            ...chartOptions,
+            responsive: true,
+            maintainAspectRatio: false,
             scales: {
+                x: {
+                    grid: {
+                        display: false
+                    }
+                },
                 y: {
                     beginAtZero: true,
                     ticks: {
@@ -300,8 +311,40 @@ document.addEventListener('DOMContentLoaded', function() {
                             return '₱' + value.toLocaleString();
                         },
                         font: {
+                            size: 12,
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        font: {
                             size: 14,
-                            weight: 'normal',
+                        },
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    titleFont: {
+                        size: 16,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 14
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += '₱' + context.parsed.y.toLocaleString();
+                            return label;
                         }
                     }
                 }
@@ -315,50 +358,91 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(document.getElementById('expenseTrendChart').getContext('2d'), {
         type: 'line',
         data: {
-            labels: <?= json_encode($trendDates) ?>,
             datasets: [{
                 label: 'Daily Expenses',
-                data: <?= json_encode($trendAmounts) ?>,
+                data: <?= json_encode(array_map(function($item) {
+                    return [
+                        'x' => $item['date'],
+                        'y' => floatval($item['total_amount'])
+                    ];
+                }, $expenseTrend)) ?>,
                 borderColor: 'rgba(54, 162, 235, 1)',
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderWidth: 2,
-                fill: true
+                borderWidth: 3,
+                fill: true,
+                pointRadius: 2,
+                pointHoverRadius: 5,
+                pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                pointBorderColor: 'rgba(54, 162, 235, 1)',
+                pointHoverBackgroundColor: 'rgba(54, 162, 235, 1)',
+                pointHoverBorderColor: 'white'
             }]
         },
         options: {
-            ...chartOptions,
+            responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 x: {
                     type: 'time',
                     time: {
-                        unit: 'day',
-                        tooltipFormat: 'MMM D, YYYY'
+                        unit: 'month',
+                        displayFormats: {
+                            month: 'MMM yyyy'
+                        }
                     },
                     title: {
                         display: true,
                         text: 'Date'
+                    },
+                    ticks: {
+                        maxTicksLimit: 12
                     }
                 },
                 y: {
                     beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Expense Amount (₱)'
+                    },
                     ticks: {
                         callback: function(value) {
                             return '₱' + value.toLocaleString();
-                        },
-                        font: {
-                            size: 14,
-                            weight: 'normal',
                         }
-                    },
-                    title: {
-                        display: false
                     }
                 }
             },
             plugins: {
                 legend: {
                     display: false
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    titleFont: {
+                        size: 16,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 14
+                    },
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            return new Date(tooltipItems[0].parsed.x).toLocaleDateString('en-PH', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            });
+                        },
+                        label: function(context) {
+                            return 'Expense: ₱' + context.parsed.y.toLocaleString();
+                        }
+                    }
                 }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
             }
         }
     });
@@ -444,7 +528,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Call the function to update totals
     updateCategoryTotals();
 
-    <?php endif; // End of if ($hasData) ?>
+    <?php endif;?> // End of if ($hasData)
 });
 </script>
 
