@@ -68,7 +68,7 @@ function jumpButton(event, element) {
             icon.classList.remove('jumping');
         }
         window.location.href = element.href; // Navigate to the link after the animation
-    }, 300); // Adjust this timing to match your CSS animation duration
+    }, 200); // Adjust this timing to match your CSS animation duration
 }
 
 function zoomRotateButton(event, element, fromIcon, toIcon) {

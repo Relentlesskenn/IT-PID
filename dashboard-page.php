@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
             notificationIcon.classList.remove('shake-icon');
             // Navigate to the notifications page after the animation
             window.location.href = this.href;
-        }, 500); // 500ms matches the duration of our shake animation
+        }, 200); // 500ms matches the duration of our shake animation
     });
 });
 </script>
