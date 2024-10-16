@@ -254,7 +254,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                 </div>
             </form>
             <!-- Search input for smaller screens, outside the form -->
-            <div class="col-12 d-lg-none mt-2">
+            <div class="col-12 d-lg-none mt-3">
                 <div class="input-group">
                     <input type="text" class="form-control" id="searchBudgetMobile" placeholder="Search budgets...">
                     <button type="button" class="btn btn-outline-secondary" id="resetSearchMobile">
