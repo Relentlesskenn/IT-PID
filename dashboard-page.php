@@ -168,9 +168,6 @@ $unreadNotificationsCount = getUnreadNotificationsCount($userId);
 // Check budget status and get alerts
 $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
 
-// Get search query
-$searchQuery = isset($_GET['search']) ? trim($_GET['search']) : '';
-
 ?>
 
 <link rel="stylesheet" href="./assets/css/dashboard.css">
@@ -211,7 +208,6 @@ $searchQuery = isset($_GET['search']) ? trim($_GET['search']) : '';
             </div>
         </div>
 
-        
         <!-- Month, Year selection, and Search -->
         <div class="mb-4">
             <form action="" method="GET" class="row g-2 align-items-center">
@@ -247,26 +243,31 @@ $searchQuery = isset($_GET['search']) ? trim($_GET['search']) : '';
                 <div class="col-auto">
                     <button type="submit" class="btn btn-custom-primary" style="font-size: 0.95rem;">View</button>
                 </div>
-                <div class="col-md-4">
-                    <input type="text" class="form-control" id="searchBudget" name="search" placeholder="Search budgets..." value="<?php echo htmlspecialchars($searchQuery); ?>">
-                </div>
             </form>
+            <!-- Search input outside the form -->
+            <div class="col-md-4 mt-2">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="searchBudget" placeholder="Search budgets...">
+                    <button type="button" class="btn btn-outline-secondary" id="resetSearch">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>
         </div>
         
         <!-- Budget Cards -->
         <div class="row row-cols-2 row-cols-sm-2 row-cols-lg-4 g-4" id="budgetCardsContainer">
-
+            
         <?php
         // Fetch budget data from the database and calculate the remaining balance
         $userId = $_SESSION['auth_user']['user_id'];
         $stmt = $conn->prepare("SELECT b.id, b.name, b.amount, b.month, b.color, SUM(e.amount) AS total_expenses 
                 FROM budgets b 
                 LEFT JOIN expenses e ON b.id = e.category_id AND MONTH(e.date) = ? AND YEAR(e.date) = ?
-                WHERE b.user_id = ? AND b.month = ? AND b.name LIKE ?
+                WHERE b.user_id = ? AND b.month = ?
                 GROUP BY b.id, b.name, b.amount, b.month, b.color");
         $yearMonth = "$currentYear-$currentMonth";
-        $searchTerm = "%" . $searchQuery . "%";
-        $stmt->bind_param("iisss", $currentMonth, $currentYear, $userId, $yearMonth, $searchTerm);
+        $stmt->bind_param("iisi", $currentMonth, $currentYear, $userId, $yearMonth);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -313,7 +314,7 @@ $searchQuery = isset($_GET['search']) ? trim($_GET['search']) : '';
             echo '<div class="col-12 no-results-message">
                     <div class="card">
                         <div class="card-body">
-                            <p class="card-text text-center">No budgets found for the selected date or search criteria.</p>
+                            <p class="card-text text-center">No budgets found for the selected date.</p>
                         </div>
                     </div>
                   </div>';
@@ -398,6 +399,9 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', function() {
     const notificationBtn = document.getElementById('notificationBtn');
     const notificationIcon = document.getElementById('notificationIcon');
+    const searchInput = document.getElementById('searchBudget');
+    const resetButton = document.getElementById('resetSearch');
+    const budgetCards = document.querySelectorAll('#budgetCardsContainer .col:not(.no-results-message)');
     
     notificationBtn.addEventListener('click', function(e) {
         e.preventDefault(); // Prevent the default link behavior
@@ -412,55 +416,66 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = this.href;
         }, 200); // Adjust this timing to match your CSS animation duration
     });
-});
 
-// Add real-time search functionality
-document.getElementById('searchBudget').addEventListener('input', function(e) {
-    const searchTerm = e.target.value.toLowerCase();
-    const budgetCards = document.querySelectorAll('#budgetCardsContainer .col:not(.no-results-message)');
-    let visibleCards = 0;
-    
-    budgetCards.forEach(card => {
-        const budgetName = card.querySelector('.card-title').textContent.toLowerCase();
-        if (budgetName.includes(searchTerm)) {
-            card.style.display = '';
-            visibleCards++;
-        } else {
-            card.style.display = 'none';
+    // Search functionality
+    function performSearch() {
+        const searchTerm = searchInput.value.toLowerCase();
+        let visibleCards = 0;
+        
+        budgetCards.forEach(card => {
+            const budgetName = card.querySelector('.card-title').textContent.toLowerCase();
+            if (budgetName.includes(searchTerm)) {
+                card.style.display = '';
+                visibleCards++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        updateNoResultsMessage(visibleCards);
+    }
+
+    // Function to update the no results message
+    function updateNoResultsMessage(visibleCards) {
+        let noResultsMessage = document.querySelector('#budgetCardsContainer .no-results-message');
+        
+        if (visibleCards === 0) {
+            if (!noResultsMessage) {
+                noResultsMessage = document.createElement('div');
+                noResultsMessage.className = 'col-12 no-results-message';
+                noResultsMessage.innerHTML = `
+                    <div class="card">
+                        <div class="card-body">
+                            <p class="card-text text-center">No budgets found matching your search.</p>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('budgetCardsContainer').appendChild(noResultsMessage);
+            } else {
+                noResultsMessage.style.display = '';
+            }
+        } else if (noResultsMessage) {
+            noResultsMessage.style.display = 'none';
         }
+    }
+
+    function resetSearch() {
+        searchInput.value = '';
+        budgetCards.forEach(card => card.style.display = '');
+        updateNoResultsMessage(budgetCards.length);
+        resetButton.style.display = 'none';
+    }
+
+    searchInput.addEventListener('input', function() {
+        performSearch();
+        resetButton.style.display = this.value ? 'block' : 'none';
     });
 
-    // Show or hide "No results" message
-    let noResultsMessage = document.querySelector('#budgetCardsContainer .no-results-message');
-    
-    if (visibleCards === 0) {
-        if (!noResultsMessage) {
-            noResultsMessage = document.createElement('div');
-            noResultsMessage.className = 'col-12 no-results-message';
-            noResultsMessage.innerHTML = `
-                <div class="card">
-                    <div class="card-body">
-                        <p class="card-text text-center">No budgets found matching your search.</p>
-                    </div>
-                </div>
-            `;
-            document.getElementById('budgetCardsContainer').appendChild(noResultsMessage);
-        } else {
-            noResultsMessage.style.display = '';
-        }
-    } else if (noResultsMessage) {
-        noResultsMessage.style.display = 'none';
-    }
-});
+    resetButton.addEventListener('click', resetSearch);
 
-// Trigger the search on page load if there's a search query
-window.addEventListener('load', function() {
-    const searchInput = document.getElementById('searchBudget');
-    if (searchInput.value) {
-        searchInput.dispatchEvent(new Event('input'));
-    }
+    // Initial setup
+    resetButton.style.display = 'none'; // Hide reset button initially
 });
-
 </script>
 
 <?php include('includes/footer.php') ?>
