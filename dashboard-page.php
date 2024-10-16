@@ -243,12 +243,21 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                 <div class="col-auto">
                     <button type="submit" class="btn btn-custom-primary" style="font-size: 0.95rem;">View</button>
                 </div>
+                <!-- Search input inside the form, but only visible on larger screens -->
+                <div class="col-lg-4 d-none d-lg-block">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="searchBudget" placeholder="Search budgets...">
+                        <button type="button" class="btn btn-outline-secondary" id="resetSearch">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
             </form>
-            <!-- Search input outside the form -->
-            <div class="col-md-4 mt-2">
+            <!-- Search input for smaller screens, outside the form -->
+            <div class="col-12 d-lg-none mt-2">
                 <div class="input-group">
-                    <input type="text" class="form-control" id="searchBudget" placeholder="Search budgets...">
-                    <button type="button" class="btn btn-outline-secondary" id="resetSearch">
+                    <input type="text" class="form-control" id="searchBudgetMobile" placeholder="Search budgets...">
+                    <button type="button" class="btn btn-outline-secondary" id="resetSearchMobile">
                         <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
@@ -291,10 +300,10 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                                     <?= htmlspecialchars($budgetName) ?>
                                 </h6>
                             </div>
-                            <div class="budget-info">
+                            <div class="budget-info mt-1 mb-2">
                                 <p class="card-text mb-0" style="font-size: 0.8rem; line-height: 1.6;">Budget - <strong>₱<?= number_format($budgetAmount, 2) ?></strong></p>
                                 <p class="card-text mb-0" style="font-size: 0.8rem; line-height: 1.6;">Spent - <strong>₱<?= number_format($totalExpenses, 2) ?></strong></p>
-                                <p class="card-text mb-1" style="font-size: 0.8rem; line-height: 1.6;">Balance - <strong>₱<?= number_format($remainingBalance, 2) ?></strong></p>
+                                <p class="card-text" style="font-size: 0.8rem; line-height: 1.6;">Balance - <strong>₱<?= number_format($remainingBalance, 2) ?></strong></p>
                             </div>
                             <div class="progress mt-auto position-relative" style="height: 0.4rem;">
                                 <div class="progress-bar <?php echo $percentageUsed >= 90 ? 'bg-custom-danger' : ($percentageUsed >= 70 ? 'bg-warning' : 'bg-success'); ?>" 
@@ -400,7 +409,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const notificationBtn = document.getElementById('notificationBtn');
     const notificationIcon = document.getElementById('notificationIcon');
     const searchInput = document.getElementById('searchBudget');
+    const searchInputMobile = document.getElementById('searchBudgetMobile');
     const resetButton = document.getElementById('resetSearch');
+    const resetButtonMobile = document.getElementById('resetSearchMobile');
     const budgetCards = document.querySelectorAll('#budgetCardsContainer .col:not(.no-results-message)');
     
     notificationBtn.addEventListener('click', function(e) {
@@ -419,7 +430,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Search functionality
     function performSearch() {
-        const searchTerm = searchInput.value.toLowerCase();
+        const searchTerm = (window.innerWidth >= 992 ? searchInput : searchInputMobile).value.toLowerCase();
         let visibleCards = 0;
         
         budgetCards.forEach(card => {
@@ -461,9 +472,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function resetSearch() {
         searchInput.value = '';
+        searchInputMobile.value = '';
         budgetCards.forEach(card => card.style.display = '');
         updateNoResultsMessage(budgetCards.length);
         resetButton.style.display = 'none';
+        resetButtonMobile.style.display = 'none';
     }
 
     searchInput.addEventListener('input', function() {
@@ -471,10 +484,35 @@ document.addEventListener('DOMContentLoaded', function() {
         resetButton.style.display = this.value ? 'block' : 'none';
     });
 
+    searchInputMobile.addEventListener('input', function() {
+        performSearch();
+        resetButtonMobile.style.display = this.value ? 'block' : 'none';
+    });
+
     resetButton.addEventListener('click', resetSearch);
+    resetButtonMobile.addEventListener('click', resetSearch);
+
+    // Sync search inputs
+    searchInput.addEventListener('input', function() {
+        searchInputMobile.value = this.value;
+    });
+
+    searchInputMobile.addEventListener('input', function() {
+        searchInput.value = this.value;
+    });
 
     // Initial setup
-    resetButton.style.display = 'none'; // Hide reset button initially
+    resetButton.style.display = 'none';
+    resetButtonMobile.style.display = 'none';
+
+    // Handle resize events
+    window.addEventListener('resize', function() {
+        if (window.innerWidth >= 992) {
+            searchInputMobile.value = searchInput.value;
+        } else {
+            searchInput.value = searchInputMobile.value;
+        }
+    });
 });
 </script>
 
