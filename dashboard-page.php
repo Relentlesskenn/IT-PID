@@ -6,6 +6,7 @@ include('includes/header.php');
 include('includes/navbar.php');
 
 // Functions
+// Function to get the total expenses for a specific month and year
 function getExpensesTotal($userId, $month, $year) {
     global $conn;
     $stmt = $conn->prepare("SELECT SUM(e.amount) AS total_expenses FROM expenses e WHERE e.user_id = ? AND MONTH(e.date) = ? AND YEAR(e.date) = ?");
@@ -405,6 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showBudgetAlerts(budgetAlerts);
 });
 
+// Add event listeners
 document.addEventListener('DOMContentLoaded', function() {
     const notificationBtn = document.getElementById('notificationBtn');
     const notificationIcon = document.getElementById('notificationIcon');
@@ -470,6 +472,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Reset search
     function resetSearch() {
         searchInput.value = '';
         searchInputMobile.value = '';
@@ -479,16 +482,19 @@ document.addEventListener('DOMContentLoaded', function() {
         resetButtonMobile.style.display = 'none';
     }
 
+    // Perform search on input
     searchInput.addEventListener('input', function() {
         performSearch();
         resetButton.style.display = this.value ? 'block' : 'none';
     });
 
+    // Reset search input on mobile
     searchInputMobile.addEventListener('input', function() {
         performSearch();
         resetButtonMobile.style.display = this.value ? 'block' : 'none';
     });
 
+    // Reset search input
     resetButton.addEventListener('click', resetSearch);
     resetButtonMobile.addEventListener('click', resetSearch);
 

@@ -5,6 +5,7 @@ include('_dbconnect.php');
 include('includes/authentication.php');
 include('includes/header.php');
 
+// Get the current user ID
 $userId = $_SESSION['auth_user']['user_id'];
 
 // Get the current month and year
@@ -124,6 +125,7 @@ if ($hasData) {
         <h1 class="h4 mb-0">Graphs</h1>
     </div>
     
+    <!-- Spending Breakdown Chart -->
     <div class="row">
         <?php if ($hasData): ?>
             <div class="col-lg-6 mb-4">
@@ -140,6 +142,7 @@ if ($hasData) {
                     </div>
                 </div>
             </div>
+            <!-- Spending Breakdown Categories -->
             <div class="col-lg-6 mb-4">
                 <div class="card h-100">
                     <div class="card-header">
@@ -159,6 +162,7 @@ if ($hasData) {
                     </div>
                 </div>
             </div>
+            <!-- Income vs. Expenses Chart -->
             <div class="col-lg-6 mb-4">
                 <div class="card h-100">
                     <div class="card-header">
@@ -173,6 +177,7 @@ if ($hasData) {
                     </div>
                 </div>
             </div>
+            <!-- Expense Trend Chart -->
             <div class="col-lg-6 mb-4">
                 <div class="card h-100">
                     <div class="card-header">
@@ -188,6 +193,7 @@ if ($hasData) {
                 </div>
             </div>
         <?php else: ?>
+            <!-- No Data Message -->
             <div class="col-12">
                 <div class="alert alert-custom-info mt-1" role="alert">
                     <h4 class="alert-heading">No Financial Data Available</h4>
@@ -206,9 +212,12 @@ if ($hasData) {
     </div>
 </div>
 
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Chart.js Date Formatting Plugin -->
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script>
+// Add event listener to DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
     <?php if ($hasData): ?>
     Chart.defaults.font.family = "'Lexend', 'sans-serif'";

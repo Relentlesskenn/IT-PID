@@ -22,6 +22,7 @@ include('includes/header.php');
 <link rel="stylesheet" href="./assets/css/page_transition.css">
 <link rel="stylesheet" href="./assets/css/custom-strength-meter.css">
 
+<!-- HTML content -->
 <div class="py-5 px-2 vh-100 d-flex flex-column main">
     <div class="container flex-grow-1">
         <div class="row justify-content-center h-100">
@@ -81,9 +82,10 @@ include('includes/header.php');
     </div>
 </div>
 
-
+<!-- Page Transition Script -->
 <script src="./assets/js/page_transition.js"></script>
 <script>
+    // Check password strength and display the strength meter
     function checkPasswordStrength() {
         const password = document.getElementById('new_password').value;
         const strengthMeterFill = document.getElementById('password-strength-meter-fill');
@@ -132,6 +134,7 @@ include('includes/header.php');
         strengthText.style.color = color;
     }
 
+    // Add event listener to password reset form
     document.getElementById('passwordResetForm').addEventListener('submit', function(event) {
         var newPassword = document.getElementById('new_password').value;
         var confirmPassword = document.getElementById('confirm_password').value;

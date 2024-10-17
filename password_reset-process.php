@@ -23,6 +23,7 @@ use PHPMailer\PHPMailer\Exception;
 
 require 'vendor/autoload.php';
 
+// Function to send password reset email
 function send_password_reset($get_username, $get_email, $token)
 {
     $mail = new PHPMailer(true);
@@ -51,6 +52,7 @@ function send_password_reset($get_username, $get_email, $token)
     $mail->send();
 }
 
+// Process password reset form submission
 if(isset($_POST['password_reset_btn']))
 {
     $email = mysqli_real_escape_string($conn, $_POST['email']);
@@ -90,6 +92,7 @@ if(isset($_POST['password_reset_btn']))
     }
 }
 
+// Process password update form submission
 if(isset($_POST['password_update_btn']))
 {
     $email = mysqli_real_escape_string($conn, $_POST['email']);

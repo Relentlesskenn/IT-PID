@@ -1,3 +1,4 @@
+/* Landing page styles */
 body, html {
   height: 100%;
   margin: 0;
@@ -18,6 +19,7 @@ body, html {
   text-align: left;
 }
 
+/* Landing page logo styles */
 .logo-container {
   margin-top: 12rem;
   margin-bottom: 13.5rem;
@@ -56,6 +58,7 @@ body, html {
   opacity: 0;
 }
 
+/* Landing page animation styles */
 .anim-typewriter {
   animation: fadeIn 0.9s ease-out 0.5s forwards,
              typewriter 4s steps(44) 1.5s 1 normal both,
@@ -77,6 +80,7 @@ body, html {
   50% { border-right: 2px solid transparent; }
 }
 
+/* Landing page buttons styles */
 .cta-buttons {
   width: 100%;
   max-width: 350px;

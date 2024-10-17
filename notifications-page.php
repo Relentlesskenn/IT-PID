@@ -4,6 +4,7 @@ include('_dbconnect.php');
 include('includes/authentication.php');
 include('includes/header.php');
 
+// Get the current user ID
 $userId = $_SESSION['auth_user']['user_id'];
 
 // Handle notification deletion
@@ -106,6 +107,7 @@ function getNotificationDetails($type, $message) {
                     <?php endwhile; ?>
                 </div>
             <?php else: ?>
+                <!-- No Notifications Message -->
                 <div class="alert alert-custom-info" role="alert">
                     <i class="bi bi-info-circle-fill me-2"></i> No notifications found.
                 </div>

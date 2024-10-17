@@ -8,6 +8,7 @@ $meta_keywords = "budgeting, personal finance, financial planning, money managem
 <link rel="stylesheet" href="./assets/css/landing_page.css">
 <link rel="stylesheet" href="./assets/css/page_transition.css">
 
+<!-- HTML content -->
 <main class="main">
     <div class="logo-container">
         <h1 class="logo-text-upper">
@@ -27,6 +28,7 @@ $meta_keywords = "budgeting, personal finance, financial planning, money managem
 <script src="./assets/js/page_transition.js"></script>
 
 <script>
+// Add event listener to DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
     const tagline = document.querySelector('.tagline');
     const logoContainer = document.querySelector('.logo-container');

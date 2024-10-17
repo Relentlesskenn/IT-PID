@@ -3,18 +3,21 @@
 <nav class="bottom-nav">
     <div class="container">
         <div class="nav-content">
+            <!-- Goals button -->
             <div class="nav-item">
                 <a href="goals-page.php" <?php echo ($page_title == 'Goals · IT-PID') ? 'class="active"' : ''; ?> onclick="jumpButton(event, this)">
                     <i class="bi bi-bullseye"></i>
                     <span>Goals</span>
                 </a>
             </div>
+            <!-- Reports button -->
             <div class="nav-item">
                 <a href="reports-page.php" <?php echo ($page_title == 'Reports · IT-PID') ? 'class="active"' : ''; ?> onclick="jumpButton(event, this)">
                     <i class="bi bi-clipboard2-data"></i>
                     <span>Reports</span>
                 </a>
             </div>
+            <!-- Create button and home button for dashboard -->
             <div class="nav-item">
                 <?php if ($page_title == 'Dashboard · IT-PID'): ?>
                     <!-- Create button for dashboard -->
@@ -32,12 +35,14 @@
                     </a>
                 <?php endif; ?>
             </div>
+            <!-- Learn button -->
             <div class="nav-item">
                 <a href="learn-page.php" <?php echo ($page_title == 'Learn · IT-PID') ? 'class="active"' : ''; ?> onclick="jumpButton(event, this)">
                     <i class="bi bi-lightbulb"></i>
                     <span>Learn</span>
                 </a>
             </div>
+            <!-- Settings button -->
             <div class="nav-item">
                 <a href="settings-page.php" <?php echo ($page_title == 'Settings · IT-PID') ? 'class="active"' : ''; ?> onclick="jumpButton(event, this)">
                     <i class="bi bi-gear"></i>
@@ -49,6 +54,7 @@
 </nav>
 
 <script>
+// Jump button animation
 function jumpButton(event, element) {
     event.preventDefault(); // Prevent default link behavior
     
@@ -67,10 +73,11 @@ function jumpButton(event, element) {
         } else if (icon) {
             icon.classList.remove('jumping');
         }
-        window.location.href = element.href; // Navigate to the link after the animation
+        window.location.href = element.href;
     }, 200); // Adjust this timing to match your CSS animation duration
 }
 
+// Zoom and rotate button animation
 function zoomRotateButton(event, element, fromIcon, toIcon) {
     event.preventDefault(); // Prevent default link behavior
     
@@ -93,7 +100,7 @@ function zoomRotateButton(event, element, fromIcon, toIcon) {
         setTimeout(() => {
             createBtn.classList.remove('zoom-in');
             icon.classList.remove('rotate-in');
-            window.location.href = element.href; // Navigate to the link after the animation
+            window.location.href = element.href;
         }, 300);
     }
 }

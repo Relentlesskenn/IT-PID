@@ -1,3 +1,4 @@
+/* Graphs styles */
 .card {
     border: none;
     border-radius: 15px;
@@ -29,6 +30,7 @@
     padding: 1.5rem;
 }
 
+/* Category list styles */
 .category-list {
     max-height: 300px;
     overflow-y: auto;

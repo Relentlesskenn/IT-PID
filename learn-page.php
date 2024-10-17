@@ -5,6 +5,7 @@ include('includes/header.php');
 include('includes/navbar.php');
 ?>
 
+<!-- HTML content -->
 <div class="py-4">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">

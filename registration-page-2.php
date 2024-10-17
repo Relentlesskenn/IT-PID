@@ -40,6 +40,7 @@ $username = filter_var($username);
 <link rel="stylesheet" href="./assets/css/page_transition.css">
 <link rel="stylesheet" href="./assets/css/custom-strength-meter.css">
 
+<!-- HTML content -->
 <div class="py-5 px-2 vh-100 d-flex flex-column main" style="color: #433878;">
     <div class="container flex-grow-1">
         <div class="row justify-content-center h-100">
@@ -114,8 +115,10 @@ $username = filter_var($username);
     </div>
 </div>
 
+<!-- Page Transition Script -->
 <script src="./assets/js/page_transition.js"></script>
 <script>
+    // Check password strength and display the strength meter
     function checkPasswordStrength() {
         const password = document.getElementById('password').value;
         const strengthMeterFill = document.getElementById('password-strength-meter-fill');

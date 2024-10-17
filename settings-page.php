@@ -5,12 +5,14 @@ include('includes/header.php');
 include('includes/navbar.php');
 ?>
 
+<!-- HTML content -->
 <div class="py-4">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h4">Settings</h1>
     </div>
     
+    <!-- Logout Button -->
     <div class="d-flex justify-content-between align-items-center">
         <a class="btn btn-danger w-100" href="logout.php">Log out</a>
     </div>

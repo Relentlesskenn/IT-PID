@@ -23,6 +23,7 @@ use PHPMailer\PHPMailer\Exception;
 
 require 'vendor/autoload.php';
 
+// Function to send verification email
 function sendemail_verify($f_name, $email, $verify_token)
 {
     $mail = new PHPMailer(true);
@@ -55,6 +56,7 @@ function sendemail_verify($f_name, $email, $verify_token)
     }
 }
 
+// Process registration form submission
 if(isset($_POST['register_btn'])) 
 {
     $f_name = filter_input(INPUT_POST, 'f_name');

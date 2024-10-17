@@ -22,6 +22,7 @@ use PHPMailer\PHPMailer\Exception;
 
 require 'vendor/autoload.php';
 
+// Function to resend the email verification email
 function resend_email_verify($f_name, $email, $verify_token)
 {
     $mail = new PHPMailer(true);
@@ -57,6 +58,7 @@ function resend_email_verify($f_name, $email, $verify_token)
     }
 }
 
+// Process resend email verification form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_email_verification_btn'])) {
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
 

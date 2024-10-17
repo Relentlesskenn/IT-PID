@@ -21,6 +21,7 @@ include('includes/header.php');
 <link rel="stylesheet" href="./assets/css/login_register_page.css">
 <link rel="stylesheet" href="./assets/css/page_transition.css">
 
+<!-- HTML content -->
 <div class="py-5 px-2 vh-100 d-flex flex-column main">
     <div class="container flex-grow-1">
         <div class="row justify-content-center h-100">
@@ -66,6 +67,8 @@ include('includes/header.php');
         </div>
     </div>
 </div>
+
+<!-- Page Transition Script -->
 <script src="./assets/js/page_transition.js"></script>
 
 <?php include('includes/footer.php'); ?>

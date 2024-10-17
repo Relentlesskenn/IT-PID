@@ -22,6 +22,7 @@ $budgetCategories = [
 ];
 
 // Functions
+// Function to show the income form
 function showIncome() {
     echo '
         <form method="post">
@@ -54,6 +55,7 @@ function showIncome() {
     ';
 }
 
+// Function to show the budget form
 function showBudget() {
     global $budgetCategories;
     $current_month = date('Y-m');
@@ -91,6 +93,7 @@ function showBudget() {
     ';
 }
 
+// Function to show the expense form
 function showExpense() {
     $current_month = date('Y-m');
     echo '
@@ -369,6 +372,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </div>
 
 <script>
+// Add event listener to radio buttons
 document.querySelectorAll('input[name="page"]').forEach(radio => {
     radio.addEventListener('change', function() {
         window.location.href = 'create-page.php?page=' + this.value;

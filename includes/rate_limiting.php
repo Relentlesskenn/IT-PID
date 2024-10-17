@@ -1,5 +1,6 @@
 <?php
 
+// Function to check rate limiting
 function check_rate_limit($key, $limit, $time_frame) {
     $current_time = time();
     $ip = $_SERVER['REMOTE_ADDR'];
