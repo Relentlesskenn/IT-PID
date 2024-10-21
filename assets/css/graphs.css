@@ -12,7 +12,7 @@
 }
 
 .card-header {
-    background: linear-gradient(135deg, #2c0047 0%, #1e8c8c 100%) !important;
+    background: linear-gradient(45deg, #433878, #7d62b4) !important;
     border-bottom: none;
     padding: 1.25rem 1.5rem;
     border-top-left-radius: 15px;
