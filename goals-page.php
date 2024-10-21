@@ -8,34 +8,50 @@ include('includes/navbar.php');
 // Get the current user ID
 $userId = $_SESSION['auth_user']['user_id'];
 
-// Function to get user's current balance
+// Function to get user's available balance (total balance minus goal allocations)
 function getCurrentBalance($conn, $userId) {
-    $sql = "SELECT SUM(amount) as total_income FROM incomes WHERE user_id = ?";
+    $firstDayOfCurrentMonth = date('Y-m-01');
+    
+    $sql = "SELECT SUM(balance) as total_balance 
+            FROM balances 
+            WHERE user_id = ? AND DATE(CONCAT(year, '-', month, '-01')) < ?";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("is", $userId, $firstDayOfCurrentMonth);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $totalBalance = $result->fetch_assoc()['total_balance'] ?? 0;
+
+    $sql = "SELECT SUM(current_amount) as total_goal_amount FROM goals WHERE user_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $userId);
     $stmt->execute();
     $result = $stmt->get_result();
-    $income = $result->fetch_assoc()['total_income'] ?? 0;
+    $totalGoalAmount = $result->fetch_assoc()['total_goal_amount'] ?? 0;
 
-    $sql = "SELECT SUM(amount) as total_expense FROM expenses WHERE user_id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $expense = $result->fetch_assoc()['total_expense'] ?? 0;
-
-    return $income - $expense;
+    return $totalBalance - $totalGoalAmount;
 }
 
 // Function to get all goals for a user
-function getUserGoals($conn, $userId, $sortBy = 'target_date', $sortOrder = 'ASC') {
+function getUserGoals($conn, $userId, $sortBy = 'target_date', $sortOrder = 'ASC', $category = null) {
     $allowedSortFields = ['name', 'target_amount', 'current_amount', 'target_date', 'category'];
     $sortBy = in_array($sortBy, $allowedSortFields) ? $sortBy : 'target_date';
     $sortOrder = $sortOrder === 'DESC' ? 'DESC' : 'ASC';
 
-    $sql = "SELECT * FROM goals WHERE user_id = ? ORDER BY $sortBy $sortOrder";
+    $sql = "SELECT * FROM goals WHERE user_id = ?";
+    $params = [$userId];
+    $types = "i";
+
+    if ($category) {
+        $sql .= " AND category = ?";
+        $params[] = $category;
+        $types .= "s";
+    }
+
+    $sql .= " ORDER BY $sortBy $sortOrder";
+    
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $userId);
+    $stmt->bind_param($types, ...$params);
     $stmt->execute();
     return $stmt->get_result();
 }
@@ -75,10 +91,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_goal'])) {
 // Handle goal progress update
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_progress'])) {
     $goalId = $_POST['goal_id'];
-    $currentAmount = $_POST['current_amount'];
+    $newAmount = $_POST['current_amount'];
+    
     $sql = "UPDATE goals SET current_amount = ? WHERE id = ? AND user_id = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("dii", $currentAmount, $goalId, $userId);
+    $stmt->bind_param("dii", $newAmount, $goalId, $userId);
     
     if ($stmt->execute()) {
         $successMessage = "Goal progress updated successfully!";
@@ -91,11 +108,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_progress'])) {
 $currentBalance = getCurrentBalance($conn, $userId);
 $sortBy = isset($_GET['sort']) ? $_GET['sort'] : 'target_date';
 $sortOrder = isset($_GET['order']) ? $_GET['order'] : 'ASC';
-$goals = getUserGoals($conn, $userId, $sortBy, $sortOrder);
+$filterCategory = isset($_GET['category']) ? $_GET['category'] : null;
+$goals = getUserGoals($conn, $userId, $sortBy, $sortOrder, $filterCategory);
 
-// Calculate goal statistics
-$totalGoals = $goals->num_rows;
-$completedGoals = 0;
+// Separate active and completed goals
+$activeGoals = [];
+$completedGoals = [];
 $totalTargetAmount = 0;
 $totalCurrentAmount = 0;
 
@@ -103,11 +121,13 @@ while ($goal = $goals->fetch_assoc()) {
     $totalTargetAmount += $goal['target_amount'];
     $totalCurrentAmount += $goal['current_amount'];
     if ($goal['current_amount'] >= $goal['target_amount']) {
-        $completedGoals++;
+        $completedGoals[] = $goal;
+    } else {
+        $activeGoals[] = $goal;
     }
 }
-$goals->data_seek(0); // Reset the result pointer
 
+$totalGoals = count($activeGoals) + count($completedGoals);
 $overallProgress = $totalTargetAmount > 0 ? ($totalCurrentAmount / $totalTargetAmount) * 100 : 0;
 
 // List of goal categories
@@ -142,12 +162,14 @@ $goalCategories = [
 
 <link rel="stylesheet" href="./assets/css/goals.css">
 
+<link rel="stylesheet" href="./assets/css/goals.css">
+
 <!-- HTML content -->
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
         <div class="col-lg-10">
             <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h4">Goals</h1>
+                <h1 class="h4">Goals</h1>
             </div>
 
             <!-- Goal Summary -->
@@ -159,7 +181,7 @@ $goalCategories = [
                             <strong>Total Goals:</strong> <?php echo $totalGoals; ?>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <strong>Completed Goals:</strong> <?php echo $completedGoals; ?>
+                            <strong>Completed Goals:</strong> <?php echo count($completedGoals); ?>
                         </div>
                         <div class="col-md-3 mb-3">
                             <strong>Total Target:</strong> ₱<?php echo number_format($totalTargetAmount, 2); ?>
@@ -179,7 +201,7 @@ $goalCategories = [
                 <div class="col-md-6 mb-4 mb-md-0">
                     <div class="card balance-card h-100">
                         <div class="card-body d-flex flex-column justify-content-center">
-                            <h5 class="card-title text-white-50">Current Balance</h5>
+                            <h5 class="card-title text-white-50">Balance</h5>
                             <h2 class="card-text display-4">₱<?php echo number_format($currentBalance, 2); ?></h2>
                         </div>
                     </div>
@@ -225,24 +247,38 @@ $goalCategories = [
                 </div>
             </div>
 
-            <!-- Display existing goals -->
+            <!-- Active Goals -->
             <div class="card mb-4">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Your Goals</h5>
-                    <div class="dropdown">
-                        <button class="btn btn-outline-custom dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            Sort Goals
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="sortDropdown">
-                            <li><a class="dropdown-item" href="?sort=target_date&order=<?php echo $sortOrder === 'ASC' ? 'DESC' : 'ASC'; ?>">By Date</a></li>
-                            <li><a class="dropdown-item" href="?sort=target_amount&order=<?php echo $sortOrder === 'ASC' ? 'DESC' : 'ASC'; ?>">By Amount</a></li>
-                            <li><a class="dropdown-item" href="?sort=category&order=<?php echo $sortOrder === 'ASC' ? 'DESC' : 'ASC'; ?>">By Category</a></li>
-                        </ul>
+                    <h5 class="mb-0">Goals</h5>
+                    <div class="d-flex">
+                        <div class="dropdown me-2">
+                            <button class="btn btn-outline-custom dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                Sort Goals
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                                <li><a class="dropdown-item" href="?sort=target_date&order=<?php echo $sortOrder === 'ASC' ? 'DESC' : 'ASC'; ?>">By Date</a></li>
+                                <li><a class="dropdown-item" href="?sort=target_amount&order=<?php echo $sortOrder === 'ASC' ? 'DESC' : 'ASC'; ?>">By Amount</a></li>
+                                <li><a class="dropdown-item" href="?sort=category&order=<?php echo $sortOrder === 'ASC' ? 'DESC' : 'ASC'; ?>">By Category</a></li>
+                            </ul>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-custom dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                Filter Category
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                <li><a class="dropdown-item" href="?category=">All Categories</a></li>
+                                <?php foreach ($goalCategories as $category => $description): ?>
+                                    <li><a class="dropdown-item" href="?category=<?php echo urlencode($category); ?>"><?php echo htmlspecialchars($category); ?></a></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <?php while ($goal = $goals->fetch_assoc()): ?>
+                        <?php foreach ($activeGoals as $goal): ?>
+                            <!-- Goal card HTML here -->
                             <div class="col-md-6 col-lg-4 mb-4">
                                 <div class="card goal-card h-100">
                                     <div class="card-body">
@@ -255,7 +291,7 @@ $goalCategories = [
                                         </p>
                                         <?php
                                         $progress = ($goal['current_amount'] / $goal['target_amount']) * 100;
-                                        $progressBarClass = $progress >= 100 ? 'bg-success' : ($progress >= 50 ? 'bg-warning' : 'bg-danger');
+                                        $progressBarClass = $progress >= 75 ? 'bg-success' : ($progress >= 50 ? 'bg-warning' : 'bg-danger');
                                         ?>
                                         <div class="progress mb-2">
                                             <div class="progress-bar <?php echo $progressBarClass; ?>" role="progressbar" style="width: <?php echo $progress; ?>%" aria-valuenow="<?php echo $progress; ?>" aria-valuemin="0" aria-valuemax="100"></div>
@@ -271,7 +307,42 @@ $goalCategories = [
                                     </div>
                                 </div>
                             </div>
-                        <?php endwhile; ?>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Completed Goals -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Completed Goals</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <?php foreach ($completedGoals as $goal): ?>
+                            <!-- Completed goal card HTML here -->
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card goal-card h-100 bg-light">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><?php echo htmlspecialchars($goal['name']); ?></h5>
+                                        <h6 class="card-subtitle mb-2 text-muted"><?php echo htmlspecialchars($goal['category']); ?></h6>
+                                        <p class="card-text">
+                                            <strong>Target:</strong> ₱<?php echo number_format($goal['target_amount'], 2); ?><br>
+                                            <strong>Saved:</strong> ₱<?php echo number_format($goal['current_amount'], 2); ?><br>
+                                            <strong>Completed:</strong> <?php echo date('M d, Y', strtotime($goal['target_date'])); ?>
+                                        </p>
+                                        <div class="progress mb-2">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <p class="text-end mb-2"><strong>100%</strong> Complete</p>
+                                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this completed goal?');">
+                                            <input type="hidden" name="goal_id" value="<?php echo $goal['id']; ?>">
+                                            <button type="submit" name="delete_goal" class="btn btn-sm btn-outline-secondary w-100">Remove</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
             </div>
@@ -305,7 +376,7 @@ $goalCategories = [
 </div>
 
 <!-- Toast for notifications -->
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+<div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 11">
     <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
             <strong class="me-auto">Notification</strong>
@@ -340,6 +411,25 @@ document.addEventListener('DOMContentLoaded', function() {
     <?php if (isset($errorMessage)): ?>
         showToast("<?php echo $errorMessage; ?>", 'danger');
     <?php endif; ?>
+
+    // Add event listeners for sorting and filtering
+    document.querySelectorAll('#sortDropdown .dropdown-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = new URL(this.href);
+            const params = new URLSearchParams(url.search);
+            updateUrlParams(params);
+        });
+    });
+
+    document.querySelectorAll('#filterDropdown .dropdown-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = new URL(this.href);
+            const params = new URLSearchParams(url.search);
+            updateUrlParams(params);
+        });
+    });
 });
 
 function openUpdateModal(goalId, currentAmount) {
@@ -356,6 +446,19 @@ function showToast(message, type) {
     toastEl.classList.remove('bg-success', 'bg-danger');
     toastEl.classList.add('bg-' + type);
     toast.show();
+}
+
+function updateUrlParams(params) {
+    // Preserve existing parameters
+    const currentParams = new URLSearchParams(window.location.search);
+    for (let [key, value] of currentParams) {
+        if (!params.has(key)) {
+            params.set(key, value);
+        }
+    }
+    
+    // Update URL and reload page
+    window.location.search = params.toString();
 }
 </script>
 
