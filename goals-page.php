@@ -8,20 +8,43 @@ include('includes/navbar.php');
 // Get the current user ID
 $userId = $_SESSION['auth_user']['user_id'];
 
-// Function to get user's available balance (total balance minus goal allocations)
-function getCurrentBalance($conn, $userId) {
-    $firstDayOfCurrentMonth = date('Y-m-01');
+// Function to update total balance for a user
+function updateCumulativeBalance($conn, $userId) {
+    $currentMonth = date('Y-m-01'); // First day of current month
     
+    // Calculate the sum of all balances from previous months
     $sql = "SELECT SUM(balance) as total_balance 
             FROM balances 
-            WHERE user_id = ? AND DATE(CONCAT(year, '-', month, '-01')) < ?";
-    
+            WHERE user_id = ? AND CONCAT(year, '-', LPAD(month, 2, '0'), '-01') < ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("is", $userId, $firstDayOfCurrentMonth);
+    $stmt->bind_param("is", $userId, $currentMonth);
     $stmt->execute();
     $result = $stmt->get_result();
     $totalBalance = $result->fetch_assoc()['total_balance'] ?? 0;
 
+    // Update or insert the cumulative balance
+    $sql = "INSERT INTO cumulative_balance (user_id, total_amount) 
+            VALUES (?, ?) 
+            ON DUPLICATE KEY UPDATE total_amount = VALUES(total_amount)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("id", $userId, $totalBalance);
+    $stmt->execute();
+}
+
+// Function to get user's available balance (total balance minus goal allocations)
+function getCurrentBalance($conn, $userId) {
+    // First, update the cumulative balance
+    updateCumulativeBalance($conn, $userId);
+
+    // Now, fetch the cumulative balance
+    $sql = "SELECT total_amount FROM cumulative_balance WHERE user_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $cumulativeBalance = $result->fetch_assoc()['total_amount'] ?? 0;
+
+    // Subtract goal allocations
     $sql = "SELECT SUM(current_amount) as total_goal_amount FROM goals WHERE user_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $userId);
@@ -29,7 +52,7 @@ function getCurrentBalance($conn, $userId) {
     $result = $stmt->get_result();
     $totalGoalAmount = $result->fetch_assoc()['total_goal_amount'] ?? 0;
 
-    return $totalBalance - $totalGoalAmount;
+    return $cumulativeBalance - $totalGoalAmount;
 }
 
 // Function to get all goals for a user
@@ -105,6 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_progress'])) {
 }
 
 // Get current balance and goals
+updateCumulativeBalance($conn, $userId);
 $currentBalance = getCurrentBalance($conn, $userId);
 $sortBy = isset($_GET['sort']) ? $_GET['sort'] : 'target_date';
 $sortOrder = isset($_GET['order']) ? $_GET['order'] : 'ASC';
@@ -159,8 +183,6 @@ $goalCategories = [
 ];
 
 ?>
-
-<link rel="stylesheet" href="./assets/css/goals.css">
 
 <link rel="stylesheet" href="./assets/css/goals.css">
 
