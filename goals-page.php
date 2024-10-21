@@ -8,6 +8,11 @@ include('includes/navbar.php');
 // Get the current user ID
 $userId = $_SESSION['auth_user']['user_id'];
 
+// Handle success message
+if (isset($_GET['success']) && $_GET['success'] == 'archived') {
+    $successMessage = "Goal archived successfully!";
+}
+
 // Function to update total balance for a user
 function updateCumulativeBalance($conn, $userId) {
     $currentMonth = date('Y-m-01'); // First day of current month
@@ -61,7 +66,7 @@ function getUserGoals($conn, $userId, $sortBy = 'target_date', $sortOrder = 'ASC
     $sortBy = in_array($sortBy, $allowedSortFields) ? $sortBy : 'target_date';
     $sortOrder = $sortOrder === 'DESC' ? 'DESC' : 'ASC';
 
-    $sql = "SELECT * FROM goals WHERE user_id = ?";
+    $sql = "SELECT * FROM goals WHERE user_id = ? AND is_archived = FALSE";
     $params = [$userId];
     $types = "i";
 
@@ -97,17 +102,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_goal'])) {
     }
 }
 
-// Handle goal deletion
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_goal'])) {
+// Handle completed goal archiving
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['archive_goal'])) {
     $goalId = $_POST['goal_id'];
-    $sql = "DELETE FROM goals WHERE id = ? AND user_id = ?";
+    $sql = "UPDATE goals SET is_archived = TRUE WHERE id = ? AND user_id = ? AND current_amount >= target_amount";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ii", $goalId, $userId);
     
     if ($stmt->execute()) {
-        $successMessage = "Goal deleted successfully!";
+        $successMessage = "Goal archived successfully!";
+        // Redirect to refresh the page
+        header("Location: " . $_SERVER['PHP_SELF'] . "?success=archived");
+        exit();
     } else {
-        $errorMessage = "Error deleting goal: " . $conn->error;
+        $errorMessage = "Error archiving goal: " . $conn->error;
     }
 }
 
@@ -133,7 +141,7 @@ $currentBalance = getCurrentBalance($conn, $userId);
 $sortBy = isset($_GET['sort']) ? $_GET['sort'] : 'target_date';
 $sortOrder = isset($_GET['order']) ? $_GET['order'] : 'ASC';
 $filterCategory = isset($_GET['category']) ? $_GET['category'] : null;
-$goals = getUserGoals($conn, $userId, $sortBy, $sortOrder, $filterCategory);
+$goals = getUserGoals($conn, $userId, $sortBy, $sortOrder, $filterCategory, false);
 
 // Separate active and completed goals
 $activeGoals = [];
@@ -341,10 +349,9 @@ $goalCategories = [
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <?php foreach ($completedGoals as $goal): ?>
-                            <!-- Completed goal card HTML here -->
-                            <div class="col-md-6 col-lg-4 mb-4">
-                                <div class="card goal-card h-100 bg-light">
+                    <?php foreach ($completedGoals as $goal): ?>
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card goal-card h-100 bg-light" data-goal-id="<?php echo $goal['id']; ?>">
                                     <div class="card-body">
                                         <h5 class="card-title"><?php echo htmlspecialchars($goal['name']); ?></h5>
                                         <h6 class="card-subtitle mb-2 text-muted"><?php echo htmlspecialchars($goal['category']); ?></h6>
@@ -357,10 +364,9 @@ $goalCategories = [
                                             <div class="progress-bar bg-success" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
                                         </div>
                                         <p class="text-end mb-2"><strong>100%</strong> Complete</p>
-                                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this completed goal?');">
-                                            <input type="hidden" name="goal_id" value="<?php echo $goal['id']; ?>">
-                                            <button type="submit" name="delete_goal" class="btn btn-sm btn-outline-secondary w-100">Remove</button>
-                                        </form>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary w-100" onclick="openArchiveModal(<?php echo $goal['id']; ?>, '<?php echo htmlspecialchars($goal['name']); ?>')">
+                                            Archive
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -397,6 +403,28 @@ $goalCategories = [
     </div>
 </div>
 
+<!-- Archive Goal Modal -->
+<div class="modal fade" id="archiveGoalModal" tabindex="-1" aria-labelledby="archiveGoalModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="archiveGoalModalLabel">Archive Completed Goal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to archive the completed goal "<span id="archiveGoalName"></span>"? It will no longer appear in your list, but will be preserved in the database.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" id="archiveGoalForm">
+                    <input type="hidden" name="goal_id" id="archiveGoalId">
+                    <button type="submit" name="archive_goal" class="btn btn-primary">Archive Goal</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Toast for notifications -->
 <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 11">
     <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
@@ -409,6 +437,46 @@ $goalCategories = [
 </div>
 
 <script>
+// Function to open the archive goal modal
+function openArchiveModal(goalId, goalName) {
+    document.getElementById('archiveGoalId').value = goalId;
+    document.getElementById('archiveGoalName').textContent = goalName;
+    var modal = new bootstrap.Modal(document.getElementById('archiveGoalModal'));
+    modal.show();
+}
+
+// Function to open the update progress modal
+function openUpdateModal(goalId, currentAmount) {
+    document.getElementById('update_goal_id').value = goalId;
+    document.getElementById('current_amount').value = currentAmount;
+    var modal = new bootstrap.Modal(document.getElementById('updateProgressModal'));
+    modal.show();
+}
+
+// Function to show a toast message
+function showToast(message, type) {
+    var toastEl = document.getElementById('liveToast');
+    var toast = new bootstrap.Toast(toastEl);
+    toastEl.querySelector('.toast-body').textContent = message;
+    toastEl.classList.remove('bg-success', 'bg-danger');
+    toastEl.classList.add('bg-' + type);
+    toast.show();
+}
+
+// Function to update URL parameters
+function updateUrlParams(params) {
+    // Preserve existing parameters
+    const currentParams = new URLSearchParams(window.location.search);
+    for (let [key, value] of currentParams) {
+        if (!params.has(key)) {
+            params.set(key, value);
+        }
+    }
+   
+    // Update URL and reload page
+    window.location.search = params.toString();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Set minimum date for target_date to today
     var today = new Date().toISOString().split('T')[0];
@@ -434,6 +502,53 @@ document.addEventListener('DOMContentLoaded', function() {
         showToast("<?php echo $errorMessage; ?>", 'danger');
     <?php endif; ?>
 
+    // Initialize the archive goal modal
+    var archiveGoalModal = new bootstrap.Modal(document.getElementById('archiveGoalModal'));
+
+    // Handle archive goal form submission
+    document.getElementById('archiveGoalForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        this.submit();
+        archiveGoalModal.hide();
+        // Refresh the page after a short delay to allow the server to process the request
+        setTimeout(function() {
+            window.location.reload();
+        }, 500);
+    });
+
+    // Initialize the archive goal modal
+    var archiveGoalModal = new bootstrap.Modal(document.getElementById('archiveGoalModal'));
+
+    // Handle archive goal form submission
+    document.getElementById('archiveGoalForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var form = this;
+        var goalId = document.getElementById('archiveGoalId').value;
+        
+        // Send AJAX request to archive the goal
+        fetch('goals-page.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'archive_goal=1&goal_id=' + goalId
+        })
+        .then(response => response.text())
+        .then(data => {
+            archiveGoalModal.hide();
+            // Remove the archived goal from the DOM
+            var goalCard = document.querySelector(`.goal-card[data-goal-id="${goalId}"]`);
+            if (goalCard) {
+                goalCard.remove();
+            }
+            showToast("Goal archived successfully!", 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast("Error archiving goal. Please try again.", 'danger');
+        });
+    });
+
     // Add event listeners for sorting and filtering
     document.querySelectorAll('#sortDropdown .dropdown-item').forEach(item => {
         item.addEventListener('click', function(e) {
@@ -444,6 +559,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Handle filter dropdown item clicks
     document.querySelectorAll('#filterDropdown .dropdown-item').forEach(item => {
         item.addEventListener('click', function(e) {
             e.preventDefault();
@@ -453,35 +569,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-
-function openUpdateModal(goalId, currentAmount) {
-    document.getElementById('update_goal_id').value = goalId;
-    document.getElementById('current_amount').value = currentAmount;
-    var modal = new bootstrap.Modal(document.getElementById('updateProgressModal'));
-    modal.show();
-}
-
-function showToast(message, type) {
-    var toastEl = document.getElementById('liveToast');
-    var toast = new bootstrap.Toast(toastEl);
-    toastEl.querySelector('.toast-body').textContent = message;
-    toastEl.classList.remove('bg-success', 'bg-danger');
-    toastEl.classList.add('bg-' + type);
-    toast.show();
-}
-
-function updateUrlParams(params) {
-    // Preserve existing parameters
-    const currentParams = new URLSearchParams(window.location.search);
-    for (let [key, value] of currentParams) {
-        if (!params.has(key)) {
-            params.set(key, value);
-        }
-    }
-    
-    // Update URL and reload page
-    window.location.search = params.toString();
-}
 </script>
 
 <?php include('includes/footer.php') ?>
