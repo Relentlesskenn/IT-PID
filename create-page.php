@@ -66,7 +66,7 @@ function showBudget() {
                 <label for="budget_name" class="form-label">Budget Category</label>
                 <div class="input-group input-group-lg">
                     <select class="form-select" name="budget_name" id="budget_name" required>
-                        <option value="">Select a category</option>';
+                        ';
     foreach ($budgetCategories as $category => $color) {
         echo '<option value="' . htmlspecialchars($category) . '" data-color="' . htmlspecialchars($color) . '">' . htmlspecialchars($category) . '</option>';
     }
@@ -359,7 +359,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             <div class="mb-4">
                 <label for="newCategoryColor" class="form-label">Color</label>
-                <input type="color" class="form-control form-control-color" id="newCategoryColor" name="newCategoryColor" value="#6c757d">
+                <input type="color" class="form-control form-control-color w-100" id="newCategoryColor" name="newCategoryColor" value="#6c757d">
             </div>
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-custom-primary btn-lg" name="addCategoryBtn">+ Add Budget</button>
