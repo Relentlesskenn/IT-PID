@@ -8,11 +8,6 @@ include('includes/navbar.php');
 // Get the current user ID
 $userId = $_SESSION['auth_user']['user_id'];
 
-// Handle success message
-if (isset($_GET['success']) && $_GET['success'] == 'archived') {
-    $successMessage = "Goal archived successfully!";
-}
-
 // Function to update total balance for a user
 function updateCumulativeBalance($conn, $userId) {
     $currentMonth = date('Y-m-01'); // First day of current month
@@ -96,9 +91,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_goal'])) {
     $stmt->bind_param("isdss", $userId, $name, $targetAmount, $targetDate, $category);
     
     if ($stmt->execute()) {
-        $successMessage = "Goal added successfully!";
+        header("Location: " . $_SERVER['PHP_SELF'] . "?success=goal_added");
+        exit();
     } else {
-        $errorMessage = "Error adding goal: " . $conn->error;
+        header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Error adding goal: " . $conn->error));
+        exit();
     }
 }
 
@@ -110,12 +107,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['archive_goal'])) {
     $stmt->bind_param("ii", $goalId, $userId);
     
     if ($stmt->execute()) {
-        $successMessage = "Goal archived successfully!";
-        // Redirect to refresh the page
-        header("Location: " . $_SERVER['PHP_SELF'] . "?success=archived");
+        header("Location: " . $_SERVER['PHP_SELF'] . "?success=goal_archived");
         exit();
     } else {
-        $errorMessage = "Error archiving goal: " . $conn->error;
+        header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Error archiving goal: " . $conn->error));
+        exit();
     }
 }
 
@@ -129,9 +125,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_progress'])) {
     $stmt->bind_param("dii", $newAmount, $goalId, $userId);
     
     if ($stmt->execute()) {
-        $successMessage = "Goal progress updated successfully!";
+        header("Location: " . $_SERVER['PHP_SELF'] . "?success=progress_updated");
+        exit();
     } else {
-        $errorMessage = "Error updating goal progress: " . $conn->error;
+        header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Error updating goal progress: " . $conn->error));
+        exit();
+    }
+}
+
+// Check for success or error messages in URL parameters
+$successMessage = isset($_GET['success']) ? getSuccessMessage($_GET['success']) : null;
+$errorMessage = isset($_GET['error']) ? $_GET['error'] : null;
+
+// Function to get success message based on the success type
+function getSuccessMessage($successType) {
+    switch ($successType) {
+        case 'goal_added':
+            return "Goal added successfully!";
+        case 'goal_archived':
+            return "Goal archived successfully!";
+        case 'progress_updated':
+            return "Goal progress updated successfully!";
+        default:
+            return "Operation completed successfully!";
     }
 }
 
@@ -141,7 +157,7 @@ $currentBalance = getCurrentBalance($conn, $userId);
 $sortBy = isset($_GET['sort']) ? $_GET['sort'] : 'target_date';
 $sortOrder = isset($_GET['order']) ? $_GET['order'] : 'ASC';
 $filterCategory = isset($_GET['category']) ? $_GET['category'] : null;
-$goals = getUserGoals($conn, $userId, $sortBy, $sortOrder, $filterCategory, false);
+$goals = getUserGoals($conn, $userId, $sortBy, $sortOrder, $filterCategory);
 
 // Separate active and completed goals
 $activeGoals = [];
@@ -293,7 +309,7 @@ $goalCategories = [
                             </ul>
                         </div>
                         <div class="dropdown">
-                            <button class="btn btn-outline-custom dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <button class="btn btn-outline-custom dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                 Filter Category
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="filterDropdown">
@@ -308,7 +324,6 @@ $goalCategories = [
                 <div class="card-body">
                     <div class="row">
                         <?php foreach ($activeGoals as $goal): ?>
-                            <!-- Goal card HTML here -->
                             <div class="col-md-6 col-lg-4 mb-4">
                                 <div class="card goal-card h-100">
                                     <div class="card-body">
@@ -437,46 +452,6 @@ $goalCategories = [
 </div>
 
 <script>
-// Function to open the archive goal modal
-function openArchiveModal(goalId, goalName) {
-    document.getElementById('archiveGoalId').value = goalId;
-    document.getElementById('archiveGoalName').textContent = goalName;
-    var modal = new bootstrap.Modal(document.getElementById('archiveGoalModal'));
-    modal.show();
-}
-
-// Function to open the update progress modal
-function openUpdateModal(goalId, currentAmount) {
-    document.getElementById('update_goal_id').value = goalId;
-    document.getElementById('current_amount').value = currentAmount;
-    var modal = new bootstrap.Modal(document.getElementById('updateProgressModal'));
-    modal.show();
-}
-
-// Function to show a toast message
-function showToast(message, type) {
-    var toastEl = document.getElementById('liveToast');
-    var toast = new bootstrap.Toast(toastEl);
-    toastEl.querySelector('.toast-body').textContent = message;
-    toastEl.classList.remove('bg-success', 'bg-danger');
-    toastEl.classList.add('bg-' + type);
-    toast.show();
-}
-
-// Function to update URL parameters
-function updateUrlParams(params) {
-    // Preserve existing parameters
-    const currentParams = new URLSearchParams(window.location.search);
-    for (let [key, value] of currentParams) {
-        if (!params.has(key)) {
-            params.set(key, value);
-        }
-    }
-   
-    // Update URL and reload page
-    window.location.search = params.toString();
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     // Set minimum date for target_date to today
     var today = new Date().toISOString().split('T')[0];
@@ -488,66 +463,85 @@ document.addEventListener('DOMContentLoaded', function() {
         return new bootstrap.Tooltip(tooltipTriggerEl)
     });
 
-    // Initialize toast
-    var toastElList = [].slice.call(document.querySelectorAll('.toast'))
-    var toastList = toastElList.map(function(toastEl) {
-        return new bootstrap.Toast(toastEl)
-    });
+    // Function to show a toast message
+    function showToast(message, type) {
+        var toastEl = document.getElementById('liveToast');
+        var toast = new bootstrap.Toast(toastEl);
+        toastEl.querySelector('.toast-body').textContent = message;
+        toastEl.classList.remove('bg-success', 'bg-danger');
+        toastEl.classList.add('bg-' + type);
+        toast.show();
+    }
 
-    // Show toast message if exists
-    <?php if (isset($successMessage)): ?>
-        showToast("<?php echo $successMessage; ?>", 'success');
-    <?php endif; ?>
-    <?php if (isset($errorMessage)): ?>
-        showToast("<?php echo $errorMessage; ?>", 'danger');
-    <?php endif; ?>
+    // Function to get URL parameters
+    function getUrlParameter(name) {
+        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+        var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+        var results = regex.exec(location.search);
+        return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
 
-    // Initialize the archive goal modal
-    var archiveGoalModal = new bootstrap.Modal(document.getElementById('archiveGoalModal'));
+    // Show success or error message if present in URL parameters
+    var successMessage = getUrlParameter('success');
+    var errorMessage = getUrlParameter('error');
 
-    // Handle archive goal form submission
-    document.getElementById('archiveGoalForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        this.submit();
-        archiveGoalModal.hide();
-        // Refresh the page after a short delay to allow the server to process the request
-        setTimeout(function() {
-            window.location.reload();
-        }, 500);
-    });
+    if (successMessage) {
+        showToast(getSuccessMessage(successMessage), 'success');
+    }
 
-    // Initialize the archive goal modal
-    var archiveGoalModal = new bootstrap.Modal(document.getElementById('archiveGoalModal'));
+    if (errorMessage) {
+        showToast(errorMessage, 'danger');
+    }
 
-    // Handle archive goal form submission
-    document.getElementById('archiveGoalForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        var form = this;
-        var goalId = document.getElementById('archiveGoalId').value;
-        
-        // Send AJAX request to archive the goal
-        fetch('goals-page.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'archive_goal=1&goal_id=' + goalId
-        })
-        .then(response => response.text())
-        .then(data => {
-            archiveGoalModal.hide();
-            // Remove the archived goal from the DOM
-            var goalCard = document.querySelector(`.goal-card[data-goal-id="${goalId}"]`);
-            if (goalCard) {
-                goalCard.remove();
+    // Function to get success message based on the success type
+    function getSuccessMessage(successType) {
+        switch (successType) {
+            case 'goal_added':
+                return "Goal added successfully!";
+            case 'goal_archived':
+                return "Goal archived successfully!";
+            case 'progress_updated':
+                return "Goal progress updated successfully!";
+            default:
+                return "Operation completed successfully!";
+        }
+    }
+
+    // Remove success and error parameters from URL
+    if (successMessage || errorMessage) {
+        var newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + window.location.search.replace(/[?&]success=[^&]+/, '').replace(/[?&]error=[^&]+/, '');
+        window.history.replaceState({path: newUrl}, '', newUrl);
+    }
+
+    // Function to open the archive goal modal
+    window.openArchiveModal = function(goalId, goalName) {
+        document.getElementById('archiveGoalId').value = goalId;
+        document.getElementById('archiveGoalName').textContent = goalName;
+        var modal = new bootstrap.Modal(document.getElementById('archiveGoalModal'));
+        modal.show();
+    }
+
+    // Function to open the update progress modal
+    window.openUpdateModal = function(goalId, currentAmount) {
+        document.getElementById('update_goal_id').value = goalId;
+        document.getElementById('current_amount').value = currentAmount;
+        var modal = new bootstrap.Modal(document.getElementById('updateProgressModal'));
+        modal.show();
+    }
+
+    // Function to update URL parameters
+    function updateUrlParams(params) {
+        // Preserve existing parameters
+        const currentParams = new URLSearchParams(window.location.search);
+        for (let [key, value] of currentParams) {
+            if (!params.has(key)) {
+                params.set(key, value);
             }
-            showToast("Goal archived successfully!", 'success');
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast("Error archiving goal. Please try again.", 'danger');
-        });
-    });
+        }
+       
+        // Update URL and reload page
+        window.location.search = params.toString();
+    }
 
     // Add event listeners for sorting and filtering
     document.querySelectorAll('#sortDropdown .dropdown-item').forEach(item => {
