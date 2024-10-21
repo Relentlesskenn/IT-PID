@@ -169,7 +169,7 @@ $goalCategories = [
                         </div>
                     </div>
                     <div class="progress">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo $overallProgress; ?>%" aria-valuenow="<?php echo $overallProgress; ?>" aria-valuemin="0" aria-valuemax="100"><?php echo number_format($overallProgress, 1); ?>%</div>
+                        <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo $overallProgress; ?>%" aria-valuenow="<?php echo $overallProgress; ?>" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                 </div>
             </div>
