@@ -1,6 +1,171 @@
+/* Card styling */
+.card {
+    border: none !important;
+    background: transparent !important;
+    border-radius: 24px !important;
+}
+
 .card-body {
-    background: rgb(255, 255, 255);
-    box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
-    border-radius: 5px;
-    border: 1px solid rgba( 255, 255, 255, 0.18 );
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 24px !important;
+    padding: 1.5rem !important;
+    transition: all 0.3s ease-in-out !important;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.card-body:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 10px 15px -3px rgba(0, 0, 0, 0.1),
+        0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Form controls styling */
+.form-control,
+.form-select,
+.input-group-text {
+    border-radius: 12px !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+.input-group .form-control:not(:last-child),
+.input-group .input-group-text:first-child {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+.input-group .form-control:not(:first-child),
+.input-group .input-group-text:last-child {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+}
+
+/* Button group container styling */
+.btn-group {
+    position: relative !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin-bottom: 24px !important;
+    width: 100%;
+    display: flex !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+}
+
+/* Outer container shadow and border */
+.btn-group::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Individual button styling */
+.btn-group .btn {
+    position: relative;
+    flex: 1;
+    border: none !important;
+    padding: 12px 24px !important;
+    font-size: 1.1rem !important;
+    font-weight: 500 !important;
+    background: white !important;
+    z-index: 1;
+}
+
+/* Income button */
+.btn-group .btn-outline-primary {
+    color: #0066FF !important;
+    border-top-left-radius: 12px !important;
+    border-bottom-left-radius: 12px !important;
+}
+
+.btn-group .btn-check:checked + .btn-outline-primary {
+    background-color: #0066FF !important;
+    color: white !important;
+}
+
+/* Budget button */
+.btn-group .btn-outline-success {
+    color: #00875A !important;
+}
+
+.btn-group .btn-check:checked + .btn-outline-success {
+    background-color: #00875A !important;
+    color: white !important;
+}
+
+/* Expense button */
+.btn-group .btn-outline-danger {
+    color: #E34935 !important;
+    border-top-right-radius: 12px !important;
+    border-bottom-right-radius: 12px !important;
+}
+
+.btn-group .btn-check:checked + .btn-outline-danger {
+    background-color: #E34935 !important;
+    color: white !important;
+}
+
+/* Remove focus outline */
+.btn-group .btn:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Active state styling */
+.btn-check:checked + .btn {
+    z-index: 2;
+}
+
+/* Button styling */
+.btn-plus {
+    background-color: white !important;
+    color: #676b70 !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 12px !important;
+    transition: all 0.2s ease !important;
+    margin-left: 8px !important;
+}
+
+.btn-plus:hover {
+    background-color: #f8f9fa !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom modal styling */
+.modal-content {
+    border-radius: 24px !important;
+    border: none !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.modal-header {
+    border-top-left-radius: 24px !important;
+    border-top-right-radius: 24px !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 1.5rem !important;
+}
+
+.modal-body {
+    padding: 1.5rem !important;
+}
+
+/* Button group styling */
+.btn-group {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.btn-group .btn {
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    padding: 0.75rem 1.25rem !important;
+    transition: all 0.2s ease !important;
 }

@@ -64,3 +64,31 @@
 [aria-expanded="true"] .bi-chevron-up {
     transform: rotate(180deg);
 }
+
+/* Dropdown Styles */
+.dropdown-menu {
+    max-height: 300px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+/* Custom scrollbar for webkit browsers */
+.dropdown-menu::-webkit-scrollbar {
+    width: 4px;
+}
+
+.dropdown-menu::-webkit-scrollbar-track {
+    background: #f8f9fa;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+/* Mobile responsiveness without changing format */
+@media (max-width: 576px) {
+    .dropdown-menu {
+        max-height: 250px; /* Slightly smaller on mobile */
+    }
+}

@@ -35,6 +35,25 @@ body {
     cursor: not-allowed !important;
 }
 
+.btn-custom-primary-rounded{
+    background-color: #433878 !important;
+    color: white;
+    border-radius: 12px !important;
+    padding: 0.315rem 1rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-custom-primary-rounded:hover{
+    background-color: #8E7AB5 !important;
+    color: white !important;
+}
+
+.btn-custom-primary-rounded:disabled{
+    background-color: #433878 !important;
+    color: rgb(223, 221, 221) !important;
+    cursor: not-allowed !important;
+}
+
 .btn-outline-custom {
     border-color: #433878 !important; 
     color: #433878 !important; 
@@ -44,6 +63,24 @@ body {
 .btn-outline-custom:hover {
     background-color: #433878 !important; 
     color: white !important; 
+}
+
+.btn-secondary{
+    border-radius: 12px !important;
+    padding: 0.315rem 1rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-outline-secondary{
+    border-radius: 12px !important;
+    padding: 0.315rem 1rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-danger{
+    border-radius: 12px !important;
+    padding: 0.315rem 1rem !important;
+    transition: all 0.2s ease !important;
 }
 
 /* Custom Pagination */

@@ -177,8 +177,8 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
 <div class="py-4">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
-            <span style="font-size: 1.1rem;">Hello, <?= htmlspecialchars($_SESSION['auth_user']['username']) ?>!</span>
-            <a id="notificationBtn" class="btn btn-custom-primary btn-sm position-relative" href="notifications-page.php">
+            <span style="font-size: 1.2rem;">Hello, <strong><?= htmlspecialchars($_SESSION['auth_user']['username']) ?></strong></span>
+            <a id="notificationBtn" class="btn btn-alert btn-sm position-relative" href="notifications-page.php">
                 <i id="notificationIcon" class="bi bi-bell-fill"></i>
                 <?php if ($unreadNotificationsCount > 0): ?>
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -242,7 +242,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                     </select>
                 </div>
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-custom-primary" style="font-size: 0.95rem;">View</button>
+                    <button type="submit" class="btn btn-view" style="font-size: 0.95rem;">View</button>
                 </div>
                 <!-- Search input inside the form, but only visible on larger screens -->
                 <div class="col-lg-4 d-none d-lg-block">
@@ -266,7 +266,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
         </div>
         
         <!-- Budget Cards -->
-        <div class="row row-cols-2 row-cols-sm-2 row-cols-lg-4 g-4" id="budgetCardsContainer">
+        <div class="row row-cols-2 row-cols-sm-2 row-cols-lg-4 g-3" id="budgetCardsContainer">
             
         <?php
         // Fetch budget data from the database and calculate the remaining balance

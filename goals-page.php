@@ -394,7 +394,7 @@ $goalCategories = [
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
-                                <button type="submit" name="add_goal" class="btn btn-custom-primary w-100">Add Goal</button>
+                                <button type="submit" name="add_goal" class="btn btn-custom-primary-rounded w-100">Add Goal</button>
                             </form>
                         </div>
                     </div>
@@ -526,7 +526,7 @@ $goalCategories = [
                             <input type="number" class="form-control" id="current_amount" name="current_amount" step="0.01" required>
                         </div>
                     </div>
-                    <button type="submit" name="update_progress" class="btn btn-custom-primary w-100">Update Progress</button>
+                    <button type="submit" name="update_progress" class="btn btn-custom-primary-rounded w-100">Update Progress</button>
                 </form>
             </div>
         </div>
@@ -570,7 +570,7 @@ $goalCategories = [
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <form method="POST" id="archiveGoalForm">
                     <input type="hidden" name="goal_id" id="archiveGoalId">
-                    <button type="submit" name="archive_goal" class="btn btn-primary">Archive Goal</button>
+                    <button type="submit" name="archive_goal" class="btn btn-custom-primary-rounded">Archive Goal</button>
                 </form>
             </div>
         </div>

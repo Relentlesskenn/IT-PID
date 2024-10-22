@@ -68,7 +68,7 @@ function getNotificationDetails($type, $message) {
         <div class="col-md-8">
             <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <a href="dashboard-page.php" class="btn btn-custom-primary btn-sm">
+                <a href="dashboard-page.php" class="btn btn-custom-primary-rounded btn-sm">
                     <i class="bi bi-arrow-left"></i> Dashboard
                 </a>
                 <h1 class="h4 mb-0">Notifications</h1>

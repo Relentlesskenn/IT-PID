@@ -2,19 +2,55 @@
 .card.card-custom {
     border: none !important;
     border-radius: 10px !important;
-    box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 ) !important;
+    /* Enhanced shadow with purple glow */
+    box-shadow: 0 8px 32px rgba(67, 56, 120, 0.25),
+                0 4px 16px rgba(125, 98, 180, 0.15),
+                0 2px 8px rgba(67, 56, 120, 0.1) !important;
     background: linear-gradient(45deg, #433878, #7d62b4) !important;
     overflow: hidden !important;
     padding: 5px !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
+    transition: box-shadow 0.3s ease !important;
 }
 
-.card-body {
-    background: rgb(255, 255, 255);
-    box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
-    border-radius: 5px;
-    border: 1px solid rgba( 255, 255, 255, 0.18 );
+.card.card-custom:hover {
+    /* Slightly intensified glow on hover */
+    box-shadow: 0 12px 40px rgba(67, 56, 120, 0.3),
+                0 8px 20px rgba(125, 98, 180, 0.2),
+                0 4px 12px rgba(67, 56, 120, 0.15) !important;
+}
+
+/* Budget cards styling */
+#budgetCardsContainer .card {
+    border: none;
+    border-radius: 16px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: white;
+}
+
+#budgetCardsContainer .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#budgetCardsContainer .card .card-body {
+    border-radius: 16px !important;
+    padding: 1rem !important;
+    background: white;
+    border: none;
+}
+
+/* Adjust the progress bar to match the card's rounded style */
+#budgetCardsContainer .progress {
+    border-radius: 8px !important;
+    overflow: hidden;
+    background-color: #f0f0f0;
+}
+
+#budgetCardsContainer .progress-bar {
+    border-radius: 8px;
 }
 
 /* Finance summary styles */
@@ -85,7 +121,115 @@
     animation: shake 0.5s ease-in-out;
 }
 
+/* Form controls styling */
+.form-select,
+.form-control,
+.input-group {
+    border-radius: 12px !important;
+    border: 1px solid rgba(67, 56, 120, 0.2) !important;
+    font-size: 0.95rem !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+/* Input group specific styling */
+.input-group {
+    overflow: hidden !important;
+}
+
+.input-group .form-control {
+    border: none !important;
+}
+
+.input-group .btn {
+    border: none !important;
+    background-color: transparent !important;
+    color: #433878 !important;
+}
+
+/* Hover and focus states */
+.form-select:hover,
+.form-control:hover,
+.input-group:hover {
+    border-color: rgba(67, 56, 120, 0.4) !important;
+    box-shadow: 0 2px 8px rgba(67, 56, 120, 0.1) !important;
+}
+
+.form-select:focus,
+.form-control:focus {
+    border-color: #433878 !important;
+    box-shadow: 0 0 0 0.25rem rgba(67, 56, 120, 0.25) !important;
+}
+
+/* Custom styling for the reset button */
+#resetSearch,
+#resetSearchMobile {
+    border-radius: 0 12px 12px 0 !important;
+    padding: 0.375rem 0.75rem !important;
+    transition: all 0.2s ease !important;
+}
+
+#resetSearch:hover,
+#resetSearchMobile:hover {
+    background-color: rgba(67, 56, 120, 0.1) !important;
+}
+
+/* View button styling to match */
+.btn-view {
+    background-color: #433878 !important;
+    color: white;
+    border-radius: 12px !important;
+    padding: 0.25rem 1rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-view:hover {
+    color: white !important;
+    background-color: #8E7AB5 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .input-group {
+        margin-top: 0.5rem !important;
+    }
+    
+    .form-select,
+    .form-control {
+        font-size: 0.9rem !important;
+    }
+}
+
+/* Label styling */
+.col-form-label {
+    font-weight: 500 !important;
+    color: #433878 !important;
+}
+
+/* Placeholder text color */
+::placeholder {
+    color: rgba(67, 56, 120, 0.5) !important;
+    opacity: 1 !important;
+}
+
+/* Select dropdown arrow color */
+.form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23433878' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
 /* Custom Alert styles */
 .bg-custom-danger {
     background-color: #CD0404 !important;
+}
+
+.btn-alert {
+    background-color: #433878 !important;
+    color: white;
+    border-radius: 50px !important;
+    padding: 0.35rem 0.65rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-alert:hover {
+    background-color: #8E7AB5 !important;
+    color: white !important;
 }

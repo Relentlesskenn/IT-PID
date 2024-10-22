@@ -119,7 +119,7 @@ if ($hasData) {
 <link rel="stylesheet" href="./assets/css/graphs.css">
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="reports-page.php" class="btn btn-custom-primary btn-sm">
+        <a href="reports-page.php" class="btn btn-custom-primary-rounded btn-sm">
             <i class="bi bi-arrow-left"></i> Reports
         </a>
         <h1 class="h4 mb-0">Graphs</h1>

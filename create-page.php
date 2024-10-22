@@ -45,7 +45,7 @@ function showIncome() {
                     <input type="number" step="0.01" class="form-control" name="income_amount" id="income_amount" required inputmode="decimal">
                 </div>
             </div>
-            <button type="submit" class="btn btn-custom-primary btn-lg w-100 mb-2" name="income_btn">
+            <button type="submit" class="btn btn-custom-primary-rounded btn-lg w-100 mb-2" name="income_btn">
                 + Add Income
             </button>
             <a class="btn btn-outline-secondary btn-lg w-100 mb-2" href="dashboard-page.php">
@@ -71,7 +71,7 @@ function showBudget() {
         echo '<option value="' . htmlspecialchars($category) . '" data-color="' . htmlspecialchars($color) . '">' . htmlspecialchars($category) . '</option>';
     }
     echo '          </select>
-                    <button type="button" class="btn btn-outline-secondary" id="add-category-btn">
+                    <button type="button" class="btn btn-plus" id="add-category-btn">
                         +
                     </button>
                 </div>
@@ -83,7 +83,7 @@ function showBudget() {
                     <input type="number" step="0.01" class="form-control" name="budget_amount" id="budget_amount" required inputmode="decimal">
                 </div>
             </div>
-            <button type="submit" class="btn btn-custom-primary btn-lg w-100 mb-2" name="budget_btn">
+            <button type="submit" class="btn btn-custom-primary-rounded btn-lg w-100 mb-2" name="budget_btn">
                 + Add Budget
             </button>
             <a class="btn btn-outline-secondary btn-lg w-100 mb-2" href="dashboard-page.php">
@@ -117,7 +117,7 @@ function showExpense() {
                 <label for="expense_comment" class="form-label">Comment</label>
                 <textarea class="form-control" name="expense_comment" id="expense_comment" rows="3" maxlength="100" placeholder="Max 100 characters"></textarea>
             </div>
-            <button type="submit" class="btn btn-custom-primary btn-lg w-100 mb-2" name="expense_btn">
+            <button type="submit" class="btn btn-custom-primary-rounded btn-lg w-100 mb-2" name="expense_btn">
                 + Add Expense
             </button>
             <a class="btn btn-outline-secondary btn-lg w-100 mb-2" href="dashboard-page.php">
@@ -299,19 +299,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <div class="container-fluid vh-100 d-flex flex-column justify-content-center align-items-center">
     <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
         <div class="card-body">
-            <form method="post" action="" id="pageForm" class="mt-2 mb-4">
-                <input type="hidden" name="submitted_page" value="<?php echo htmlspecialchars($selected_page); ?>">
-                <div class="btn-group w-100" role="group" aria-label="Page Selection">
-                    <input type="radio" class="btn-check" name="page" id="income" value="income" autocomplete="off" <?php echo ($selected_page == 'income') ? 'checked' : ''; ?>>
-                    <label class="btn btn-outline-primary" for="income">Income</label>
+        <form method="post" action="" id="pageForm" class="mt-2 mb-4">
+            <input type="hidden" name="submitted_page" value="<?php echo htmlspecialchars($selected_page); ?>">
+            <div class="btn-group w-100" role="group" aria-label="Page Selection">
+                <input type="radio" class="btn-check" name="page" id="income" value="income" autocomplete="off" <?php echo ($selected_page == 'income') ? 'checked' : ''; ?>>
+                <label class="btn btn-outline-primary" for="income">Income</label>
 
-                    <input type="radio" class="btn-check" name="page" id="budget" value="budget" autocomplete="off" <?php echo ($selected_page == 'budget') ? 'checked' : ''; ?>>
-                    <label class="btn btn-outline-success" for="budget">Budget</label>
+                <input type="radio" class="btn-check" name="page" id="budget" value="budget" autocomplete="off" <?php echo ($selected_page == 'budget') ? 'checked' : ''; ?>>
+                <label class="btn btn-outline-success" for="budget">Budget</label>
 
-                    <input type="radio" class="btn-check" name="page" id="expense" value="expense" autocomplete="off" <?php echo ($selected_page == 'expense') ? 'checked' : ''; ?>>
-                    <label class="btn btn-outline-danger" for="expense">Expense</label>
-                </div>
-            </form>
+                <input type="radio" class="btn-check" name="page" id="expense" value="expense" autocomplete="off" <?php echo ($selected_page == 'expense') ? 'checked' : ''; ?>>
+                <label class="btn btn-outline-danger" for="expense">Expense</label>
+            </div>
+        </form>
             
             <div class="content">
                 <?php
@@ -364,7 +364,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <input type="color" class="form-control form-control-color w-100" id="newCategoryColor" name="newCategoryColor" value="#6c757d">
             </div>
             <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-custom-primary btn-lg" name="addCategoryBtn">+ Add Budget</button>
+                <button type="submit" class="btn btn-custom-primary-rounded btn-lg" name="addCategoryBtn">+ Add Budget</button>
                 <button type="button" class="btn btn-outline-secondary btn-lg w-100 mb-1" data-bs-dismiss="modal" aria-label="Close">Close</button>
             </div>
         </form>

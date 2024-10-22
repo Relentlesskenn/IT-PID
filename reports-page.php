@@ -251,7 +251,7 @@ $hasExpenses = ($result && $result->num_rows > 0);
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h4">Reports</h1>
-        <a href="graphs-page.php" class="btn btn-custom-primary">
+        <a href="graphs-page.php" class="btn btn-custom-primary-rounded">
             <i class="bi bi-graph-up"></i> Graphs
         </a>
         </div>
@@ -299,7 +299,7 @@ $hasExpenses = ($result && $result->num_rows > 0);
             <input type="hidden" name="date" value="<?php echo htmlspecialchars($selectedDate); ?>">
             <input type="hidden" name="month" value="<?php echo htmlspecialchars($selectedMonth); ?>">
             <input type="hidden" name="year" value="<?php echo htmlspecialchars($selectedYear); ?>">
-            <button type="submit" name="generate_pdf" class="btn btn-custom-primary w-100" <?php echo $hasExpenses ? '' : 'disabled'; ?>>
+            <button type="submit" name="generate_pdf" class="btn btn-custom-primary-rounded w-100" <?php echo $hasExpenses ? '' : 'disabled'; ?>>
                 Generate PDF
             </button>
         </form>
