@@ -391,7 +391,7 @@ $hasExpenses = ($result && $result->num_rows > 0);
 
 <!-- Modal for displaying the comment -->
 <div class="modal fade" id="commentModal" tabindex="-1" aria-labelledby="commentModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="commentModalLabel">Comment</h5>

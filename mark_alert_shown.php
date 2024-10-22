@@ -2,6 +2,7 @@
 include('_dbconnect.php');
 include('includes/authentication.php');
 
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userId = $_POST['userId'];
     $budgetId = $_POST['budgetId'];

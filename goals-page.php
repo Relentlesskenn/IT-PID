@@ -1,4 +1,5 @@
 <?php
+ob_start(); // Start output buffering
 $page_title = "Goals · IT-PID";
 include('_dbconnect.php');
 include('includes/authentication.php');
@@ -91,11 +92,49 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_goal'])) {
     $stmt->bind_param("isdss", $userId, $name, $targetAmount, $targetDate, $category);
     
     if ($stmt->execute()) {
-        header("Location: " . $_SERVER['PHP_SELF'] . "?success=goal_added");
-        exit();
+        if (!headers_sent()) {
+            header("Location: " . $_SERVER['PHP_SELF'] . "?success=goal_added");
+            exit();
+        } else {
+            echo "<script>window.location.href='" . $_SERVER['PHP_SELF'] . "?success=goal_added';</script>";
+            exit();
+        }
     } else {
-        header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Error adding goal: " . $conn->error));
-        exit();
+        if (!headers_sent()) {
+            header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Error adding goal: " . $conn->error));
+            exit();
+        } else {
+            echo "<script>window.location.href='" . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Error adding goal: " . $conn->error) . "';</script>";
+            exit();
+        }
+    }
+}
+
+// Handle goal deletion
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_goal'])) {
+    $goalId = $_POST['goal_id'];
+    
+    // Only allow deletion of incomplete goals
+    $sql = "DELETE FROM goals WHERE id = ? AND user_id = ? AND current_amount < target_amount";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $goalId, $userId);
+    
+    if ($stmt->execute()) {
+        if (!headers_sent()) {
+            header("Location: " . $_SERVER['PHP_SELF'] . "?success=goal_deleted");
+            exit();
+        } else {
+            echo "<script>window.location.href='" . $_SERVER['PHP_SELF'] . "?success=goal_deleted';</script>";
+            exit();
+        }
+    } else {
+        if (!headers_sent()) {
+            header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Error deleting goal: " . $conn->error));
+            exit();
+        } else {
+            echo "<script>window.location.href='" . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Error deleting goal: " . $conn->error) . "';</script>";
+            exit();
+        }
     }
 }
 
@@ -107,11 +146,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['archive_goal'])) {
     $stmt->bind_param("ii", $goalId, $userId);
     
     if ($stmt->execute()) {
-        header("Location: " . $_SERVER['PHP_SELF'] . "?success=goal_archived");
-        exit();
+        if (!headers_sent()) {
+            header("Location: " . $_SERVER['PHP_SELF'] . "?success=goal_archived");
+            exit();
+        } else {
+            echo "<script>window.location.href='" . $_SERVER['PHP_SELF'] . "?success=goal_archived';</script>";
+            exit();
+        }
     } else {
-        header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Error archiving goal: " . $conn->error));
-        exit();
+        if (!headers_sent()) {
+            header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Error archiving goal: " . $conn->error));
+            exit();
+        } else {
+            echo "<script>window.location.href='" . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Error archiving goal: " . $conn->error) . "';</script>";
+            exit();
+        }
     }
 }
 
@@ -146,6 +195,8 @@ function getSuccessMessage($successType) {
             return "Goal archived successfully!";
         case 'progress_updated':
             return "Goal progress updated successfully!";
+        case 'goal_deleted':
+            return "Goal deleted successfully!";
         default:
             return "Operation completed successfully!";
     }
@@ -293,7 +344,7 @@ $goalCategories = [
                 </div>
             </div>
 
-            <!-- Active Goals -->
+            <!-- Goals -->
             <div class="card mb-4">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Goals</h5>
@@ -344,10 +395,7 @@ $goalCategories = [
                                         <p class="text-end mb-2"><strong><?php echo number_format($progress, 1); ?>%</strong> Complete</p>
                                         <div class="d-flex justify-content-between">
                                             <button class="btn btn-sm btn-outline-custom" onclick="openUpdateModal(<?php echo $goal['id']; ?>, <?php echo $goal['current_amount']; ?>)">Update Progress</button>
-                                            <form method="POST" onsubmit="return confirm('Are you sure you want to delete this goal?');">
-                                                <input type="hidden" name="goal_id" value="<?php echo $goal['id']; ?>">
-                                                <button type="submit" name="delete_goal" class="btn btn-sm btn-outline-danger">Delete</button>
-                                            </form>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(<?php echo $goal['id']; ?>, '<?php echo htmlspecialchars($goal['name']); ?>')">Delete</button>
                                         </div>
                                     </div>
                                 </div>
@@ -395,7 +443,7 @@ $goalCategories = [
 
 <!-- Update Progress Modal -->
 <div class="modal fade" id="updateProgressModal" tabindex="-1" aria-labelledby="updateProgressModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="updateProgressModalLabel">Update Goal Progress</h5>
@@ -418,9 +466,31 @@ $goalCategories = [
     </div>
 </div>
 
+<!-- Delete Goal Modal -->
+<div class="modal fade" id="deleteGoalModal" tabindex="-1" aria-labelledby="deleteGoalModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteGoalModalLabel">Delete Goal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the goal "<span id="deleteGoalName"></span>"? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" id="deleteGoalForm">
+                    <input type="hidden" name="goal_id" id="deleteGoalId">
+                    <button type="submit" name="delete_goal" class="btn btn-danger">Delete Goal</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Archive Goal Modal -->
 <div class="modal fade" id="archiveGoalModal" tabindex="-1" aria-labelledby="archiveGoalModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="archiveGoalModalLabel">Archive Completed Goal</h5>
@@ -513,6 +583,14 @@ document.addEventListener('DOMContentLoaded', function() {
         window.history.replaceState({path: newUrl}, '', newUrl);
     }
 
+    // Function to open the delete goal modal
+    window.openDeleteModal = function(goalId, goalName) {
+        document.getElementById('deleteGoalId').value = goalId;
+        document.getElementById('deleteGoalName').textContent = goalName;
+        var modal = new bootstrap.Modal(document.getElementById('deleteGoalModal'));
+        modal.show();
+    }
+
     // Function to open the archive goal modal
     window.openArchiveModal = function(goalId, goalName) {
         document.getElementById('archiveGoalId').value = goalId;
@@ -565,4 +643,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<?php include('includes/footer.php') ?>
+<?php 
+include('includes/footer.php');
+ob_end_flush(); // End output buffering and flush the contents
+?>
