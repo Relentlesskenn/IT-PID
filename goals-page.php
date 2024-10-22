@@ -265,36 +265,14 @@ $goalCategories = [
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
         <div class="col-lg-10">
+            <!-- Page Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h4">Goals</h1>
             </div>
 
-            <!-- Goal Summary -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Goal Summary</h5>
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <strong>Total Goals:</strong> <?php echo $totalGoals; ?>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <strong>Completed Goals:</strong> <?php echo count($completedGoals); ?>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <strong>Total Target:</strong> ₱<?php echo number_format($totalTargetAmount, 2); ?>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <strong>Total Saved:</strong> ₱<?php echo number_format($totalCurrentAmount, 2); ?>
-                        </div>
-                    </div>
-                    <div class="progress">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo $overallProgress; ?>%" aria-valuenow="<?php echo $overallProgress; ?>" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </div>
-            </div>
-
+            <!-- Balance and Summary Row -->
             <div class="row mb-4">
-                <!-- Display current balance -->
+                <!-- Balance Card -->
                 <div class="col-md-6 mb-4 mb-md-0">
                     <div class="card balance-card h-100">
                         <div class="card-body d-flex flex-column justify-content-center">
@@ -304,9 +282,88 @@ $goalCategories = [
                     </div>
                 </div>
 
-                <!-- Add new goal form -->
+                <!-- Goal Summary Card -->
                 <div class="col-md-6">
                     <div class="card h-100">
+                        <!-- Mobile Header (Visible only on small screens) -->
+                        <div class="card-header bg-white d-md-none">
+                            <button class="btn btn-link text-decoration-none text-dark p-0 w-100 d-flex justify-content-between align-items-center" 
+                                    type="button" 
+                                    data-bs-toggle="collapse" 
+                                    data-bs-target="#goalSummaryCollapse" 
+                                    aria-expanded="false" 
+                                    aria-controls="goalSummaryCollapse">
+                                <h5 class="mb-0">Goal Summary</h5>
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                        </div>
+
+                        <!-- Desktop Header (Visible only on medium screens and up) -->
+                        <div class="card-header bg-white d-none d-md-block">
+                            <h5 class="mb-0">Goal Summary</h5>
+                        </div>
+
+                        <!-- Mobile Content (Collapsible on small screens) -->
+                        <div class="collapse d-md-none" id="goalSummaryCollapse">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6 col-sm-3 mb-3">
+                                        <strong>Total Goals:</strong> <?php echo $totalGoals; ?>
+                                    </div>
+                                    <div class="col-6 col-sm-3 mb-3">
+                                        <strong>Completed Goals:</strong> <?php echo count($completedGoals); ?>
+                                    </div>
+                                    <div class="col-6 col-sm-3 mb-3">
+                                        <strong>Total Target:</strong> ₱<?php echo number_format($totalTargetAmount, 2); ?>
+                                    </div>
+                                    <div class="col-6 col-sm-3 mb-3">
+                                        <strong>Total Saved:</strong> ₱<?php echo number_format($totalCurrentAmount, 2); ?>
+                                    </div>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                        style="width: <?php echo $overallProgress; ?>%" 
+                                        aria-valuenow="<?php echo $overallProgress; ?>" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="100">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Desktop Content (Always visible on medium screens and up) -->
+                        <div class="card-body d-none d-md-block">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <strong>Total Goals:</strong> <?php echo $totalGoals; ?>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <strong>Completed Goals:</strong> <?php echo count($completedGoals); ?>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <strong>Total Target:</strong> ₱<?php echo number_format($totalTargetAmount, 2); ?>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <strong>Total Saved:</strong> ₱<?php echo number_format($totalCurrentAmount, 2); ?>
+                                </div>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                    style="width: <?php echo $overallProgress; ?>%" 
+                                    aria-valuenow="<?php echo $overallProgress; ?>" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add New Goal Row -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
                         <div class="card-header bg-white">
                             <h5 class="mb-0">Add New Goal</h5>
                         </div>
@@ -344,7 +401,7 @@ $goalCategories = [
                 </div>
             </div>
 
-            <!-- Goals -->
+            <!-- Active Goals Section -->
             <div class="card mb-4">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Goals</h5>
@@ -360,7 +417,7 @@ $goalCategories = [
                             </ul>
                         </div>
                         <div class="dropdown">
-                        <button class="btn btn-outline-custom dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="btn btn-outline-custom dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                 Filter Category
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="filterDropdown">
@@ -390,7 +447,12 @@ $goalCategories = [
                                         $progressBarClass = $progress >= 75 ? 'bg-success' : ($progress >= 50 ? 'bg-warning' : 'bg-danger');
                                         ?>
                                         <div class="progress mb-2">
-                                            <div class="progress-bar <?php echo $progressBarClass; ?>" role="progressbar" style="width: <?php echo $progress; ?>%" aria-valuenow="<?php echo $progress; ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                                            <div class="progress-bar <?php echo $progressBarClass; ?>" role="progressbar" 
+                                                 style="width: <?php echo $progress; ?>%" 
+                                                 aria-valuenow="<?php echo $progress; ?>" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                            </div>
                                         </div>
                                         <p class="text-end mb-2"><strong><?php echo number_format($progress, 1); ?>%</strong> Complete</p>
                                         <div class="d-flex justify-content-between">
@@ -405,16 +467,16 @@ $goalCategories = [
                 </div>
             </div>
 
-            <!-- Completed Goals -->
-            <div class="card mb-4">
+            <!-- Completed Goals Section -->
+            <div class="card">
                 <div class="card-header bg-white">
                     <h5 class="mb-0">Completed Goals</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                    <?php foreach ($completedGoals as $goal): ?>
-                        <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card goal-card h-100 bg-light" data-goal-id="<?php echo $goal['id']; ?>">
+                        <?php foreach ($completedGoals as $goal): ?>
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card goal-card h-100 bg-light" data-goal-id="<?php echo $goal['id']; ?>">
                                     <div class="card-body">
                                         <h5 class="card-title"><?php echo htmlspecialchars($goal['name']); ?></h5>
                                         <h6 class="card-subtitle mb-2 text-muted"><?php echo htmlspecialchars($goal['category']); ?></h6>
@@ -424,7 +486,12 @@ $goalCategories = [
                                             <strong>Completed:</strong> <?php echo date('M d, Y', strtotime($goal['target_date'])); ?>
                                         </p>
                                         <div class="progress mb-2">
-                                            <div class="progress-bar bg-success" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                 style="width: 100%" 
+                                                 aria-valuenow="100" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                            </div>
                                         </div>
                                         <p class="text-end mb-2"><strong>100%</strong> Complete</p>
                                         <button type="button" class="btn btn-sm btn-outline-secondary w-100" onclick="openArchiveModal(<?php echo $goal['id']; ?>, '<?php echo htmlspecialchars($goal['name']); ?>')">
@@ -629,6 +696,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams(url.search);
             updateUrlParams(params);
         });
+    });
+
+    // Handle collapse icon rotation
+    document.querySelector('[data-bs-toggle="collapse"]').addEventListener('click', function() {
+        const icon = this.querySelector('.bi');
+        if (icon.classList.contains('bi-chevron-down')) {
+            icon.classList.replace('bi-chevron-down', 'bi-chevron-up');
+        } else {
+            icon.classList.replace('bi-chevron-up', 'bi-chevron-down');
+        }
     });
 
     // Handle filter dropdown item clicks

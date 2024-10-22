@@ -52,3 +52,15 @@
         margin-bottom: 20px;
     }
 }
+
+.btn-link:focus {
+    box-shadow: none;
+}
+
+.bi-chevron-down, .bi-chevron-up {
+    transition: transform 0.2s ease-in-out;
+}
+
+[aria-expanded="true"] .bi-chevron-up {
+    transform: rotate(180deg);
+}
