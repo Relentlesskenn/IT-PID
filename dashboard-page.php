@@ -178,8 +178,8 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
     <div class="container">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <span style="font-size: 1.2rem;">Hello, <strong><?= htmlspecialchars($_SESSION['auth_user']['username']) ?></strong></span>
-            <a id="notificationBtn" class="btn btn-alert btn-sm position-relative" href="notifications-page.php">
-                <i id="notificationIcon" class="bi bi-bell-fill"></i>
+            <a id="notificationBtn" class="position-relative btn btn-link text-dark p-0" href="notifications-page.php">
+                <i id="notificationIcon" class="bi <?= $unreadNotificationsCount > 0 ? 'bi-bell-fill' : 'bi-bell' ?> fs-5"></i>
                 <?php if ($unreadNotificationsCount > 0): ?>
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                     <?= $unreadNotificationsCount ?>
