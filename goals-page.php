@@ -579,7 +579,7 @@ $goalCategories = [
 
 <!-- Toast for notifications -->
 <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 11">
-    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
             <strong class="me-auto">Notification</strong>
             <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -602,12 +602,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to show a toast message
     function showToast(message, type) {
-        var toastEl = document.getElementById('liveToast');
-        var toast = new bootstrap.Toast(toastEl);
-        toastEl.querySelector('.toast-body').textContent = message;
-        toastEl.classList.remove('bg-success', 'bg-danger');
-        toastEl.classList.add('bg-' + type);
+    const toastLiveExample = document.getElementById('liveToast');
+    if (toastLiveExample) {
+        const toast = new bootstrap.Toast(toastLiveExample, {
+            animation: true,
+            autohide: true,
+            delay: 5000
+        });
+
+        const toastBody = document.querySelector('.toast-body');
+        const toastElement = document.querySelector('.toast');
+        
+        toastBody.textContent = message;
+        toastElement.classList.remove('border-primary', 'border-warning', 'border-danger');
+        
+        switch (type) {
+            case 'primary':
+                toastElement.classList.add('border-primary');
+                break;
+            case 'warning':
+                toastElement.classList.add('border-warning');
+                break;
+            case 'danger':
+                toastElement.classList.add('border-danger');
+                break;
+        }
+        
         toast.show();
+        }
     }
 
     // Function to get URL parameters
@@ -623,11 +645,11 @@ document.addEventListener('DOMContentLoaded', function() {
     var errorMessage = getUrlParameter('error');
 
     if (successMessage) {
-        showToast(getSuccessMessage(successMessage), 'success');
+    showToast(getSuccessMessage(successMessage), 'primary');
     }
 
     if (errorMessage) {
-        showToast(errorMessage, 'danger');
+    showToast(errorMessage, 'danger');
     }
 
     // Function to get success message based on the success type
@@ -639,6 +661,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 return "Goal archived successfully!";
             case 'progress_updated':
                 return "Goal progress updated successfully!";
+            case 'goal_deleted':
+                return "Goal deleted successfully!";
             default:
                 return "Operation completed successfully!";
         }
