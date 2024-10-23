@@ -114,9 +114,10 @@ if ($hasData) {
 }
 ?>
 
+<link rel="stylesheet" href="./assets/css/graphs.css">
+
 <!-- HTML content -->
 <body class="graphs-page">
-<link rel="stylesheet" href="./assets/css/graphs.css">
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <a href="reports-page.php" class="btn btn-custom-primary-rounded btn-sm">
