@@ -1,7 +1,18 @@
 /* goals.css */
 .balance-card {
+    color: white !important;
+    border: none !important;
+    border-radius: 10px !important;
+    /* Enhanced shadow with purple glow */
+    box-shadow: 0 8px 32px rgba(67, 56, 120, 0.25),
+                0 4px 16px rgba(125, 98, 180, 0.15),
+                0 2px 8px rgba(67, 56, 120, 0.1) !important;
     background: linear-gradient(45deg, #433878, #7d62b4) !important;
-    color: white;
+    overflow: hidden !important;
+    padding: 5px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    transition: box-shadow 0.3s ease !important;
 }
 
 .goal-card {
