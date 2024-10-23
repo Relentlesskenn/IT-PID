@@ -394,7 +394,7 @@ $goalCategories = [
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
-                                <button type="submit" name="add_goal" class="btn btn-custom-primary-rounded w-100">Add Goal</button>
+                                <button type="submit" name="add_goal" class="btn btn-add w-100">Add Goal</button>
                             </form>
                         </div>
                     </div>

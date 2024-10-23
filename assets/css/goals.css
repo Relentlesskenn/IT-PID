@@ -95,6 +95,14 @@
     box-shadow: none;
 }
 
+.btn-add {
+    background-color: #433878 !important;
+    color: white !important;
+    border-radius: 12px !important;
+    padding: 0.75rem!important;
+    transition: all 0.2s ease !important;
+}
+
 .btn-dropdown {
     border-color: #433878 !important; 
     color: #433878 !important; 
@@ -155,53 +163,75 @@
 }
 
 /* Input Group Enhancements */
+.form-control {
+    height: calc(3rem + 2px) !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(67, 56, 120, 0.2) !important;
+}
+
+/* Input Group Specific Styles */
 .input-group {
-    position: relative;
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: stretch;
-    width: 100%;
+    position: relative !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    width: 100% !important;
 }
 
-.input-group .form-control {
-    position: relative;
-    flex: 1 1 auto;
-    width: 1%;
-    min-width: 0;
-    border-top-left-radius: 0 !important;
-    border-bottom-left-radius: 0 !important;
-    border-left: 0 !important;
-}
-
+/* Input Group Text (Currency Symbol) */
 .input-group-text {
-    display: flex;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
-    font-weight: 400;
-    line-height: 1.5;
-    text-align: center;
-    white-space: nowrap;
+    display: flex !important;
+    align-items: center !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 1rem !important;
+    font-weight: 400 !important;
+    line-height: 1.5 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    background-color: rgba(67, 56, 120, 0.05) !important;
+    border: 1px solid rgba(67, 56, 120, 0.2) !important;
+    border-right: 0 !important;
     border-top-left-radius: 12px !important;
     border-bottom-left-radius: 12px !important;
     border-top-right-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
-    border: 1px solid rgba(67, 56, 120, 0.2);
-    border-right: 0;
-    background-color: rgba(67, 56, 120, 0.05);
-    color: #433878;
+    color: #433878 !important;
+    height: calc(3rem + 2px) !important; /* Match form-control height */
 }
 
-/* Remove double borders when input is focused */
-.input-group .form-control:focus {
-    z-index: 3;
+/* Input Group Form Control */
+.input-group > .form-control {
+    flex: 1 1 auto !important;
+    width: 1% !important;
+    min-width: 0 !important;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-top-right-radius: 12px !important;
+    border-bottom-right-radius: 12px !important;
     border-left: 0 !important;
+    height: calc(3rem + 2px) !important; /* Match input-group-text height */
 }
 
-/* Ensure consistent height */
-.input-group > .form-control,
-.input-group > .input-group-text {
-    height: calc(3rem + 2px); /* Matches the height of other form elements */
+/* Focus states */
+.input-group .form-control:focus {
+    z-index: 3 !important;
+    border-left: 0 !important;
+    box-shadow: none !important;
+    border-color: rgba(67, 56, 120, 0.4) !important;
+}
+
+/* Make date input and select match other inputs */
+input[type="date"].form-control,
+select.form-select {
+    height: calc(3rem + 2px) !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(67, 56, 120, 0.2) !important;
 }
 
 /* Dropdown Styles */
