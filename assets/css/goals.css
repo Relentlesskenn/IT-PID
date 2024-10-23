@@ -1,8 +1,22 @@
 /* goals.css */
+.card {
+    border-radius: 20px !important; /* Increased border radius for all cards */
+    border: 1px solid rgba(67, 56, 120, 0.1) !important;
+    transition: all 0.3s ease-in-out !important;
+    padding: 10px !important;
+}
+
+.card-header {
+    border-top-left-radius: 20px !important;
+    border-top-right-radius: 20px !important;
+    border-bottom: 1px solid rgba(67, 56, 120, 0.1) !important;
+    background-color: white !important;
+}
+
 .balance-card {
     color: white !important;
     border: none !important;
-    border-radius: 10px !important;
+    border-radius: 20px !important;
     /* Enhanced shadow with purple glow */
     box-shadow: 0 8px 32px rgba(67, 56, 120, 0.25),
                 0 4px 16px rgba(125, 98, 180, 0.15),
@@ -15,37 +29,23 @@
     transition: box-shadow 0.3s ease !important;
 }
 
-.balance-card:hover {
-    /* Slightly intensified glow on hover */
-    box-shadow: 0 12px 40px rgba(67, 56, 120, 0.3),
-                0 8px 20px rgba(125, 98, 180, 0.2),
-                0 4px 12px rgba(67, 56, 120, 0.15) !important;
+.goal-card {
+    border-radius: 20px !important;
+    transition: all 0.3s ease-in-out;
+    background: white !important;
 }
 
-.goal-card {
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+.goal-card-title {
+    font-size: 1.5rem;
 }
 
 .goal-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 25px rgba(67, 56, 120, 0.15) !important;
 }
 
-.progress {
-    height: 10px;
-    border-radius: 5px;
-}
-
-.dropdown-menu {
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.dropdown-item:hover {
-    background-color: #f8f9fa;
-}
-
-.card-header {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+.goal-card.bg-light {
+    background: linear-gradient(145deg, #f8f9fa, #ffffff) !important;
 }
 
 .goal-summary {
@@ -71,8 +71,65 @@
     }
 }
 
+.progress {
+    height: 10px !important;
+    border-radius: 8px !important;
+    background-color: rgba(67, 56, 120, 0.1) !important;
+    overflow: hidden !important;
+}
+
+.progress-bar {
+    border-radius: 8px !important;
+    transition: width 0.5s ease-in-out !important;
+}
+
+.dropdown-menu {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
 .btn-link:focus {
     box-shadow: none;
+}
+
+.btn-dropdown {
+    border-color: #433878 !important; 
+    color: #433878 !important; 
+    background-color: transparent !important; 
+    border-radius: 12px !important;
+    transition: all 0.3s ease !important;
+    font-size: 0.9rem !important;
+}
+
+.btn-update {
+    border-color: #433878 !important; 
+    color: #433878 !important; 
+    background-color: transparent !important;
+    border-radius: 18px !important;
+    transition: all 0.3s ease !important;
+    padding: 10px !important;
+}
+
+.btn-update:hover {
+    background-color: #433878 !important; 
+    color: white !important; 
+}
+
+.btn-delete {
+    border-color: #dc3545 !important; 
+    color: #dc3545 !important; 
+    background-color: transparent !important;
+    border-radius: 18px !important;
+    transition: all 0.3s ease !important;
+    padding: 10px 40px !important;
+}
+
+.btn-delete:hover {
+    background-color: #dc3545 !important; 
+    color: white !important; 
 }
 
 .bi-chevron-down, .bi-chevron-up {
@@ -81,6 +138,70 @@
 
 [aria-expanded="true"] .bi-chevron-up {
     transform: rotate(180deg);
+}
+
+/* Modal enhancements */
+.modal-content {
+    border-radius: 24px !important;
+    border: none !important;
+    box-shadow: 0 10px 40px rgba(67, 56, 120, 0.2) !important;
+}
+
+.modal-header {
+    border-top-left-radius: 24px !important;
+    border-top-right-radius: 24px !important;
+    border-bottom: 1px solid rgba(67, 56, 120, 0.1) !important;
+    padding: 20px !important;
+}
+
+/* Input Group Enhancements */
+.input-group {
+    position: relative;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    width: 100%;
+}
+
+.input-group .form-control {
+    position: relative;
+    flex: 1 1 auto;
+    width: 1%;
+    min-width: 0;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-left: 0 !important;
+}
+
+.input-group-text {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: center;
+    white-space: nowrap;
+    border-top-left-radius: 12px !important;
+    border-bottom-left-radius: 12px !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border: 1px solid rgba(67, 56, 120, 0.2);
+    border-right: 0;
+    background-color: rgba(67, 56, 120, 0.05);
+    color: #433878;
+}
+
+/* Remove double borders when input is focused */
+.input-group .form-control:focus {
+    z-index: 3;
+    border-left: 0 !important;
+}
+
+/* Ensure consistent height */
+.input-group > .form-control,
+.input-group > .input-group-text {
+    height: calc(3rem + 2px); /* Matches the height of other form elements */
 }
 
 /* Dropdown Styles */

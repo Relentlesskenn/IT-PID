@@ -271,9 +271,9 @@ $goalCategories = [
             </div>
 
             <!-- Balance and Summary Row -->
-            <div class="row mb-4">
+            <div class="row mb-3">
                 <!-- Balance Card -->
-                <div class="col-md-6 mb-4 mb-md-0">
+                <div class="col-md-6 mb-3 mb-md-0">
                     <div class="card balance-card h-100">
                         <div class="card-body d-flex flex-column justify-content-center">
                             <h5 class="card-title text-white-50">Balance</h5>
@@ -291,10 +291,10 @@ $goalCategories = [
                                     type="button" 
                                     data-bs-toggle="collapse" 
                                     data-bs-target="#goalSummaryCollapse" 
-                                    aria-expanded="false" 
+                                    aria-expanded="true"
                                     aria-controls="goalSummaryCollapse">
                                 <h5 class="mb-0">Goal Summary</h5>
-                                <i class="bi bi-chevron-down"></i>
+                                <i class="bi bi-chevron-up"></i> <!-- Changed from bi-chevron-down to bi-chevron-up -->
                             </button>
                         </div>
 
@@ -304,7 +304,7 @@ $goalCategories = [
                         </div>
 
                         <!-- Mobile Content (Collapsible on small screens) -->
-                        <div class="collapse d-md-none" id="goalSummaryCollapse">
+                        <div class="collapse show d-md-none" id="goalSummaryCollapse"> <!-- Added 'show' class -->
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-6 col-sm-3 mb-3">
@@ -361,7 +361,7 @@ $goalCategories = [
             </div>
 
             <!-- Add New Goal Row -->
-            <div class="row mb-4">
+            <div class="row mb-3">
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header bg-white">
@@ -384,7 +384,7 @@ $goalCategories = [
                                     <label for="target_date" class="form-label">Target Date</label>
                                     <input type="date" class="form-control" id="target_date" name="target_date" required>
                                 </div>
-                                <div class="mb-3">
+                                <div class="mb-4">
                                     <label for="category" class="form-label">Category</label>
                                     <select class="form-select" id="category" name="category">
                                         <?php foreach ($goalCategories as $category => $description): ?>
@@ -402,12 +402,12 @@ $goalCategories = [
             </div>
 
             <!-- Active Goals Section -->
-            <div class="card mb-4">
+            <div class="card mb-3">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Goals</h5>
                     <div class="d-flex">
                         <div class="dropdown me-2">
-                            <button class="btn btn-outline-custom dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="btn btn-dropdown dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                 Sort Goals
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="sortDropdown">
@@ -417,7 +417,7 @@ $goalCategories = [
                             </ul>
                         </div>
                         <div class="dropdown">
-                            <button class="btn btn-outline-custom dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="btn btn-dropdown dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                 Filter Category
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="filterDropdown">
@@ -435,7 +435,7 @@ $goalCategories = [
                             <div class="col-md-6 col-lg-4 mb-4">
                                 <div class="card goal-card h-100">
                                     <div class="card-body">
-                                        <h5 class="card-title"><?php echo htmlspecialchars($goal['name']); ?></h5>
+                                        <h5 class="goal-card-title"><strong><?php echo htmlspecialchars($goal['name']); ?></strong></h5>
                                         <h6 class="card-subtitle mb-2 text-muted"><?php echo htmlspecialchars($goal['category']); ?></h6>
                                         <p class="card-text">
                                             <strong>Target:</strong> ₱<?php echo number_format($goal['target_amount'], 2); ?><br>
@@ -454,10 +454,10 @@ $goalCategories = [
                                                  aria-valuemax="100">
                                             </div>
                                         </div>
-                                        <p class="text-end mb-2"><strong><?php echo number_format($progress, 1); ?>%</strong> Complete</p>
+                                        <p class="text-end mb-4"><strong><?php echo number_format($progress, 1); ?>%</strong> Complete</p>
                                         <div class="d-flex justify-content-between">
-                                            <button class="btn btn-sm btn-outline-custom" onclick="openUpdateModal(<?php echo $goal['id']; ?>, <?php echo $goal['current_amount']; ?>)">Update Progress</button>
-                                            <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(<?php echo $goal['id']; ?>, '<?php echo htmlspecialchars($goal['name']); ?>')">Delete</button>
+                                            <button class="btn btn-sm btn-update" onclick="openUpdateModal(<?php echo $goal['id']; ?>, <?php echo $goal['current_amount']; ?>)">Update Progress</button>
+                                            <button class="btn btn-sm btn-delete" onclick="openDeleteModal(<?php echo $goal['id']; ?>, '<?php echo htmlspecialchars($goal['name']); ?>')">Delete</button>
                                         </div>
                                     </div>
                                 </div>
@@ -493,7 +493,7 @@ $goalCategories = [
                                                  aria-valuemax="100">
                                             </div>
                                         </div>
-                                        <p class="text-end mb-2"><strong>100%</strong> Complete</p>
+                                        <p class="text-end mb-4"><strong>100%</strong> Complete</p>
                                         <button type="button" class="btn btn-sm btn-outline-secondary w-100" onclick="openArchiveModal(<?php echo $goal['id']; ?>, '<?php echo htmlspecialchars($goal['name']); ?>')">
                                             Archive
                                         </button>
@@ -723,14 +723,22 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Handle collapse icon rotation
-    document.querySelector('[data-bs-toggle="collapse"]').addEventListener('click', function() {
-        const icon = this.querySelector('.bi');
-        if (icon.classList.contains('bi-chevron-down')) {
-            icon.classList.replace('bi-chevron-down', 'bi-chevron-up');
-        } else {
-            icon.classList.replace('bi-chevron-up', 'bi-chevron-down');
-        }
-    });
+    const collapseButton = document.querySelector('[data-bs-toggle="collapse"]');
+    if (collapseButton) {
+        // Set initial state
+        const icon = collapseButton.querySelector('.bi');
+        icon.classList.remove('bi-chevron-down');
+        icon.classList.add('bi-chevron-up');
+
+        collapseButton.addEventListener('click', function() {
+            const icon = this.querySelector('.bi');
+            if (icon.classList.contains('bi-chevron-down')) {
+                icon.classList.replace('bi-chevron-down', 'bi-chevron-up');
+            } else {
+                icon.classList.replace('bi-chevron-up', 'bi-chevron-down');
+            }
+        });
+    }
 
     // Handle filter dropdown item clicks
     document.querySelectorAll('#filterDropdown .dropdown-item').forEach(item => {
