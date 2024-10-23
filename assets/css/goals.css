@@ -15,6 +15,13 @@
     transition: box-shadow 0.3s ease !important;
 }
 
+.balance-card:hover {
+    /* Slightly intensified glow on hover */
+    box-shadow: 0 12px 40px rgba(67, 56, 120, 0.3),
+                0 8px 20px rgba(125, 98, 180, 0.2),
+                0 4px 12px rgba(67, 56, 120, 0.15) !important;
+}
+
 .goal-card {
     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
