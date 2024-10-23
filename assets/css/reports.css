@@ -1,0 +1,127 @@
+/* Custom styles for reports page */
+.card {
+    border: none;
+    margin-bottom: 1.5rem;
+}
+
+.rounded-4 {
+    border-radius: 1rem !important;
+}
+
+.shadow-sm {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+/* Table styles */
+.table-responsive {
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    border-top: none;
+}
+
+.table-dark th {
+    background-color: #433878;
+    border-color: #2c3e50;
+}
+
+/* Pagination Styles */
+.pagination {
+    gap: 0.5rem;
+}
+
+.page-item {
+    margin: 0 2px;
+}
+
+.page-item:first-child .page-link,
+.page-item:last-child .page-link {
+    border-radius: 40% !important; 
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.page-link {
+    border-radius: 40% !important;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    font-size: 0.9rem;
+    color: #2c3e50;
+    border: none;
+    background-color: #f8f9fa;
+    transition: all 0.2s ease-in-out;
+}
+
+.page-link:hover {
+    background-color: #e9ecef;
+    color: #2c3e50;
+    transform: translateY(-1px);
+}
+
+.page-item.active .page-link {
+    background-color: #2c3e50;
+    border-color: #2c3e50;
+    transform: none;
+}
+
+.page-item.disabled .page-link {
+    border-radius: 40%;
+    background-color: #f8f9fa;
+    opacity: 0.5;
+}
+
+.form-control, .form-select {
+    border-radius: 0.5rem;
+    border: 1px solid #dee2e6;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #2c3e50;
+    box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+}
+
+/* Card title styling */
+.card-title {
+    color: black;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* Add smooth transitions */
+.card, .btn, .page-link {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-view {
+    background-color: #433878 !important;
+    color: white !important;
+    border-radius: 12px !important;
+    padding: 0.25rem 1rem !important;
+    transition: all 0.2s ease !important;   
+}
+
+.btn-view:hover {
+    background-color: #8e7ab5;
+    color: white;
+}
+
+.btn-view:disabled {
+    background-color: #777388 !important;
+    color: rgb(223, 221, 221) !important;
+    cursor: not-allowed !important;
+}

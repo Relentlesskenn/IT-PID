@@ -37,7 +37,7 @@ body {
 
 .btn-custom-primary-rounded{
     background-color: #433878 !important;
-    color: white;
+    color: white !important;
     border-radius: 12px !important;
     padding: 0.315rem 1rem !important;
     transition: all 0.2s ease !important;
