@@ -1,0 +1,105 @@
+/* Custom styles for notifications page */
+.notifications-page .list-group {
+    gap: 0.5rem;
+}
+
+.notifications-page .list-group-item {
+    border-radius: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-bottom: 0;
+    background-color: #fff;
+}
+
+.notifications-page .list-group-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Notification header alignment */
+.notifications-page .list-group-item h5 {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    font-size: 1.3rem;
+    line-height: 1.5;
+}
+
+/* Icon styling and alignment */
+.notifications-page .list-group-item h5 i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-right: 0.5rem;
+    font-size: 1.3rem;
+    position: relative;
+    top: 1px;
+}
+
+.notifications-page .list-group-item h5 i.bi-exclamation-triangle-fill,
+.notifications-page .list-group-item h5 i.bi-piggy-bank,
+.notifications-page .list-group-item h5 i.bi-cash-coin,
+.notifications-page .list-group-item h5 i.bi-credit-card,
+.notifications-page .list-group-item h5 i.bi-bell-fill {
+    transform: translateY(1.3px);
+}
+
+/* Style for the delete button */
+.notifications-page .btn-outline-danger {
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.notifications-page .btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+    transform: scale(1.05);
+}
+
+/* Style for the clear all button */
+.notifications-page .btn-danger {
+    border-radius: 12px !important;
+    padding: 0.315rem 1rem !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Custom alert styling */
+.notifications-page .alert {
+    border-radius: 1rem;
+    padding: 1.25rem;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Message text styling */
+.notifications-page .list-group-item p {
+    color: #4a5568;
+    line-height: 1.5;
+}
+
+/* Timestamp styling */
+.notifications-page .list-group-item small {
+    color: #718096;
+}
+
+/* Icon container styling */
+.notifications-page .list-group-item i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
+.notifications-page .list-group-item p strong {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.notifications-page .list-group-item small {
+    font-weight: normal;
+}

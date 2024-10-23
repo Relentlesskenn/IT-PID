@@ -43,23 +43,59 @@ function getNotificationDetails($type, $message) {
         'exceeded' => ['icon' => 'bi-exclamation-triangle-fill text-danger', 'title' => 'Budget Alert'],
     ];
 
-    if ($type === 'budget_alert') {
-        foreach ($budgetAlerts as $keyword => $details) {
-            if (strpos($message, $keyword) !== false) {
-                return $details;
-            }
-        }
-    }
-    
-    $notificationTypes = [
-        'budget' => ['icon' => 'bi-piggy-bank text-primary', 'title' => 'Budget Notification'],
-        'income' => ['icon' => 'bi-cash-coin text-success', 'title' => 'Income Notification'],
-        'expense' => ['icon' => 'bi-credit-card text-danger', 'title' => 'Expense Notification'],
+    // Initialize default values
+    $details = [
+        'icon' => 'bi-bell-fill text-secondary',
+        'title' => 'Notification',
+        'message' => $message // Always include the original message
     ];
 
-    return $notificationTypes[$type] ?? ['icon' => 'bi-bell-fill text-secondary', 'title' => 'Notification'];
+    if ($type === 'budget_alert') {
+        foreach ($budgetAlerts as $keyword => $budgetDetails) {
+            if (strpos($message, $keyword) !== false) {
+                $details['icon'] = $budgetDetails['icon'];
+                $details['title'] = $budgetDetails['title'];
+                break;
+            }
+        }
+    } else {
+        $notificationTypes = [
+            'budget' => ['icon' => 'bi-piggy-bank text-primary', 'title' => 'Budget Notification'],
+            'income' => ['icon' => 'bi-cash-coin text-success', 'title' => 'Income Notification'],
+            'expense' => ['icon' => 'bi-credit-card text-danger', 'title' => 'Expense Notification'],
+        ];
+
+        if (isset($notificationTypes[$type])) {
+            $details['icon'] = $notificationTypes[$type]['icon'];
+            $details['title'] = $notificationTypes[$type]['title'];
+        }
+    }
+
+    // Format the message to make specific parts bold
+    // Make peso amounts bold
+    $details['message'] = preg_replace('/₱[\d,]+(\.\d{2})?/', '<strong>$0</strong>', $details['message']);
+    
+    // Make category names in single quotes bold
+    $details['message'] = preg_replace('/\'([^\']+)\'/', '\'<strong>$1</strong>\'', $details['message']);
+    
+    // Make dates bold
+    $details['message'] = preg_replace('/\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}\b/', '<strong>$0</strong>', $details['message']);
+
+    // Make dates bold
+    $details['message'] = preg_replace(
+        '/\b(?:January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}\b/',
+        '<strong>$0</strong>',
+        $details['message']
+    );
+
+    // Make percentages bold (including the % symbol)
+    $details['message'] = preg_replace('/\b\d+(?:\.\d+)?%/', '<strong>$0</strong>', $details['message']);
+
+    return $details;
 }
 ?>
+
+<link rel="stylesheet" href="./assets/css/notifications.css">
 
 <!-- HTML content -->
 <body class="notifications-page">
@@ -78,20 +114,19 @@ function getNotificationDetails($type, $message) {
                             <i class="bi bi-trash3"></i> Clear All
                         </button>
                     </form>
-                <?php else: ?>
                 <?php endif; ?>
             </div>
 
             <!-- Notifications List -->
             <?php if ($result->num_rows > 0): ?>
-                <div class="list-group mb-4">
+                <div class="list-group">
                     <?php while ($row = $result->fetch_assoc()): 
                         $notificationDetails = getNotificationDetails($row['type'], $row['message']);
                     ?>
                         <div class="list-group-item">
                             <div class="d-flex w-100 justify-content-between align-items-center">
                                 <h5 class="mb-1">
-                                    <i class="bi <?= htmlspecialchars($notificationDetails['icon']) ?> me-2"></i>
+                                    <i class="bi <?= htmlspecialchars($notificationDetails['icon']) ?>"></i>
                                     <?= htmlspecialchars($notificationDetails['title']) ?>
                                 </h5>
                                 <form method="POST" class="d-inline">
@@ -101,7 +136,7 @@ function getNotificationDetails($type, $message) {
                                     </button>
                                 </form>
                             </div>
-                            <p class="mb-1 mt-2"><?= htmlspecialchars($row['message']) ?></p>
+                            <p class="mb-1 mt-2"><?= $notificationDetails['message'] ?? '' ?></p>
                             <small class="text-muted"><?= date('M d, Y H:i', strtotime($row['created_at'])) ?></small>
                         </div>
                     <?php endwhile; ?>
