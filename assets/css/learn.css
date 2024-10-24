@@ -1,0 +1,140 @@
+/* Category card styles */
+.category-card {
+    position: relative;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.category-card.active {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    background: linear-gradient(145deg, #433878, #8E7AB5);
+    color: white;
+}
+
+.category-card.active .badge {
+    background-color: white !important;
+    color: #433878;
+}
+
+.category-indicator {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: #433878;
+    transition: width 0.3s ease;
+}
+
+.category-card.active .category-indicator {
+    width: 100%;
+    background: white;
+}
+
+/* Card styles */
+.learn-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    border-radius: 15px;
+}
+
+.learn-card:hover {
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.resource-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.article-card {
+    height: 100%;
+}
+
+.article-preview {
+    color: #666;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    line-clamp: 3;
+    overflow: hidden;
+    max-height: 4.5em;
+    position: relative;
+}
+
+@supports not (-webkit-line-clamp: 3) {
+    .article-preview::after {
+        content: '...';
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        padding-left: 40px;
+        background: linear-gradient(to right, transparent, white 50%);
+    }
+}
+
+/* Animation styles */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+/* Category indicator badge */
+.badge {
+    transition: all 0.3s ease;
+}
+
+/* Search clear button */
+#clearSearch {
+    display: none;
+}
+
+/* Modal styles */
+.modal-header {
+    background-color: #433878;
+    color: white;
+}
+
+.modal-header .btn-close {
+    color: white;
+    opacity: 1;
+}
+
+/* Loading spinner styles */
+.spinner-border {
+    color: #433878;
+}
+
+/* Category indicator text */
+#categoryIndicator {
+    font-size: 0.9rem;
+}
+
+/* Show all button */
+.category-reset {
+    transition: all 0.3s ease;
+    border-radius: 20px;
+}
+
+.category-reset:hover {
+    background-color: #433878;
+    color: white;
+    border-color: #433878;
+}
