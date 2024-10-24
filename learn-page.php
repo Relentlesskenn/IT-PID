@@ -163,112 +163,115 @@ $goalsCount = getArticleCountByCategory($conn, 'goals');
 <link rel="stylesheet" href="./assets/css/learn.css">
 
 <!-- HTML content -->
-<div class="py-4">
+<div class="learn-page py-4">
     <div class="container">
-        <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h4">Learn</h1>
-            <div class="input-group" style="max-width: 300px;">
-                <input type="text" class="form-control" id="searchInput" placeholder="Search articles...">
-                <button class="btn btn-outline-secondary" type="button" id="clearSearch">
-                    <i class="bi bi-x-lg"></i>
-                </button>
+        <!-- Header Section -->
+        <div class="row align-items-center mb-4">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <h1 class="h4 mb-0">Learn</h1>
+            </div>
+            <div class="col-md-6">
+                <div class="search-container ms-md-auto">
+                    <input type="text" class="form-control form-control-lg" id="searchInput" placeholder="Search articles...">
+                    <button class="btn" type="button" id="clearSearch">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Featured Categories -->
-        <div class="row g-4 mb-5">
-            <div class="col-12 d-flex justify-content-between align-items-center">
-                <h5 class="mb-3">Featured Categories</h5>
-                <button class="btn btn-outline-secondary btn-sm category-reset" id="showAllButton">
-                    Show All
-                </button>
+        <!-- Featured Categories Section -->
+        <div class="row g-2 mb-4">
+            <div class="col-12">
+                <div class="section-header">
+                    <h2 class="mb-0">Featured Categories</h2>
+                    <button class="btn category-reset" id="showAllButton">
+                        <i class="bi bi-grid me-2"></i>Show All
+                    </button>
+                </div>
             </div>
+            
+            <!-- Budgeting Basics Category -->
             <div class="col-md-4">
-                <div class="card learn-card category-card" data-category="basics">
+                <div class="category-card card" data-category="basics">
                     <div class="card-body text-center py-4">
                         <i class="bi bi-book resource-icon"></i>
                         <h5 class="card-title">Budgeting Basics</h5>
-                        <p class="card-text">Learn fundamental concepts and strategies</p>
-                        <span class="badge bg-secondary"><?= $basicsCount ?> articles</span>
-                        <div class="category-indicator"></div>
+                        <p class="card-text">Master the fundamentals of personal finance</p>
+                        <span class="badge"><?= $basicsCount ?> articles</span>
                     </div>
                 </div>
             </div>
+
+            <!-- Saving Tips Category -->
             <div class="col-md-4">
-                <div class="card learn-card category-card" data-category="savings">
+                <div class="category-card card" data-category="savings">
                     <div class="card-body text-center py-4">
                         <i class="bi bi-piggy-bank resource-icon"></i>
                         <h5 class="card-title">Saving Tips</h5>
-                        <p class="card-text">Master the art of saving money</p>
-                        <span class="badge bg-secondary"><?= $savingsCount ?> articles</span>
-                        <div class="category-indicator"></div>
+                        <p class="card-text">Smart strategies to grow your savings</p>
+                        <span class="badge"><?= $savingsCount ?> articles</span>
                     </div>
                 </div>
             </div>
+
+            <!-- Financial Goals Category -->
             <div class="col-md-4">
-                <div class="card learn-card category-card" data-category="goals">
+                <div class="category-card card" data-category="goals">
                     <div class="card-body text-center py-4">
                         <i class="bi bi-trophy resource-icon"></i>
                         <h5 class="card-title">Financial Goals</h5>
-                        <p class="card-text">Set and achieve your money goals</p>
-                        <span class="badge bg-secondary"><?= $goalsCount ?> articles</span>
-                        <div class="category-indicator"></div>
+                        <p class="card-text">Turn your financial dreams into reality</p>
+                        <span class="badge"><?= $goalsCount ?> articles</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Latest Articles Section -->
-        <div class="row g-4 mb-5">
-            <div class="col-12 d-flex justify-content-between align-items-center">
-                <h5 class="mb-3">Latest Articles</h5>
-                <div id="categoryIndicator" class="text-muted">
-                    <?php echo $category ? "Showing " . ucfirst($category) . " articles" : "Showing all articles"; ?>
-                </div>
+        <div class="container">
+            <div class="section-header mb-4">
+                <h2>Latest Articles</h2>
+                <span class="articles-status">Showing all articles</span>
             </div>
-            <div id="articlesContainer" class="row g-4">
+            
+            <div class="articles-grid">
                 <?php
                 $articles = getArticles($conn);
                 
                 if ($articles === false) {
-                    // Database error occurred
                     ?>
-                    <div class="col-12">
-                        <div class="alert alert-danger" role="alert">
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                            Error loading articles. Please try again later.
-                        </div>
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Error loading articles. Please try again later.
                     </div>
                     <?php
                 } else if ($articles->num_rows === 0) {
-                    // No articles found
                     ?>
-                    <div class="col-12">
-                        <div class="alert alert-custom-info" role="alert">
-                            <i class="bi bi-info-circle me-2"></i>
-                            No articles available at the moment.
-                        </div>
+                    <div class="alert alert-custom-info" role="alert">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        No articles available at the moment.
                     </div>
                     <?php
                 } else {
-                    // Display articles
                     while ($article = $articles->fetch_assoc()):
                     ?>
-                    <div class="col-md-6 col-lg-4 fade-in">
-                        <div class="card learn-card article-card">
-                            <div class="card-body">
-                                <h6 class="card-title mb-3"><?= htmlspecialchars($article['title']) ?></h6>
-                                <p class="card-text article-preview"><?= htmlspecialchars($article['preview']) ?></p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted"><?= date('M d, Y', strtotime($article['date_published'])) ?></small>
-                                    <button class="btn btn-custom-primary-rounded btn-sm" onclick="showArticle(<?= $article['id'] ?>)">
-                                        Read More
-                                    </button>
-                                </div>
-                            </div>
+                    <article class="article-card">
+                        <h3 class="article-title">
+                            <?= htmlspecialchars($article['title']) ?>
+                        </h3>
+                        <p class="article-description">
+                            <?= htmlspecialchars($article['preview']) ?>
+                        </p>
+                        <div class="article-footer">
+                            <span class="article-date">
+                                <?= date('M d, Y', strtotime($article['date_published'])) ?>
+                            </span>
+                            <button class="read-more-btn" onclick="showArticle(<?= $article['id'] ?>)">
+                                Read More
+                            </button>
                         </div>
-                    </div>
+                    </article>
                     <?php 
                     endwhile;
                 }
@@ -277,12 +280,16 @@ $goalsCount = getArticleCountByCategory($conn, 'goals');
         </div>
 
         <!-- Quick Tips Section -->
-        <div class="row g-4">
+        <div class="row g-2">
             <div class="col-12">
-                <h5 class="mb-3">Quick Tips</h5>
+                <div class="section-header">
+                    <h2 class="mb-0">Quick Tips</h2>
+                </div>
             </div>
+            
+            <!-- 50/30/20 Rule Tip -->
             <div class="col-md-6 col-lg-3">
-                <div class="card learn-card h-100">
+                <div class="quick-tip-card card h-100">
                     <div class="card-body">
                         <h6 class="card-title text-primary">
                             <i class="bi bi-lightning-charge-fill me-2"></i>50/30/20 Rule
@@ -291,8 +298,10 @@ $goalsCount = getArticleCountByCategory($conn, 'goals');
                     </div>
                 </div>
             </div>
+
+            <!-- Pay Yourself First Tip -->
             <div class="col-md-6 col-lg-3">
-                <div class="card learn-card h-100">
+                <div class="quick-tip-card card h-100">
                     <div class="card-body">
                         <h6 class="card-title text-success">
                             <i class="bi bi-graph-up-arrow me-2"></i>Pay Yourself First
@@ -301,8 +310,10 @@ $goalsCount = getArticleCountByCategory($conn, 'goals');
                     </div>
                 </div>
             </div>
+
+            <!-- Emergency Fund Tip -->
             <div class="col-md-6 col-lg-3">
-                <div class="card learn-card h-100">
+                <div class="quick-tip-card card h-100">
                     <div class="card-body">
                         <h6 class="card-title text-warning">
                             <i class="bi bi-shield-check me-2"></i>Emergency Fund
@@ -311,8 +322,10 @@ $goalsCount = getArticleCountByCategory($conn, 'goals');
                     </div>
                 </div>
             </div>
+
+            <!-- Review Regularly Tip -->
             <div class="col-md-6 col-lg-3">
-                <div class="card learn-card h-100">
+                <div class="quick-tip-card card h-100">
                     <div class="card-body">
                         <h6 class="card-title text-danger">
                             <i class="bi bi-clock-history me-2"></i>Review Regularly
@@ -333,8 +346,7 @@ $goalsCount = getArticleCountByCategory($conn, 'goals');
                 <h5 class="modal-title"></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-            </div>
+            <div class="modal-body"></div>
         </div>
     </div>
 </div>
