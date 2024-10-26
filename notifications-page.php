@@ -99,7 +99,7 @@ function getNotificationDetails($type, $message) {
 
 <!-- HTML content -->
 <body class="notifications-page">
-<div class="container py-4">
+<div class="container pt-4 pb-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <!-- Header -->

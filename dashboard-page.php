@@ -174,7 +174,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
 <link rel="stylesheet" href="./assets/css/dashboard.css">
 
 <!-- HTML content -->
-<div class="py-4">
+<div class="pt-4 pb-5">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <span style="font-size: 1.2rem;">Hello, <strong><?= htmlspecialchars($_SESSION['auth_user']['username']) ?></strong></span>

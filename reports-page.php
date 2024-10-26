@@ -334,7 +334,7 @@ $hasExpenses = ($result && $result->num_rows > 0);
 <link rel="stylesheet" href="./assets/css/reports.css">
 
 <!-- HTML content -->
-<div class="py-4">
+<div class="pt-4 pb-5">
     <div class="container">
         <!-- Reports and Graph Button -->
         <div class="d-flex justify-content-between align-items-center mb-4">
