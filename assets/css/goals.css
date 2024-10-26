@@ -139,6 +139,12 @@
     margin-top: 0.25rem !important;
 }
 
+.goal-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 /* Progress Bar */
 .progress {
     height: 0.5rem !important;
@@ -209,13 +215,13 @@
     border-radius: 10px !important;
     font-weight: 500 !important;
     transition: all 0.3s ease !important;
+    margin-top: 5px !important;
 }
 
 .btn-update {
     border: 2px solid #433878 !important;
     color: #433878 !important;
     background-color: transparent !important;
-    flex-grow: 1 !important;
 }
 
 .btn-update:hover {
@@ -398,7 +404,7 @@
     }
     
     .card-body {
-        padding: 1rem !important;
+        padding: 1.5rem !important;
     }
     
     .btn-dropdown {

@@ -118,7 +118,7 @@ if ($hasData) {
 
 <!-- Main container with bento grid -->
 <body class="graphs-page">
-<div class="graphs-container py-4">
+<div class="graphs-container pt-4 pb-5">
     <!-- Header section -->
     <div class="d-flex justify-content-between align-items-center">
         <a href="reports-page.php" class="btn btn-custom-primary-rounded btn-sm">

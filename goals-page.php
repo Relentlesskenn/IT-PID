@@ -267,9 +267,6 @@ $goalCategories = [
         <!-- Page Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h4 mb-0">Goals</h1>
-            <button type="button" class="btn btn-add" data-bs-toggle="modal" data-bs-target="#addGoalModal">
-                <i class="bi bi-plus-lg me-2"></i>New Goal
-            </button>
         </div>
 
         <!-- Overview Cards Section -->
@@ -333,6 +330,11 @@ $goalCategories = [
                 </div>
             </div>
         </div>
+
+        <!-- Add Goal Button -->
+        <button type="button" class="btn btn-add w-100 mb-4" data-bs-toggle="modal" data-bs-target="#addGoalModal">
+                + New Goal
+        </button>
 
         <!-- Active Goals Section -->
         <div class="row mb-4">
@@ -426,13 +428,13 @@ $goalCategories = [
                                                     <strong><?php echo number_format($progress, 1); ?>%</strong> Complete
                                                 </p>
                                                 <div class="goal-actions">
-                                                    <button class="btn btn-update flex-grow-1" 
-                                                            onclick="openUpdateModal(<?php echo $goal['id']; ?>, <?php echo $goal['current_amount']; ?>)">
-                                                        <i class="bi bi-pencil me-2"></i>Update
-                                                    </button>
                                                     <button class="btn btn-delete" 
                                                             onclick="openDeleteModal(<?php echo $goal['id']; ?>, '<?php echo htmlspecialchars($goal['name']); ?>')">
                                                         <i class="bi bi-trash"></i>
+                                                    </button>
+                                                    <button class="btn btn-update" 
+                                                            onclick="openUpdateModal(<?php echo $goal['id']; ?>, <?php echo $goal['current_amount']; ?>)">
+                                                        <i class="bi bi-pencil me-2"></i>Update
                                                     </button>
                                                 </div>
                                             </div>
