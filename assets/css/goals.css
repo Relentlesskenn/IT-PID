@@ -62,11 +62,21 @@
 }
 
 .balance-card .display-4 {
-    font-size: 2.25rem !important;
+    font-size: 2.5rem !important;
     font-weight: 700 !important;
     line-height: 1.2 !important;
     margin: 0.5rem 0 !important;
     text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.balance-content {
+    text-align: center !important;
+    max-width: 400px !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 /* Summary Stats */
@@ -295,30 +305,24 @@
 }
 
 /* Form Controls */
-.form-control, .form-select {
-    height: calc(3rem + 2px) !important;
-    padding: 0.75rem 1rem !important;
-    font-size: 1rem !important;
-    line-height: 1.5 !important;
-    border-radius: 12px !important;
-    border: 2px solid rgba(67, 56, 120, 0.1) !important;
-    transition: all 0.3s ease !important;
-}
-
-.form-control:focus, .form-select:focus {
-    border-color: #433878 !important;
-    box-shadow: 0 0 0 3px rgba(67, 56, 120, 0.1) !important;
-}
-
+/* Form controls styling */
+.form-control,
+.form-select,
 .input-group-text {
-    background-color: rgba(67, 56, 120, 0.05) !important;
-    border: 2px solid rgba(67, 56, 120, 0.1) !important;
-    border-right: none !important;
-    padding: 0.75rem 1rem !important;
-    font-size: 1rem !important;
-    border-top-left-radius: 12px !important;
-    border-bottom-left-radius: 12px !important;
-    color: #433878 !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+.input-group .form-control:not(:last-child),
+.input-group .input-group-text:first-child {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+.input-group .form-control:not(:first-child),
+.input-group .input-group-text:last-child {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
 }
 
 /* Spacing Utilities */

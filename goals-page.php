@@ -275,9 +275,9 @@ $goalCategories = [
         <!-- Overview Cards Section -->
         <div class="row g-3 mb-4">
             <!-- Balance Card -->
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="card balance-card h-100">
-                    <div class="card-body">
+                    <div class="card-body balance-content">
                         <h5 class="card-title">Available Balance</h5>
                         <h2 class="display-4">₱<?php echo number_format($currentBalance, 2); ?></h2>
                         <p class="text-white-50 mb-0">
@@ -289,7 +289,7 @@ $goalCategories = [
             </div>
 
             <!-- Summary Statistics Card -->
-            <div class="col-md-6">
+            <div class="col-md-8">
                 <div class="card h-100">
                     <div class="card-header">
                         <h5 class="mb-0">Goals Overview</h5>
