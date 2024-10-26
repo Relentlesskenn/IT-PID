@@ -262,271 +262,316 @@ $goalCategories = [
 <link rel="stylesheet" href="./assets/css/goals.css">
 
 <!-- HTML content -->
-<div class="container-fluid py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <!-- Page Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h4">Goals</h1>
-            </div>
+<div class="py-4">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h4 mb-0">Goals</h1>
+            <button type="button" class="btn btn-add" data-bs-toggle="modal" data-bs-target="#addGoalModal">
+                <i class="bi bi-plus-lg me-2"></i>New Goal
+            </button>
+        </div>
 
-            <!-- Balance and Summary Row -->
-            <div class="row mb-3">
-                <!-- Balance Card -->
-                <div class="col-md-6 mb-3 mb-md-0">
-                    <div class="card balance-card h-100">
-                        <div class="card-body d-flex flex-column justify-content-center">
-                            <h5 class="card-title text-white-50">Balance</h5>
-                            <h2 class="card-text display-4">₱<?php echo number_format($currentBalance, 2); ?></h2>
-                        </div>
+        <!-- Overview Cards Section -->
+        <div class="row g-3 mb-4">
+            <!-- Balance Card -->
+            <div class="col-md-6">
+                <div class="card balance-card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Available Balance</h5>
+                        <h2 class="display-4">₱<?php echo number_format($currentBalance, 2); ?></h2>
+                        <p class="text-white-50 mb-0">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Unallocated funds available for goals
+                        </p>
                     </div>
                 </div>
+            </div>
 
-                <!-- Goal Summary Card -->
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <!-- Mobile Header (Visible only on small screens) -->
-                        <div class="card-header bg-white d-md-none">
-                            <button class="btn btn-link text-decoration-none text-dark p-0 w-100 d-flex justify-content-between align-items-center" 
-                                    type="button" 
-                                    data-bs-toggle="collapse" 
-                                    data-bs-target="#goalSummaryCollapse" 
-                                    aria-expanded="true"
-                                    aria-controls="goalSummaryCollapse">
-                                <h5 class="mb-0">Goal Summary</h5>
-                                <i class="bi bi-chevron-up"></i> <!-- Changed from bi-chevron-down to bi-chevron-up -->
-                            </button>
-                        </div>
-
-                        <!-- Desktop Header (Visible only on medium screens and up) -->
-                        <div class="card-header bg-white d-none d-md-block">
-                            <h5 class="mb-0">Goal Summary</h5>
-                        </div>
-
-                        <!-- Mobile Content (Collapsible on small screens) -->
-                        <div class="collapse show d-md-none" id="goalSummaryCollapse"> <!-- Added 'show' class -->
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-6 col-sm-3 mb-3">
-                                        <strong>Total Goals:</strong> <?php echo $totalGoals; ?>
-                                    </div>
-                                    <div class="col-6 col-sm-3 mb-3">
-                                        <strong>Completed Goals:</strong> <?php echo count($completedGoals); ?>
-                                    </div>
-                                    <div class="col-6 col-sm-3 mb-3">
-                                        <strong>Total Target:</strong> ₱<?php echo number_format($totalTargetAmount, 2); ?>
-                                    </div>
-                                    <div class="col-6 col-sm-3 mb-3">
-                                        <strong>Total Saved:</strong> ₱<?php echo number_format($totalCurrentAmount, 2); ?>
-                                    </div>
+            <!-- Summary Statistics Card -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">Goals Overview</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-6 col-md-3">
+                                <div class="summary-stat">
+                                    <span class="text-muted">Total Goals</span>
+                                    <strong><?php echo $totalGoals; ?></strong>
                                 </div>
-                                <div class="progress">
-                                    <div class="progress-bar bg-success" role="progressbar" 
-                                        style="width: <?php echo $overallProgress; ?>%" 
-                                        aria-valuenow="<?php echo $overallProgress; ?>" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="100">
-                                    </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="summary-stat">
+                                    <span class="text-muted">Completed</span>
+                                    <strong><?php echo count($completedGoals); ?></strong>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="summary-stat">
+                                    <span class="text-muted">Total Target</span>
+                                    <strong>₱<?php echo number_format($totalTargetAmount, 2); ?></strong>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="summary-stat">
+                                    <span class="text-muted">Total Saved</span>
+                                    <strong>₱<?php echo number_format($totalCurrentAmount, 2); ?></strong>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Desktop Content (Always visible on medium screens and up) -->
-                        <div class="card-body d-none d-md-block">
-                            <div class="row">
-                                <div class="col-md-3 mb-3">
-                                    <strong>Total Goals:</strong> <?php echo $totalGoals; ?>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <strong>Completed Goals:</strong> <?php echo count($completedGoals); ?>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <strong>Total Target:</strong> ₱<?php echo number_format($totalTargetAmount, 2); ?>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <strong>Total Saved:</strong> ₱<?php echo number_format($totalCurrentAmount, 2); ?>
-                                </div>
-                            </div>
-                            <div class="progress">
-                                <div class="progress-bar bg-success" role="progressbar" 
-                                    style="width: <?php echo $overallProgress; ?>%" 
-                                    aria-valuenow="<?php echo $overallProgress; ?>" 
-                                    aria-valuemin="0" 
-                                    aria-valuemax="100">
-                                </div>
+                        <div class="progress mt-4">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                style="width: <?php echo $overallProgress; ?>%" 
+                                aria-valuenow="<?php echo $overallProgress; ?>" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Add New Goal Row -->
-            <div class="row mb-3">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header bg-white">
-                            <h5 class="mb-0">Add New Goal</h5>
-                        </div>
-                        <div class="card-body">
-                            <form method="POST">
-                                <div class="mb-3">
-                                    <label for="goal_name" class="form-label">Goal Name</label>
-                                    <input type="text" class="form-control" id="goal_name" name="goal_name" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="target_amount" class="form-label">Target Amount</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">₱</span>
-                                        <input type="number" class="form-control" id="target_amount" name="target_amount" step="0.01" required>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="target_date" class="form-label">Target Date</label>
-                                    <input type="date" class="form-control" id="target_date" name="target_date" required>
-                                </div>
-                                <div class="mb-4">
-                                    <label for="category" class="form-label">Category</label>
-                                    <select class="form-select" id="category" name="category">
-                                        <?php foreach ($goalCategories as $category => $description): ?>
-                                            <option value="<?php echo htmlspecialchars($category); ?>" data-bs-toggle="tooltip" title="<?php echo htmlspecialchars($description); ?>">
-                                                <?php echo htmlspecialchars($category); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                <button type="submit" name="add_goal" class="btn btn-add w-100">Add Goal</button>
-                            </form>
+        <!-- Active Goals Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                        <h5 class="mb-0">Active Goals</h5>
+                        <div class="d-flex gap-2">
+                            <div class="dropdown">
+                                <button class="btn btn-dropdown" type="button" id="sortDropdown" data-bs-toggle="dropdown">
+                                    <i class="bi bi-sort-down me-1"></i>Sort
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="?sort=target_date&order=<?php echo $sortOrder === 'ASC' ? 'DESC' : 'ASC'; ?>">
+                                        <i class="bi bi-calendar me-2"></i>By Date</a>
+                                    </li>
+                                    <li><a class="dropdown-item" href="?sort=target_amount&order=<?php echo $sortOrder === 'ASC' ? 'DESC' : 'ASC'; ?>">
+                                        <i class="bi bi-currency-dollar me-2"></i>By Amount</a>
+                                    </li>
+                                    <li><a class="dropdown-item" href="?sort=category&order=<?php echo $sortOrder === 'ASC' ? 'DESC' : 'ASC'; ?>">
+                                        <i class="bi bi-tag me-2"></i>By Category</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-dropdown" type="button" id="filterDropdown" data-bs-toggle="dropdown">
+                                    <i class="bi bi-funnel me-1"></i>Filter
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="?category=">All Categories</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <?php foreach ($goalCategories as $category => $description): ?>
+                                        <li><a class="dropdown-item" href="?category=<?php echo urlencode($category); ?>">
+                                            <?php echo htmlspecialchars($category); ?></a>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Active Goals Section -->
-            <div class="card mb-3">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Goals</h5>
-                    <div class="d-flex">
-                        <div class="dropdown me-2">
-                            <button class="btn btn-dropdown dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                Sort Goals
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="sortDropdown">
-                                <li><a class="dropdown-item" href="?sort=target_date&order=<?php echo $sortOrder === 'ASC' ? 'DESC' : 'ASC'; ?>">By Date</a></li>
-                                <li><a class="dropdown-item" href="?sort=target_amount&order=<?php echo $sortOrder === 'ASC' ? 'DESC' : 'ASC'; ?>">By Amount</a></li>
-                                <li><a class="dropdown-item" href="?sort=category&order=<?php echo $sortOrder === 'ASC' ? 'DESC' : 'ASC'; ?>">By Category</a></li>
-                            </ul>
-                        </div>
-                        <div class="dropdown">
-                            <button class="btn btn-dropdown dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                Filter Category
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
-                                <li><a class="dropdown-item" href="?category=">All Categories</a></li>
-                                <?php foreach ($goalCategories as $category => $description): ?>
-                                    <li><a class="dropdown-item" href="?category=<?php echo urlencode($category); ?>"><?php echo htmlspecialchars($category); ?></a></li>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <?php if (empty($activeGoals)): ?>
+                                <div class="col-12">
+                                    <div class="text-center py-5">
+                                        <i class="bi bi-clipboard-plus display-4 text-muted mb-3"></i>
+                                        <p class="mb-0 text-muted">No active goals yet. Start by creating a new goal!</p>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <?php foreach ($activeGoals as $goal): ?>
+                                    <div class="col-md-6 col-lg-4">
+                                        <div class="card goal-card h-100">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                                    <h5 class="goal-card-title"><?php echo htmlspecialchars($goal['name']); ?></h5>
+                                                    <span class="badge bg-primary rounded-pill">
+                                                        <?php echo htmlspecialchars($goal['category']); ?>
+                                                    </span>
+                                                </div>
+                                                <div class="goal-details mb-3">
+                                                    <div class="row g-2">
+                                                        <div class="col-6">
+                                                            <small class="text-muted d-block">Target</small>
+                                                            <strong class="text-primary">₱<?php echo number_format($goal['target_amount'], 2); ?></strong>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <small class="text-muted d-block">Saved</small>
+                                                            <strong class="text-success">₱<?php echo number_format($goal['current_amount'], 2); ?></strong>
+                                                        </div>
+                                                        <div class="col-12 mt-2">
+                                                            <small class="text-muted d-block">Due Date</small>
+                                                            <strong><?php echo date('M d, Y', strtotime($goal['target_date'])); ?></strong>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <?php
+                                                $progress = ($goal['current_amount'] / $goal['target_amount']) * 100;
+                                                $progressBarClass = $progress >= 75 ? 'bg-success' : ($progress >= 50 ? 'bg-warning' : 'bg-danger');
+                                                ?>
+                                                <div class="progress">
+                                                    <div class="progress-bar <?php echo $progressBarClass; ?>" 
+                                                        role="progressbar" 
+                                                        style="width: <?php echo $progress; ?>%" 
+                                                        aria-valuenow="<?php echo $progress; ?>" 
+                                                        aria-valuemin="0" 
+                                                        aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <p class="text-end mb-3">
+                                                    <strong><?php echo number_format($progress, 1); ?>%</strong> Complete
+                                                </p>
+                                                <div class="goal-actions">
+                                                    <button class="btn btn-update flex-grow-1" 
+                                                            onclick="openUpdateModal(<?php echo $goal['id']; ?>, <?php echo $goal['current_amount']; ?>)">
+                                                        <i class="bi bi-pencil me-2"></i>Update
+                                                    </button>
+                                                    <button class="btn btn-delete" 
+                                                            onclick="openDeleteModal(<?php echo $goal['id']; ?>, '<?php echo htmlspecialchars($goal['name']); ?>')">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 <?php endforeach; ?>
-                            </ul>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <?php foreach ($activeGoals as $goal): ?>
-                            <div class="col-md-6 col-lg-4 mb-4">
-                                <div class="card goal-card h-100">
-                                    <div class="card-body">
-                                        <h5 class="goal-card-title"><strong><?php echo htmlspecialchars($goal['name']); ?></strong></h5>
-                                        <h6 class="card-subtitle mb-2 text-muted"><?php echo htmlspecialchars($goal['category']); ?></h6>
-                                        <p class="card-text">
-                                            <strong>Target:</strong> ₱<?php echo number_format($goal['target_amount'], 2); ?><br>
-                                            <strong>Current:</strong> ₱<?php echo number_format($goal['current_amount'], 2); ?><br>
-                                            <strong>Due:</strong> <?php echo date('M d, Y', strtotime($goal['target_date'])); ?>
-                                        </p>
-                                        <?php
-                                        $progress = ($goal['current_amount'] / $goal['target_amount']) * 100;
-                                        $progressBarClass = $progress >= 75 ? 'bg-success' : ($progress >= 50 ? 'bg-warning' : 'bg-danger');
-                                        ?>
-                                        <div class="progress mb-2">
-                                            <div class="progress-bar <?php echo $progressBarClass; ?>" role="progressbar" 
-                                                 style="width: <?php echo $progress; ?>%" 
-                                                 aria-valuenow="<?php echo $progress; ?>" 
-                                                 aria-valuemin="0" 
-                                                 aria-valuemax="100">
+            </div>
+        </div>
+
+        <!-- Completed Goals Section -->
+        <?php if (!empty($completedGoals)): ?>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Completed Goals</h5>
+                        <span class="badge bg-success"><?php echo count($completedGoals); ?> Achieved</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <?php foreach ($completedGoals as $goal): ?>
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="card goal-card bg-light h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                <h5 class="goal-card-title"><?php echo htmlspecialchars($goal['name']); ?></h5>
+                                                <span class="badge bg-success rounded-pill">Completed</span>
                                             </div>
-                                        </div>
-                                        <p class="text-end mb-4"><strong><?php echo number_format($progress, 1); ?>%</strong> Complete</p>
-                                        <div class="d-flex justify-content-between">
-                                            <button class="btn btn-sm btn-update" onclick="openUpdateModal(<?php echo $goal['id']; ?>, <?php echo $goal['current_amount']; ?>)">Update Progress</button>
-                                            <button class="btn btn-sm btn-delete" onclick="openDeleteModal(<?php echo $goal['id']; ?>, '<?php echo htmlspecialchars($goal['name']); ?>')">Delete</button>
+                                            <div class="goal-details mb-3">
+                                                <div class="row g-2">
+                                                    <div class="col-6">
+                                                        <small class="text-muted d-block">Target</small>
+                                                        <strong>₱<?php echo number_format($goal['target_amount'], 2); ?></strong>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <small class="text-muted d-block">Saved</small>
+                                                        <strong class="text-success">₱<?php echo number_format($goal['current_amount'], 2); ?></strong>
+                                                    </div>
+                                                    <div class="col-12 mt-2">
+                                                        <small class="text-muted d-block">Completed On</small>
+                                                        <strong><?php echo date('M d, Y', strtotime($goal['target_date'])); ?></strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="progress mb-4">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                                            </div>
+                                            <button type="button" class="btn btn-outline-secondary w-100" 
+                                                    onclick="openArchiveModal(<?php echo $goal['id']; ?>, '<?php echo htmlspecialchars($goal['name']); ?>')">
+                                                <i class="bi bi-archive me-2"></i>Archive Goal
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        <?php endforeach; ?>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
+        <?php endif; ?>
+    </div>
+</div> <!-- End of container -->
 
-            <!-- Completed Goals Section -->
-            <div class="card">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Completed Goals</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <?php foreach ($completedGoals as $goal): ?>
-                            <div class="col-md-6 col-lg-4 mb-4">
-                                <div class="card goal-card h-100 bg-light" data-goal-id="<?php echo $goal['id']; ?>">
-                                    <div class="card-body">
-                                        <h5 class="card-title"><?php echo htmlspecialchars($goal['name']); ?></h5>
-                                        <h6 class="card-subtitle mb-2 text-muted"><?php echo htmlspecialchars($goal['category']); ?></h6>
-                                        <p class="card-text">
-                                            <strong>Target:</strong> ₱<?php echo number_format($goal['target_amount'], 2); ?><br>
-                                            <strong>Saved:</strong> ₱<?php echo number_format($goal['current_amount'], 2); ?><br>
-                                            <strong>Completed:</strong> <?php echo date('M d, Y', strtotime($goal['target_date'])); ?>
-                                        </p>
-                                        <div class="progress mb-2">
-                                            <div class="progress-bar bg-success" role="progressbar" 
-                                                 style="width: 100%" 
-                                                 aria-valuenow="100" 
-                                                 aria-valuemin="0" 
-                                                 aria-valuemax="100">
-                                            </div>
-                                        </div>
-                                        <p class="text-end mb-4"><strong>100%</strong> Complete</p>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary w-100" onclick="openArchiveModal(<?php echo $goal['id']; ?>, '<?php echo htmlspecialchars($goal['name']); ?>')">
-                                            Archive
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
+<!-- Add Goal Modal -->
+<div class="modal fade" id="addGoalModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Goal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" id="addGoalForm">
+                    <div class="mb-3">
+                        <label for="goal_name" class="form-label">Goal Name</label>
+                        <input type="text" class="form-control" id="goal_name" name="goal_name" required>
                     </div>
-                </div>
+                    <div class="mb-3">
+                        <label for="target_amount" class="form-label">Target Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₱</span>
+                            <input type="number" class="form-control" id="target_amount" name="target_amount" 
+                                   step="0.01" required min="0">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="target_date" class="form-label">Target Date</label>
+                        <input type="date" class="form-control" id="target_date" name="target_date" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="category" class="form-label">Category</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <?php foreach ($goalCategories as $category => $description): ?>
+                                <option value="<?php echo htmlspecialchars($category); ?>" 
+                                        data-bs-toggle="tooltip" 
+                                        title="<?php echo htmlspecialchars($description); ?>">
+                                    <?php echo htmlspecialchars($category); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <button type="submit" name="add_goal" class="btn btn-add w-100">
+                        <i class="bi bi-plus-circle me-2"></i>Create Goal
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Update Progress Modal -->
-<div class="modal fade" id="updateProgressModal" tabindex="-1" aria-labelledby="updateProgressModalLabel" aria-hidden="true">
+<div class="modal fade" id="updateProgressModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="updateProgressModalLabel">Update Goal Progress</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">Update Goal Progress</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="updateProgressForm" method="POST">
                     <input type="hidden" id="update_goal_id" name="goal_id">
-                    <div class="mb-3">
-                        <label for="current_amount" class="form-label">Current Amount</label>
+                    <div class="mb-4">
+                        <label for="current_amount" class="form-label">Current Amount Saved</label>
                         <div class="input-group">
                             <span class="input-group-text">₱</span>
-                            <input type="number" class="form-control" id="current_amount" name="current_amount" step="0.01" required>
+                            <input type="number" class="form-control" id="current_amount" 
+                                   name="current_amount" step="0.01" required min="0">
                         </div>
                     </div>
-                    <button type="submit" name="update_progress" class="btn btn-custom-primary-rounded w-100">Update Progress</button>
+                    <div class="d-grid">
+                        <button type="submit" name="update_progress" class="btn btn-add">
+                            <i class="bi bi-check-circle me-2"></i>Update Progress
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -534,21 +579,28 @@ $goalCategories = [
 </div>
 
 <!-- Delete Goal Modal -->
-<div class="modal fade" id="deleteGoalModal" tabindex="-1" aria-labelledby="deleteGoalModalLabel" aria-hidden="true">
+<div class="modal fade" id="deleteGoalModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteGoalModalLabel">Delete Goal</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header border-danger">
+                <h5 class="modal-title text-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Delete Goal
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                Are you sure you want to delete the goal "<span id="deleteGoalName"></span>"? This action cannot be undone.
+                <p class="mb-0">Are you sure you want to delete the goal "<span id="deleteGoalName" class="fw-bold"></span>"?</p>
+                <p class="text-danger mb-0 mt-2">
+                    <small><i class="bi bi-info-circle me-1"></i>This action cannot be undone.</small>
+                </p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form method="POST" id="deleteGoalForm">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" id="deleteGoalForm" class="d-inline">
                     <input type="hidden" name="goal_id" id="deleteGoalId">
-                    <button type="submit" name="delete_goal" class="btn btn-danger">Delete Goal</button>
+                    <button type="submit" name="delete_goal" class="btn btn-danger">
+                        <i class="bi bi-trash me-2"></i>Delete Goal
+                    </button>
                 </form>
             </div>
         </div>
@@ -556,33 +608,41 @@ $goalCategories = [
 </div>
 
 <!-- Archive Goal Modal -->
-<div class="modal fade" id="archiveGoalModal" tabindex="-1" aria-labelledby="archiveGoalModalLabel" aria-hidden="true">
+<div class="modal fade" id="archiveGoalModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="archiveGoalModalLabel">Archive Completed Goal</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">
+                    <i class="bi bi-archive me-2"></i>Archive Goal
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                Are you sure you want to archive the completed goal "<span id="archiveGoalName"></span>"? It will no longer appear in your list, but will be preserved in the database.
+                <p class="mb-0">Archive the completed goal "<span id="archiveGoalName" class="fw-bold"></span>"?</p>
+                <p class="text-muted mb-0 mt-2">
+                    <small><i class="bi bi-info-circle me-1"></i>Archived goals are preserved but won't appear in your active list.</small>
+                </p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form method="POST" id="archiveGoalForm">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" id="archiveGoalForm" class="d-inline">
                     <input type="hidden" name="goal_id" id="archiveGoalId">
-                    <button type="submit" name="archive_goal" class="btn btn-custom-primary-rounded">Archive Goal</button>
+                    <button type="submit" name="archive_goal" class="btn btn-archive">
+                        <i class="bi bi-archive me-2"></i>Archive Goal
+                    </button>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Toast for notifications -->
-<div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 11">
+<!-- Toast Notification -->
+<div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080">
     <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
+            <i class="bi bi-info-circle me-2"></i>
             <strong class="me-auto">Notification</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
         </div>
         <div class="toast-body"></div>
     </div>

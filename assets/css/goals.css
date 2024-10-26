@@ -1,263 +1,404 @@
-/* goals.css */
+/* Base Card Styles */
 .card {
-    border-radius: 20px !important; /* Increased border radius for all cards */
+    border-radius: 20px !important;
     border: 1px solid rgba(67, 56, 120, 0.1) !important;
-    transition: all 0.3s ease-in-out !important;
-    padding: 10px !important;
+    background: #ffffff !important;
+    box-shadow: 0 2px 12px rgba(67, 56, 120, 0.08) !important;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out !important;
+    margin-bottom: 0 !important;
+}
+
+.card:hover {
+    box-shadow: 0 4px 20px rgba(67, 56, 120, 0.12) !important;
 }
 
 .card-header {
-    border-top-left-radius: 20px !important;
-    border-top-right-radius: 20px !important;
-    border-bottom: 1px solid rgba(67, 56, 120, 0.1) !important;
     background-color: white !important;
+    border-bottom: 1px solid rgba(67, 56, 120, 0.1) !important;
+    padding: 1.25rem 1.5rem !important;
+    border-radius: 20px 20px 0 0 !important;
 }
 
+.card-header h5 {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: #433878 !important;
+    margin: 0 !important;
+}
+
+.card-body {
+    padding: 1.5rem !important;
+}
+
+/* Balance Card */
 .balance-card {
-    color: white !important;
+    background: linear-gradient(135deg, #433878, #7d62b4) !important;
     border: none !important;
-    border-radius: 20px !important;
-    /* Enhanced shadow with purple glow */
-    box-shadow: 0 8px 32px rgba(67, 56, 120, 0.25),
-                0 4px 16px rgba(125, 98, 180, 0.15),
-                0 2px 8px rgba(67, 56, 120, 0.1) !important;
-    background: linear-gradient(45deg, #433878, #7d62b4) !important;
+    color: white !important;
+    position: relative !important;
     overflow: hidden !important;
-    padding: 5px !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    transition: box-shadow 0.3s ease !important;
+    box-shadow: 
+        0 8px 32px rgba(67, 56, 120, 0.25),
+        0 4px 16px rgba(125, 98, 180, 0.15) !important;
 }
 
+.balance-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+    pointer-events: none;
+}
+
+.balance-card .card-title {
+    font-size: 0.9rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    opacity: 0.9 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.balance-card .display-4 {
+    font-size: 2.25rem !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    margin: 0.5rem 0 !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Summary Stats */
+.summary-stat {
+    background: rgba(67, 56, 120, 0.03);
+    border-radius: 16px;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.summary-stat:hover {
+    background: rgba(67, 56, 120, 0.05);
+    transform: translateY(-2px);
+}
+
+.summary-stat .text-muted {
+    font-size: 0.85rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.summary-stat strong {
+    font-size: 1.15rem;
+    color: #433878;
+    display: block;
+}
+
+/* Goal Cards */
 .goal-card {
-    border-radius: 20px !important;
-    transition: all 0.3s ease-in-out;
-    background: white !important;
-}
-
-.goal-card-title {
-    font-size: 1.5rem;
+    height: 100% !important;
+    transition: transform 0.3s ease !important;
 }
 
 .goal-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(67, 56, 120, 0.15) !important;
+    transform: translateY(-3px);
 }
 
-.goal-card.bg-light {
-    background: linear-gradient(145deg, #f8f9fa, #ffffff) !important;
+.goal-card-title {
+    font-size: 1.1rem !important;
+    color: #433878 !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    margin-bottom: 0 !important;
 }
 
-.goal-summary {
-    background-color: #f8f9fa;
-    border-radius: 5px;
-    padding: 15px;
-    margin-bottom: 20px;
+.goal-details {
+    margin-top: 1rem !important;
 }
 
-.goal-summary .progress {
-    height: 20px;
-    border-radius: 10px;
+.goal-details .text-muted {
+    font-size: 0.85rem !important;
+    line-height: 1.4 !important;
 }
 
-.goal-summary .progress-bar {
-    font-size: 12px;
-    line-height: 20px;
+.goal-details strong {
+    font-size: 1rem !important;
+    display: inline-block !important;
+    margin-top: 0.25rem !important;
 }
 
-@media (max-width: 767px) {
-    .goal-card {
-        margin-bottom: 20px;
-    }
-}
-
+/* Progress Bar */
 .progress {
-    height: 10px !important;
-    border-radius: 8px !important;
+    height: 0.5rem !important;
+    border-radius: 0.25rem !important;
     background-color: rgba(67, 56, 120, 0.1) !important;
+    margin: 1rem 0 !important;
     overflow: hidden !important;
 }
 
 .progress-bar {
-    border-radius: 8px !important;
-    transition: width 0.5s ease-in-out !important;
+    transition: width 0.6s ease-in-out !important;
 }
 
-.dropdown-menu {
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
+.progress-bar.bg-success { background-color: #28a745 !important; }
+.progress-bar.bg-warning { background-color: #ffc107 !important; }
+.progress-bar.bg-danger { background-color: #dc3545 !important; }
 
-.dropdown-item:hover {
-    background-color: #f8f9fa;
-}
-
-.btn-link:focus {
-    box-shadow: none;
-}
-
+/* Buttons */
 .btn-add {
-    background-color: #433878 !important;
+    background: linear-gradient(135deg, #433878, #7d62b4) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 0.625rem 1.25rem !important;
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-add:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(67, 56, 120, 0.2) !important;
+}
+
+.btn-archive {
+    background: linear-gradient(135deg, #433878, #7d62b4) !important;
     color: white !important;
     border-radius: 12px !important;
-    padding: 0.75rem!important;
-    transition: all 0.2s ease !important;
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-archive:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(67, 56, 120, 0.2) !important;
 }
 
 .btn-dropdown {
-    border-color: #433878 !important; 
-    color: #433878 !important; 
-    background-color: transparent !important; 
+    border: 1px solid rgba(67, 56, 120, 0.2) !important;
+    color: #433878 !important;
+    background-color: white !important;
     border-radius: 12px !important;
-    transition: all 0.3s ease !important;
+    padding: 0.5rem 1rem !important;
     font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-dropdown:hover {
+    background-color: #433878 !important;
+    color: white !important;
+}
+
+.btn-update, .btn-delete {
+    font-size: 0.9rem !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 10px !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
 }
 
 .btn-update {
-    border-color: #433878 !important; 
-    color: #433878 !important; 
+    border: 2px solid #433878 !important;
+    color: #433878 !important;
     background-color: transparent !important;
-    border-radius: 18px !important;
-    transition: all 0.3s ease !important;
-    padding: 10px !important;
+    flex-grow: 1 !important;
 }
 
 .btn-update:hover {
-    background-color: #433878 !important; 
-    color: white !important; 
+    background-color: #433878 !important;
+    color: white !important;
 }
 
 .btn-delete {
-    border-color: #dc3545 !important; 
-    color: #dc3545 !important; 
+    border: 2px solid #dc3545 !important;
+    color: #dc3545 !important;
     background-color: transparent !important;
-    border-radius: 18px !important;
-    transition: all 0.3s ease !important;
-    padding: 10px 40px !important;
+    padding: 0.5rem 1.25rem !important;
 }
 
 .btn-delete:hover {
-    background-color: #dc3545 !important; 
-    color: white !important; 
+    background-color: #dc3545 !important;
+    color: white !important;
 }
 
-.bi-chevron-down, .bi-chevron-up {
-    transition: transform 0.2s ease-in-out;
+/* Empty State */
+.text-center .bi {
+    font-size: 3rem !important;
+    color: rgba(67, 56, 120, 0.2) !important;
+    margin-bottom: 1rem !important;
 }
 
-[aria-expanded="true"] .bi-chevron-up {
-    transform: rotate(180deg);
+/* Badges */
+.badge {
+    padding: 0.5em 0.75em !important;
+    font-weight: 500 !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.3px !important;
 }
 
-/* Modal enhancements */
+.badge.bg-primary {
+    background-color: #433878 !important;
+}
+
+.badge.bg-success {
+    background-color: #28a745 !important;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    border-radius: 12px !important;
+    border: 1px solid rgba(67, 56, 120, 0.1) !important;
+    box-shadow: 0 4px 20px rgba(67, 56, 120, 0.15) !important;
+    padding: 0.5rem !important;
+}
+
+.dropdown-item {
+    border-radius: 8px !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.9rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(67, 56, 120, 0.05) !important;
+    color: #433878 !important;
+}
+
+.dropdown-divider {
+    margin: 0.5rem 0 !important;
+    border-color: rgba(67, 56, 120, 0.1) !important;
+}
+
+/* Modal Styles */
 .modal-content {
-    border-radius: 24px !important;
+    border-radius: 20px !important;
     border: none !important;
     box-shadow: 0 10px 40px rgba(67, 56, 120, 0.2) !important;
 }
 
 .modal-header {
-    border-top-left-radius: 24px !important;
-    border-top-right-radius: 24px !important;
     border-bottom: 1px solid rgba(67, 56, 120, 0.1) !important;
-    padding: 20px !important;
+    padding: 1.25rem 1.5rem !important;
 }
 
-/* Input Group Enhancements */
-.form-control {
+.modal-body {
+    padding: 1.5rem !important;
+}
+
+.modal-footer {
+    border-top: 1px solid rgba(67, 56, 120, 0.1) !important;
+    padding: 1.25rem 1.5rem !important;
+}
+
+/* Form Controls */
+.form-control, .form-select {
     height: calc(3rem + 2px) !important;
     padding: 0.75rem 1rem !important;
     font-size: 1rem !important;
     line-height: 1.5 !important;
     border-radius: 12px !important;
-    border: 1px solid rgba(67, 56, 120, 0.2) !important;
+    border: 2px solid rgba(67, 56, 120, 0.1) !important;
+    transition: all 0.3s ease !important;
 }
 
-/* Input Group Specific Styles */
-.input-group {
-    position: relative !important;
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    align-items: stretch !important;
-    width: 100% !important;
+.form-control:focus, .form-select:focus {
+    border-color: #433878 !important;
+    box-shadow: 0 0 0 3px rgba(67, 56, 120, 0.1) !important;
 }
 
-/* Input Group Text (Currency Symbol) */
 .input-group-text {
-    display: flex !important;
-    align-items: center !important;
+    background-color: rgba(67, 56, 120, 0.05) !important;
+    border: 2px solid rgba(67, 56, 120, 0.1) !important;
+    border-right: none !important;
     padding: 0.75rem 1rem !important;
     font-size: 1rem !important;
-    font-weight: 400 !important;
-    line-height: 1.5 !important;
-    text-align: center !important;
-    white-space: nowrap !important;
-    background-color: rgba(67, 56, 120, 0.05) !important;
-    border: 1px solid rgba(67, 56, 120, 0.2) !important;
-    border-right: 0 !important;
     border-top-left-radius: 12px !important;
     border-bottom-left-radius: 12px !important;
-    border-top-right-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
     color: #433878 !important;
-    height: calc(3rem + 2px) !important; /* Match form-control height */
 }
 
-/* Input Group Form Control */
-.input-group > .form-control {
-    flex: 1 1 auto !important;
-    width: 1% !important;
-    min-width: 0 !important;
-    border-top-left-radius: 0 !important;
-    border-bottom-left-radius: 0 !important;
-    border-top-right-radius: 12px !important;
-    border-bottom-right-radius: 12px !important;
-    border-left: 0 !important;
-    height: calc(3rem + 2px) !important; /* Match input-group-text height */
+/* Spacing Utilities */
+.mb-4 {
+    margin-bottom: 1.5rem !important;
 }
 
-/* Focus states */
-.input-group .form-control:focus {
-    z-index: 3 !important;
-    border-left: 0 !important;
-    box-shadow: none !important;
-    border-color: rgba(67, 56, 120, 0.4) !important;
+.gap-2 {
+    gap: 0.5rem !important;
 }
 
-/* Make date input and select match other inputs */
-input[type="date"].form-control,
-select.form-select {
-    height: calc(3rem + 2px) !important;
-    padding: 0.75rem 1rem !important;
-    font-size: 1rem !important;
-    line-height: 1.5 !important;
+.g-3 {
+    --bs-gutter-x: 1rem !important;
+    --bs-gutter-y: 1rem !important;
+}
+
+/* Toast Notifications */
+.toast {
     border-radius: 12px !important;
-    border: 1px solid rgba(67, 56, 120, 0.2) !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    background: white !important;
 }
 
-/* Dropdown Styles */
-.dropdown-menu {
-    max-height: 300px;
-    overflow-y: auto;
-    scrollbar-width: thin;
+.toast-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+    padding: 0.75rem 1rem !important;
 }
 
-/* Custom scrollbar for webkit browsers */
-.dropdown-menu::-webkit-scrollbar {
-    width: 4px;
+.toast-body {
+    padding: 1rem !important;
 }
 
-.dropdown-menu::-webkit-scrollbar-track {
-    background: #f8f9fa;
+/* Responsive Design */
+@media (max-width: 992px) {
+    .card-body {
+        padding: 1.25rem !important;
+    }
+    
+    .balance-card .display-4 {
+        font-size: 2rem !important;
+    }
+    
+    .summary-stat strong {
+        font-size: 1rem !important;
+    }
 }
 
-.dropdown-menu::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 4px;
-}
-
-/* Mobile responsiveness without changing format */
-@media (max-width: 576px) {
+@media (max-width: 768px) {
+    .balance-card .display-4 {
+        font-size: 1.75rem !important;
+    }
+    
+    .btn-update, .btn-delete {
+        font-size: 0.85rem !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    .goal-card-title {
+        font-size: 1rem !important;
+    }
+    
     .dropdown-menu {
-        max-height: 250px; /* Slightly smaller on mobile */
+        width: 100% !important;
+        max-height: 300px !important;
+        overflow-y: auto !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-header {
+        padding: 1rem !important;
+    }
+    
+    .card-body {
+        padding: 1rem !important;
+    }
+    
+    .btn-dropdown {
+        width: 100% !important;
+        margin-bottom: 0.5rem !important;
     }
 }

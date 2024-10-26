@@ -116,101 +116,128 @@ if ($hasData) {
 
 <link rel="stylesheet" href="./assets/css/graphs.css">
 
-<!-- HTML content -->
+<!-- Main container with bento grid -->
 <body class="graphs-page">
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="graphs-container py-4">
+    <!-- Header section -->
+    <div class="d-flex justify-content-between align-items-center">
         <a href="reports-page.php" class="btn btn-custom-primary-rounded btn-sm">
-            <i class="bi bi-arrow-left"></i> Reports
+            <i class="bi bi-arrow-left"></i>
+            <span>Reports</span>
         </a>
-        <h1 class="h4 mb-0">Graphs</h1>
+        <h1 class="h4 mb-0">Financial Graphs</h1>
     </div>
-    
-    <!-- Spending Breakdown Chart -->
-    <div class="row">
-        <?php if ($hasData): ?>
-            <div class="col-lg-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <h2 class="card-title">Spending Breakdown for <?= htmlspecialchars($currentDate) ?></h2>
+
+    <?php if ($hasData): ?>
+    <!-- Bento grid layout for charts -->
+    <div class="bento-grid">
+        <!-- Spending Breakdown Chart -->
+        <div class="bento-card">
+            <div class="bento-card-header">
+                <h2 class="bento-card-title">
+                    Spending Breakdown
+                    <small class="d-block text-white-50 mt-1">
+                        <?= htmlspecialchars($currentDate) ?>
+                    </small>
+                </h2>
+            </div>
+            <div class="bento-card-body">
+                <?php if (!empty($spendingBreakdown)): ?>
+                    <canvas id="spendingBreakdownChart"></canvas>
+                <?php else: ?>
+                    <div class="d-flex align-items-center justify-content-center h-100">
+                        <p class="text-muted">No spending data available</p>
                     </div>
-                    <div class="card-body">
-                        <?php if (!empty($spendingBreakdown)): ?>
-                            <canvas id="spendingBreakdownChart"></canvas>
-                        <?php else: ?>
-                            <p class="text-center">No spending data available for <?= date('F', strtotime($currentMonth)) ?></p>
-                        <?php endif; ?>
-                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Categories List -->
+        <div class="bento-card">
+            <div class="bento-card-header">
+                <h2 class="bento-card-title">
+                    Spending Categories
+                    <small class="d-block text-white-50 mt-1">
+                        <?= htmlspecialchars($currentDate) ?>
+                    </small>
+                </h2>
+            </div>
+            <div class="bento-card-body">
+                <div class="category-list">
+                    <?php if (!empty($spendingBreakdown)): ?>
+                        <?php foreach ($spendingBreakdown as $category): ?>
+                            <div class="category-item" 
+                                 style="background-color: <?= htmlspecialchars($category['color']) ?>;">
+                                <strong><?= htmlspecialchars($category['category']) ?></strong>
+                                <strong>₱<?= number_format($category['total_amount'], 2) ?></strong>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="d-flex align-items-center justify-content-center h-100">
+                            <p class="text-muted">No categories available</p>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
-            <!-- Spending Breakdown Categories -->
-            <div class="col-lg-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <h2 class="card-title">Categories for <?= htmlspecialchars($currentDate) ?></h2>
-                    </div>
-                    <div class="card-body category-list">
-                        <?php if (!empty($spendingBreakdown)): ?>
-                            <?php foreach ($spendingBreakdown as $category): ?>
-                                <div class="category-item" style="background-color: <?= htmlspecialchars($category['color']) ?>; color:white;">
-                                    <strong><?= htmlspecialchars($category['category']) ?></strong>
-                                    <strong><span class="float-end">₱<?= number_format($category['total_amount'], 2) ?></span></strong>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <p class="text-center">No categories with spending for <?= date('F', strtotime($currentMonth)) ?></p>
-                        <?php endif; ?>
-                    </div>
-                </div>
+        </div>
+
+        <!-- Income vs Expenses Chart -->
+        <div class="bento-card">
+            <div class="bento-card-header">
+                <h2 class="bento-card-title">
+                    Income vs Expenses
+                    <small class="d-block text-white-50 mt-1">
+                        <?= htmlspecialchars($currentYear) ?>
+                    </small>
+                </h2>
             </div>
-            <!-- Income vs. Expenses Chart -->
-            <div class="col-lg-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <h2 class="card-title">Income vs. Expenses for <?= htmlspecialchars($currentYear) ?></h2>
+            <div class="bento-card-body">
+                <?php if ($hasIncomeExpenseData): ?>
+                    <canvas id="incomeExpensesChart"></canvas>
+                <?php else: ?>
+                    <div class="d-flex align-items-center justify-content-center h-100">
+                        <p class="text-muted">No income/expense data available</p>
                     </div>
-                    <div class="card-body">
-                        <?php if ($hasIncomeExpenseData): ?>
-                            <canvas id="incomeExpensesChart"></canvas>
-                        <?php else: ?>
-                            <p class="text-center">No income or expense data available for <?= date('Y') ?></p>
-                        <?php endif; ?>
-                    </div>
-                </div>
+                <?php endif; ?>
             </div>
-            <!-- Expense Trend Chart -->
-            <div class="col-lg-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <h2 class="card-title">Expense Trend Over Time for <?= htmlspecialchars($currentYear) ?></h2>
-                    </div>
-                    <div class="card-body">
-                        <?php if (!empty($expenseTrend)): ?>
-                            <canvas id="expenseTrendChart"></canvas>
-                        <?php else: ?>
-                            <p class="text-center">No expense trend data available for <?= date('Y') ?></p>
-                        <?php endif; ?>
-                    </div>
-                </div>
+        </div>
+
+        <!-- Expense Trend Chart -->
+        <div class="bento-card">
+            <div class="bento-card-header">
+                <h2 class="bento-card-title">
+                    Expense Trend
+                    <small class="d-block text-white-50 mt-1">
+                        <?= htmlspecialchars($currentYear) ?>
+                    </small>
+                </h2>
             </div>
-        <?php else: ?>
-            <!-- No Data Message -->
-            <div class="col-12">
-                <div class="alert alert-custom-info mt-1" role="alert">
-                    <h4 class="alert-heading">No Financial Data Available</h4>
-                    <p>There is currently no financial data to display graphs for <?= date("Y", strtotime($currentYear)) ?>.</p>
-                    <hr>
-                    <p class="mb-0">To start seeing your financial graphs:</p>
-                    <ul>
-                        <li>Add some income entries</li>
-                        <li>Create budget categories</li>
-                        <li>Record your expenses</li>
-                    </ul>
-                    <a href="create-page.php" class="btn btn-custom-primary mt-3">Add Financial Data</a>
-                </div>
+            <div class="bento-card-body">
+                <?php if (!empty($expenseTrend)): ?>
+                    <canvas id="expenseTrendChart"></canvas>
+                <?php else: ?>
+                    <div class="d-flex align-items-center justify-content-center h-100">
+                        <p class="text-muted">No trend data available</p>
+                    </div>
+                <?php endif; ?>
             </div>
-        <?php endif; ?>
+        </div>
     </div>
+
+    <?php else: ?>
+    <!-- No Data State -->
+    <div class="no-data-container">
+        <i class="bi bi-graph-up no-data-icon"></i>
+        <h4 class="no-data-text">No Financial Data Available</h4>
+        <p class="mb-4">Start tracking your finances to see detailed graphs and insights.</p>
+        <div class="d-flex gap-3 justify-content-center">
+            <a href="create-page.php" class="back-button">
+                <i class="bi bi-plus-lg"></i>
+                Add Financial Data
+            </a>
+        </div>
+    </div>
+    <?php endif; ?>
 </div>
 
 <!-- Chart.js -->
