@@ -163,7 +163,7 @@ $goalsCount = getArticleCountByCategory($conn, 'goals');
 <link rel="stylesheet" href="./assets/css/learn.css">
 
 <!-- HTML content -->
-<div class="learn-page py-4">
+<div class="learn-page pt-4 pb-5">
     <div class="container">
         <!-- Header Section -->
         <div class="row align-items-center mb-4">
