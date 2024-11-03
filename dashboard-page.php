@@ -267,69 +267,77 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
         
         <!-- Budget Cards -->
         <div class="row row-cols-2 row-cols-sm-2 row-cols-lg-4 g-3" id="budgetCardsContainer">
+            <?php
+            // Fetch budget data from the database and calculate the remaining balance
+            $userId = $_SESSION['auth_user']['user_id'];
             
-        <?php
-        // Fetch budget data from the database and calculate the remaining balance
-        $userId = $_SESSION['auth_user']['user_id'];
-        $stmt = $conn->prepare("SELECT b.id, b.name, b.amount, b.month, b.color, SUM(e.amount) AS total_expenses 
-                FROM budgets b 
-                LEFT JOIN expenses e ON b.id = e.category_id AND MONTH(e.date) = ? AND YEAR(e.date) = ?
-                WHERE b.user_id = ? AND b.month = ?
-                GROUP BY b.id, b.name, b.amount, b.month, b.color");
-        $yearMonth = "$currentYear-$currentMonth";
-        $stmt->bind_param("iisi", $currentMonth, $currentYear, $userId, $yearMonth);
-        $stmt->execute();
-        $result = $stmt->get_result();
+            // Modified query to strictly match the month-year format
+            $stmt = $conn->prepare("SELECT b.id, b.name, b.amount, b.month, b.color, 
+                    COALESCE(SUM(CASE 
+                        WHEN MONTH(e.date) = ? AND YEAR(e.date) = ? 
+                        THEN e.amount 
+                        ELSE 0 
+                    END), 0) AS total_expenses 
+                    FROM budgets b 
+                    LEFT JOIN expenses e ON b.id = e.category_id
+                    WHERE b.user_id = ? 
+                    AND b.month = ?
+                    GROUP BY b.id, b.name, b.amount, b.month, b.color");
+                    
+            $yearMonth = sprintf('%04d-%02d', $currentYear, $currentMonth);
+            $stmt->bind_param("iiss", $currentMonth, $currentYear, $userId, $yearMonth);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                $budgetId = $row['id'];
-                $budgetName = $row['name'];
-                $budgetAmount = $row['amount'];
-                $monthCreated = $row['month'];
-                $totalExpenses = $row['total_expenses'] ?? 0;
-                $remainingBalance = $budgetAmount - $totalExpenses;
-                $percentageUsed = ($totalExpenses / $budgetAmount) * 100;
-        ?>
-                <!-- Budget Card Content -->
-                <div class="col">
-                    <div class="card h-100">
-                        <div class="card-body d-flex flex-column p-2">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <h6 class="card-title mb-0" style="font-size: 1rem; font-weight: bold;">
-                                    <span class="badge rounded-pill-custom" style="background-color: <?= htmlspecialchars($row['color']) ?>; margin-bottom: 0.2rem;">&nbsp;</span>
-                                    <?= htmlspecialchars($budgetName) ?>
-                                </h6>
-                            </div>
-                            <div class="budget-info mt-1 mb-2">
-                                <p class="card-text mb-0" style="font-size: 0.8rem; line-height: 1.6;">Budget - <strong>₱<?= number_format($budgetAmount, 2) ?></strong></p>
-                                <p class="card-text mb-0" style="font-size: 0.8rem; line-height: 1.6;">Spent - <strong>₱<?= number_format($totalExpenses, 2) ?></strong></p>
-                                <p class="card-text" style="font-size: 0.8rem; line-height: 1.6;">Balance - <strong>₱<?= number_format($remainingBalance, 2) ?></strong></p>
-                            </div>
-                            <div class="progress mt-auto position-relative" style="height: 0.4rem;">
-                                <div class="progress-bar <?php echo $percentageUsed >= 90 ? 'bg-custom-danger' : ($percentageUsed >= 70 ? 'bg-warning' : 'bg-success'); ?>" 
-                                    role="progressbar" 
-                                    style="width: <?= $percentageUsed ?>%;" 
-                                    aria-valuenow="<?= $percentageUsed ?>" 
-                                    aria-valuemin="0" 
-                                    aria-valuemax="100">
+            if ($result->num_rows > 0) {
+                while ($row = $result->fetch_assoc()) {
+                    $budgetId = $row['id'];
+                    $budgetName = $row['name'];
+                    $budgetAmount = $row['amount'];
+                    $monthCreated = $row['month'];
+                    $totalExpenses = $row['total_expenses'] ?? 0;
+                    $remainingBalance = $budgetAmount - $totalExpenses;
+                    $percentageUsed = ($totalExpenses / $budgetAmount) * 100;
+            ?>
+                    <!-- Budget Card Content -->
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column p-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h6 class="card-title mb-0" style="font-size: 1rem; font-weight: bold;">
+                                        <span class="badge rounded-pill-custom" style="background-color: <?= htmlspecialchars($row['color']) ?>; margin-bottom: 0.2rem;">&nbsp;</span>
+                                        <?= htmlspecialchars($budgetName) ?>
+                                    </h6>
+                                </div>
+                                <div class="budget-info mt-1 mb-2">
+                                    <p class="card-text mb-0" style="font-size: 0.8rem; line-height: 1.6;">Budget - <strong>₱<?= number_format($budgetAmount, 2) ?></strong></p>
+                                    <p class="card-text mb-0" style="font-size: 0.8rem; line-height: 1.6;">Spent - <strong>₱<?= number_format($totalExpenses, 2) ?></strong></p>
+                                    <p class="card-text" style="font-size: 0.8rem; line-height: 1.6;">Balance - <strong>₱<?= number_format($remainingBalance, 2) ?></strong></p>
+                                </div>
+                                <div class="progress mt-auto position-relative" style="height: 0.4rem;">
+                                    <div class="progress-bar <?php echo $percentageUsed >= 90 ? 'bg-custom-danger' : ($percentageUsed >= 70 ? 'bg-warning' : 'bg-success'); ?>" 
+                                        role="progressbar" 
+                                        style="width: <?= $percentageUsed ?>%;" 
+                                        aria-valuenow="<?= $percentageUsed ?>" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="100">
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-        <?php
-            }
-        } else {
-            echo '<div class="col-12 no-results-message">
-                    <div class="card">
-                        <div class="card-body">
-                            <p class="card-text text-center">No budgets found for the selected date.</p>
+            <?php
+                }
+            } else {
+                echo '<div class="col-12 no-results-message">
+                        <div class="card">
+                            <div class="card-body">
+                                <p class="card-text text-center">No budgets found for the selected date.</p>
+                            </div>
                         </div>
-                    </div>
-                  </div>';
-        }
-        ?>        
+                    </div>';
+            }
+            ?>        
         </div>
     </div>
 
