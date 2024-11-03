@@ -100,8 +100,8 @@ function getNotificationDetails($type, $message) {
 <!-- HTML content -->
 <body class="notifications-page">
 <div class="container pt-4 pb-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
+    <div class="row">
+        <div class="col-12">
             <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <a href="dashboard-page.php" class="btn btn-custom-primary-rounded btn-sm">

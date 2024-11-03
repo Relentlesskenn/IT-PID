@@ -4,12 +4,12 @@
 }
 
 .notifications-page .list-group-item {
-    border-radius: 1.5rem;
+    border-radius: 1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     border: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 1rem;
+    padding: 1.25rem;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    margin-bottom: 0;
+    margin-bottom: 0.5rem;
     background-color: #fff;
 }
 
@@ -20,11 +20,10 @@
 
 /* Notification header alignment */
 .notifications-page .list-group-item h5 {
+    font-size: 1.1rem;
+    margin: 0;
     display: flex;
     align-items: center;
-    margin: 0;
-    font-size: 1.3rem;
-    line-height: 1.5;
 }
 
 /* Icon styling and alignment */
@@ -35,11 +34,11 @@
     width: 24px;
     height: 24px;
     margin-right: 0.5rem;
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     position: relative;
-    top: 1px;
 }
 
+/* Icon specific adjustments */
 .notifications-page .list-group-item h5 i.bi-exclamation-triangle-fill,
 .notifications-page .list-group-item h5 i.bi-piggy-bank,
 .notifications-page .list-group-item h5 i.bi-cash-coin,
@@ -78,12 +77,16 @@
 /* Message text styling */
 .notifications-page .list-group-item p {
     color: #4a5568;
-    line-height: 1.5;
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+    max-width: 100%;
+    word-wrap: break-word;
 }
 
 /* Timestamp styling */
 .notifications-page .list-group-item small {
     color: #718096;
+    font-weight: normal;
 }
 
 /* Icon container styling */
@@ -95,11 +98,48 @@
     height: 24px;
 }
 
+/* Strong text styling */
 .notifications-page .list-group-item p strong {
     font-weight: 600;
     color: #2d3748;
 }
 
-.notifications-page .list-group-item small {
-    font-weight: normal;
+/* Header spacing */
+.notifications-page .list-group-item .d-flex {
+    margin-bottom: 0.75rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .notifications-page .list-group-item {
+        padding: 1rem;
+    }
+    
+    .notifications-page .list-group-item h5 {
+        font-size: 1rem;
+    }
+
+    .notifications-page .list-group-item p {
+        font-size: 0.9rem;
+    }
+
+    .notifications-page .list-group-item small {
+        font-size: 0.8rem;
+    }
+}
+
+/* Fade animation for new notifications */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.notifications-page .list-group-item {
+    animation: fadeIn 0.3s ease-out;
 }
