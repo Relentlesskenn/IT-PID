@@ -651,164 +651,228 @@ $goalCategories = [
 </div>
 
 <script>
+// Wait for DOM to be fully loaded before executing any code
 document.addEventListener('DOMContentLoaded', function() {
-    // Set minimum date for target_date to today
-    var today = new Date().toISOString().split('T')[0];
-    document.getElementById('target_date').setAttribute('min', today);
-
-    // Initialize Bootstrap tooltips for category descriptions
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    });
-
-    // Function to show a toast message
-    function showToast(message, type) {
-    const toastLiveExample = document.getElementById('liveToast');
-    if (toastLiveExample) {
-        const toast = new bootstrap.Toast(toastLiveExample, {
-            animation: true,
-            autohide: true,
-            delay: 5000
+    /**
+     * Initialize Bootstrap tooltips
+     */
+    const initializeTooltips = () => {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
         });
+    };
 
-        const toastBody = document.querySelector('.toast-body');
-        const toastElement = document.querySelector('.toast');
-        
-        toastBody.textContent = message;
-        toastElement.classList.remove('border-primary', 'border-warning', 'border-danger');
-        
-        switch (type) {
-            case 'primary':
+    /**
+     * Format currency to PHP Peso
+     * @param {number} amount - The amount to format
+     * @returns {string} Formatted currency string
+     */
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('en-PH', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(amount);
+    };
+
+    /**
+     * Get success message based on type
+     * @param {string} type - The type of success message
+     * @returns {string} The corresponding success message
+     */
+    const getSuccessMessage = (type) => {
+        const messages = {
+            'goal_added': 'Goal added successfully!',
+            'goal_archived': 'Goal archived successfully!',
+            'progress_updated': 'Goal progress updated successfully!',
+            'goal_deleted': 'Goal deleted successfully!'
+        };
+        return messages[type] || 'Operation completed successfully!';
+    };
+
+    /**
+     * Show toast notification
+     */
+    const handleToastNotification = () => {
+        const toastElement = document.getElementById('liveToast');
+        if (!toastElement) return;
+
+        const toast = new bootstrap.Toast(toastElement);
+        const urlParams = new URLSearchParams(window.location.search);
+        const successMsg = urlParams.get('success');
+        const errorMsg = urlParams.get('error');
+
+        if (successMsg || errorMsg) {
+            const toastBody = toastElement.querySelector('.toast-body');
+            if (!toastBody) return;
+
+            toastElement.classList.remove('border-primary', 'border-danger');
+
+            if (successMsg) {
+                toastBody.textContent = getSuccessMessage(successMsg);
                 toastElement.classList.add('border-primary');
-                break;
-            case 'warning':
-                toastElement.classList.add('border-warning');
-                break;
-            case 'danger':
+            } else if (errorMsg) {
+                toastBody.textContent = decodeURIComponent(errorMsg);
                 toastElement.classList.add('border-danger');
-                break;
+            }
+
+            toast.show();
+
+            // Clean URL after showing toast
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, '', cleanUrl);
         }
-        
-        toast.show();
-        }
-    }
+    };
 
-    // Function to get URL parameters
-    function getUrlParameter(name) {
-        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-        var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-        var results = regex.exec(location.search);
-        return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-    }
-
-    // Show success or error message if present in URL parameters
-    var successMessage = getUrlParameter('success');
-    var errorMessage = getUrlParameter('error');
-
-    if (successMessage) {
-    showToast(getSuccessMessage(successMessage), 'primary');
-    }
-
-    if (errorMessage) {
-    showToast(errorMessage, 'danger');
-    }
-
-    // Function to get success message based on the success type
-    function getSuccessMessage(successType) {
-        switch (successType) {
-            case 'goal_added':
-                return "Goal added successfully!";
-            case 'goal_archived':
-                return "Goal archived successfully!";
-            case 'progress_updated':
-                return "Goal progress updated successfully!";
-            case 'goal_deleted':
-                return "Goal deleted successfully!";
-            default:
-                return "Operation completed successfully!";
-        }
-    }
-
-    // Remove success and error parameters from URL
-    if (successMessage || errorMessage) {
-        var newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + window.location.search.replace(/[?&]success=[^&]+/, '').replace(/[?&]error=[^&]+/, '');
-        window.history.replaceState({path: newUrl}, '', newUrl);
-    }
-
-    // Function to open the delete goal modal
-    window.openDeleteModal = function(goalId, goalName) {
-        document.getElementById('deleteGoalId').value = goalId;
-        document.getElementById('deleteGoalName').textContent = goalName;
-        var modal = new bootstrap.Modal(document.getElementById('deleteGoalModal'));
-        modal.show();
-    }
-
-    // Function to open the archive goal modal
-    window.openArchiveModal = function(goalId, goalName) {
-        document.getElementById('archiveGoalId').value = goalId;
-        document.getElementById('archiveGoalName').textContent = goalName;
-        var modal = new bootstrap.Modal(document.getElementById('archiveGoalModal'));
-        modal.show();
-    }
-
-    // Function to open the update progress modal
+    /**
+     * Modal Operation Functions
+     */
+    // Update Progress Modal
     window.openUpdateModal = function(goalId, currentAmount) {
-        document.getElementById('update_goal_id').value = goalId;
-        document.getElementById('current_amount').value = currentAmount;
-        var modal = new bootstrap.Modal(document.getElementById('updateProgressModal'));
-        modal.show();
-    }
+        const modal = document.getElementById('updateProgressModal');
+        const goalIdInput = document.getElementById('update_goal_id');
+        const amountInput = document.getElementById('current_amount');
 
-    // Function to update URL parameters
-    function updateUrlParams(params) {
-        // Preserve existing parameters
-        const currentParams = new URLSearchParams(window.location.search);
-        for (let [key, value] of currentParams) {
-            if (!params.has(key)) {
-                params.set(key, value);
+        if (modal && goalIdInput && amountInput) {
+            try {
+                const modalInstance = new bootstrap.Modal(modal);
+                goalIdInput.value = goalId;
+                amountInput.value = currentAmount;
+                modalInstance.show();
+            } catch (error) {
+                console.error('Error opening update modal:', error);
             }
         }
-       
-        // Update URL and reload page
-        window.location.search = params.toString();
-    }
+    };
 
-    // Add event listeners for sorting and filtering
-    document.querySelectorAll('#sortDropdown .dropdown-item').forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            const url = new URL(this.href);
-            const params = new URLSearchParams(url.search);
-            updateUrlParams(params);
-        });
-    });
+    // Delete Goal Modal
+    window.openDeleteModal = function(goalId, goalName) {
+        const modal = document.getElementById('deleteGoalModal');
+        const goalIdInput = document.getElementById('deleteGoalId');
+        const goalNameSpan = document.getElementById('deleteGoalName');
 
-    // Handle collapse icon rotation
-    const collapseButton = document.querySelector('[data-bs-toggle="collapse"]');
-    if (collapseButton) {
-        // Set initial state
-        const icon = collapseButton.querySelector('.bi');
-        icon.classList.remove('bi-chevron-down');
-        icon.classList.add('bi-chevron-up');
+        if (modal && goalIdInput && goalNameSpan) {
+            try {
+                const modalInstance = new bootstrap.Modal(modal);
+                goalIdInput.value = goalId;
+                goalNameSpan.textContent = goalName;
+                modalInstance.show();
+            } catch (error) {
+                console.error('Error opening delete modal:', error);
+            }
+        }
+    };
 
-        collapseButton.addEventListener('click', function() {
-            const icon = this.querySelector('.bi');
-            if (icon.classList.contains('bi-chevron-down')) {
-                icon.classList.replace('bi-chevron-down', 'bi-chevron-up');
+    // Archive Goal Modal
+    window.openArchiveModal = function(goalId, goalName) {
+        const modal = document.getElementById('archiveGoalModal');
+        const goalIdInput = document.getElementById('archiveGoalId');
+        const goalNameSpan = document.getElementById('archiveGoalName');
+
+        if (modal && goalIdInput && goalNameSpan) {
+            try {
+                const modalInstance = new bootstrap.Modal(modal);
+                goalIdInput.value = goalId;
+                goalNameSpan.textContent = goalName;
+                modalInstance.show();
+            } catch (error) {
+                console.error('Error opening archive modal:', error);
+            }
+        }
+    };
+
+    /**
+     * Form Validation Setup
+     */
+    const setupFormValidation = () => {
+        const addGoalForm = document.getElementById('addGoalForm');
+        if (addGoalForm) {
+            // Add form validation
+            addGoalForm.addEventListener('submit', function(e) {
+                if (!this.checkValidity()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                this.classList.add('was-validated');
+            });
+
+            // Validate target amount
+            const targetAmountInput = document.getElementById('target_amount');
+            if (targetAmountInput) {
+                targetAmountInput.addEventListener('input', function() {
+                    const value = parseFloat(this.value);
+                    if (value <= 0) {
+                        this.setCustomValidity('Amount must be greater than 0');
+                    } else {
+                        this.setCustomValidity('');
+                    }
+                });
+            }
+        }
+    };
+
+    /**
+     * Date Input Setup
+     */
+    const setupDateInput = () => {
+        const targetDateInput = document.getElementById('target_date');
+        if (targetDateInput) {
+            // Set minimum date to today
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            targetDateInput.setAttribute('min', formattedDate);
+
+            // Validate selected date
+            targetDateInput.addEventListener('change', function() {
+                const selectedDate = new Date(this.value);
+                if (selectedDate < today) {
+                    this.setCustomValidity('Date cannot be in the past');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+        }
+    };
+
+    /**
+     * Progress Bar Updates
+     */
+    const updateProgressBars = () => {
+        const progressBars = document.querySelectorAll('.progress-bar');
+        progressBars.forEach(bar => {
+            const progress = parseFloat(bar.getAttribute('aria-valuenow'));
+            bar.style.width = `${progress}%`;
+            
+            // Update progress bar color based on percentage
+            if (progress >= 75) {
+                bar.classList.add('bg-success');
+            } else if (progress >= 50) {
+                bar.classList.add('bg-warning');
             } else {
-                icon.classList.replace('bi-chevron-up', 'bi-chevron-down');
+                bar.classList.add('bg-danger');
             }
         });
+    };
+
+    // Initialize all functions
+    try {
+        initializeTooltips();
+        handleToastNotification();
+        setupFormValidation();
+        setupDateInput();
+        updateProgressBars();
+    } catch (error) {
+        console.error('Initialization error:', error);
     }
 
-    // Handle filter dropdown item clicks
-    document.querySelectorAll('#filterDropdown .dropdown-item').forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            const url = new URL(this.href);
-            const params = new URLSearchParams(url.search);
-            updateUrlParams(params);
+    // Clean up function for tooltips when the page is unloaded
+    window.addEventListener('pagehide', function() {
+        const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        tooltips.forEach(element => {
+            const tooltip = bootstrap.Tooltip.getInstance(element);
+            if (tooltip) {
+                tooltip.dispose();
+            }
         });
     });
 });

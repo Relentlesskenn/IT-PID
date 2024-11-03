@@ -193,36 +193,36 @@ $goalsCount = getArticleCountByCategory($conn, 'goals');
             
             <!-- Budgeting Basics Category -->
             <div class="col-md-4">
-                <div class="category-card card" data-category="basics">
+                <div class="category-card card" role="button" data-category="basics">
                     <div class="card-body text-center py-4">
                         <i class="bi bi-book resource-icon"></i>
                         <h5 class="card-title">Budgeting Basics</h5>
                         <p class="card-text">Master the fundamentals of personal finance</p>
-                        <span class="badge"><?= $basicsCount ?> articles</span>
+                        <span class="badge bg-primary"><?= $basicsCount ?> articles</span>
                     </div>
                 </div>
             </div>
 
             <!-- Saving Tips Category -->
             <div class="col-md-4">
-                <div class="category-card card" data-category="savings">
+                <div class="category-card card" role="button" data-category="savings">
                     <div class="card-body text-center py-4">
                         <i class="bi bi-piggy-bank resource-icon"></i>
                         <h5 class="card-title">Saving Tips</h5>
                         <p class="card-text">Smart strategies to grow your savings</p>
-                        <span class="badge"><?= $savingsCount ?> articles</span>
+                        <span class="badge bg-primary"><?= $savingsCount ?> articles</span>
                     </div>
                 </div>
             </div>
 
             <!-- Financial Goals Category -->
             <div class="col-md-4">
-                <div class="category-card card" data-category="goals">
+                <div class="category-card card" role="button" data-category="goals">
                     <div class="card-body text-center py-4">
                         <i class="bi bi-trophy resource-icon"></i>
                         <h5 class="card-title">Financial Goals</h5>
                         <p class="card-text">Turn your financial dreams into reality</p>
-                        <span class="badge"><?= $goalsCount ?> articles</span>
+                        <span class="badge bg-primary"><?= $goalsCount ?> articles</span>
                     </div>
                 </div>
             </div>
@@ -421,31 +421,34 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    // Function to update articles display
+    // Function to update articles based on category
     function updateArticles(category = null) {
+        currentCategory = category;
+        
         // Show loading state
-        articlesContainer.innerHTML = `
-            <div class="col-12 text-center py-4">
+        document.querySelector('.articles-grid').innerHTML = `
+            <div class="text-center py-4">
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Loading...</span>
                 </div>
             </div>
         `;
 
+        // Reset all cards
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.classList.remove('active');
+        });
+
+        // Update active category if one is selected
+        if (category) {
+            document.querySelector(`[data-category="${category}"]`).classList.add('active');
+        }
+
         // Update category indicator
-        currentCategory = category;
-        categoryIndicator.textContent = category ? 
+        const articlesStatus = document.querySelector('.articles-status');
+        articlesStatus.textContent = category ? 
             `Showing ${category.charAt(0).toUpperCase() + category.slice(1)} articles` : 
             'Showing all articles';
-
-        // Update active category visual
-        document.querySelectorAll('.category-card').forEach(card => {
-            if (category && card.dataset.category === category) {
-                card.classList.add('active');
-            } else {
-                card.classList.remove('active');
-            }
-        });
 
         // Fetch filtered articles
         fetch('learn-page.php', {
@@ -460,75 +463,90 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!response.success) {
                 throw new Error(response.error || 'Failed to load articles');
             }
+
+            const articlesGrid = document.querySelector('.articles-grid');
             const articles = response.data;
-            articlesContainer.innerHTML = '';
-            
+
             if (!articles || articles.length === 0) {
-                articlesContainer.innerHTML = `
-                    <div class="col-12">
-                        <div class="alert alert-custom-info">
-                            <i class="bi bi-info-circle-fill me-2"></i>
-                            No articles found in this category.
-                        </div>
+                articlesGrid.innerHTML = `
+                    <div class="alert alert-custom-info">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        No articles found ${category ? `in ${category} category` : ''}.
                     </div>
                 `;
                 return;
             }
 
+            // Clear and rebuild articles grid
+            articlesGrid.innerHTML = '';
+            
             articles.forEach(article => {
                 const articleCard = `
-                    <div class="col-md-6 col-lg-4 fade-in">
-                        <div class="card learn-card article-card">
-                            <div class="card-body">
-                                <h6 class="card-title mb-3">${escapeHtml(article.title)}</h6>
-                                <p class="card-text article-preview">${escapeHtml(article.preview)}</p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">${formatDate(article.date_published)}</small>
-                                    <button class="btn btn-custom-primary-rounded btn-sm" 
-                                            onclick="showArticle(${article.id})">
-                                        Read More
-                                    </button>
-                                </div>
-                            </div>
+                    <article class="article-card fade-in">
+                        <h3 class="article-title">
+                            ${escapeHtml(article.title)}
+                        </h3>
+                        <p class="article-description">
+                            ${escapeHtml(article.preview)}
+                        </p>
+                        <div class="article-footer">
+                            <span class="article-date">
+                                ${formatDate(article.date_published)}
+                            </span>
+                            <button class="read-more-btn" onclick="showArticle(${article.id})">
+                                Read More
+                            </button>
                         </div>
-                    </div>
+                    </article>
                 `;
-                articlesContainer.insertAdjacentHTML('beforeend', articleCard);
+                articlesGrid.insertAdjacentHTML('beforeend', articleCard);
             });
+
+            // Reset search if category changes
+            if (searchInput.value) {
+                searchInput.value = '';
+                clearSearch.style.display = 'none';
+            }
         })
         .catch(error => {
             console.error('Error:', error);
-            articlesContainer.innerHTML = `
-                <div class="col-12">
-                    <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        ${error.message || 'Error loading articles. Please try again later.'}
-                    </div>
+            document.querySelector('.articles-grid').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    ${error.message || 'Error loading articles. Please try again later.'}
                 </div>
             `;
         });
     }
 
-    // Add event listeners for category cards
+    // Make cards keyboard accessible and handle clicks
     document.querySelectorAll('.category-card').forEach(card => {
+        // Add keyboard support
+        card.setAttribute('tabindex', '0');
+        
+        // Handle keyboard events
+        card.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+
+        // Add explicit click handling
         card.addEventListener('click', function() {
             const category = this.dataset.category;
             const isCurrentlyActive = this.classList.contains('active');
             
-            // If clicking the active category, show all articles
             if (isCurrentlyActive) {
-                updateArticles(null);
+                updateArticles(null); // Show all articles
             } else {
-                updateArticles(category);
+                updateArticles(category); // Show category articles
             }
         });
     });
 
-    // Show all articles button
+    // Show all articles button handler
     document.getElementById('showAllButton').addEventListener('click', function() {
-        document.querySelectorAll('.category-card').forEach(card => {
-            card.classList.remove('active');
-        });
         updateArticles(null);
     });
 
@@ -539,59 +557,50 @@ document.addEventListener('DOMContentLoaded', function() {
         let visibleCount = 0;
         
         articles.forEach(article => {
-            const title = article.querySelector('.card-title').textContent.toLowerCase();
-            const preview = article.querySelector('.article-preview').textContent.toLowerCase();
-            const parent = article.closest('.col-md-6');
+            const title = article.querySelector('.article-title').textContent.toLowerCase();
+            const preview = article.querySelector('.article-description').textContent.toLowerCase();
             
             if (title.includes(searchTerm) || preview.includes(searchTerm)) {
-                parent.style.display = '';
+                article.style.display = '';
                 visibleCount++;
             } else {
-                parent.style.display = 'none';
+                article.style.display = 'none';
             }
         });
         
-        // Update search clear button visibility
+        // Update clear button visibility
         clearSearch.style.display = searchTerm ? 'block' : 'none';
         
-        // Update category indicator during search
-        if (searchTerm) {
-            categoryIndicator.textContent = `Found ${visibleCount} article${visibleCount !== 1 ? 's' : ''}`;
-        } else {
-            categoryIndicator.textContent = currentCategory ? 
+        // Update status text during search
+        const articlesStatus = document.querySelector('.articles-status');
+        articlesStatus.textContent = searchTerm ? 
+            `Found ${visibleCount} article${visibleCount !== 1 ? 's' : ''}` :
+            (currentCategory ? 
                 `Showing ${currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1)} articles` : 
-                'Showing all articles';
-        }
-        
+                'Showing all articles');
+
         // Show/hide no results message
-        const noResultsMessage = document.querySelector('.no-results-message');
+        const existingAlert = document.querySelector('.alert-custom-info');
+        if (existingAlert) {
+            existingAlert.remove();
+        }
+
         if (visibleCount === 0) {
-            if (!noResultsMessage) {
-                const message = `
-                    <div class="col-12 no-results-message fade-in">
-                        <div class="alert alert-custom-info">
-                            <i class="bi bi-info-circle-fill me-2"></i>
-                            No articles found matching "${escapeHtml(searchTerm)}"
-                        </div>
-                    </div>
-                `;
-                articlesContainer.insertAdjacentHTML('beforeend', message);
-            }
-        } else if (noResultsMessage) {
-            noResultsMessage.remove();
+            const noResultsMessage = `
+                <div class="alert alert-custom-info">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    No articles found matching "${escapeHtml(searchTerm)}"
+                </div>
+            `;
+            document.querySelector('.articles-grid').insertAdjacentHTML('beforeend', noResultsMessage);
         }
     });
 
-    // Clear search
+    // Clear search handler
     clearSearch.addEventListener('click', function() {
         searchInput.value = '';
         searchInput.dispatchEvent(new Event('input'));
         this.style.display = 'none';
-        
-        // Reset category indicator
-        categoryIndicator.textContent = currentCategory ? 
-            `Showing ${currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1)} articles` : 
-            'Showing all articles';
     });
 
     // Initialize tooltips if any exist
@@ -602,7 +611,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initial setup
     clearSearch.style.display = 'none';
-    categoryIndicator.textContent = 'Showing all articles';
 });
 </script>
 

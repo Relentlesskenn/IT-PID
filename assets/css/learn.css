@@ -67,20 +67,14 @@
 }
 
 /* Category Cards */
-.category-section {
-    margin-bottom: 40px;
-}
-
 .category-card {
     background: #FFFFFF;
     border-radius: 16px;
-    padding: 24px;
-    height: 100%;
-    cursor: pointer;
     border: 1px solid rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
-    text-align: center;
+    cursor: pointer;
     position: relative;
+    overflow: hidden;
 }
 
 .category-card:hover {
@@ -88,9 +82,17 @@
     box-shadow: 0 8px 24px rgba(67, 56, 120, 0.12);
 }
 
+.category-card:active {
+    transform: translateY(-2px);
+}
+
 .category-card.active {
-    border-color: #433878;
+    border: 2px solid #433878;
     background-color: #F8F6FF;
+}
+
+.category-card .card-body {
+    padding: 24px;
 }
 
 .category-card .resource-icon {
@@ -123,6 +125,17 @@
     border-radius: 20px;
     font-size: 0.8rem;
     font-weight: 500;
+}
+
+.category-card:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(67, 56, 120, 0.3);
+}
+
+/* Make sure the card is clickable */
+.category-card[role="button"] {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Articles Grid Layout */
