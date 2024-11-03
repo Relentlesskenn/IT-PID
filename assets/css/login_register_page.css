@@ -1,118 +1,320 @@
-/* Login and Register page styles */
+/* Core theme variables */
+:root {
+  --midnight-purple: #2D1B69;
+  --purple-accent: #6B4BFF;
+  --purple-light: #8E7AB5;
+  --purple-gradient: linear-gradient(135deg, #2D1B69, #6B4BFF);
+  --purple-glow: rgba(107, 75, 255, 0.15);
+  --text-dark: #1A1A1A;
+  --text-light: #6E7191;
+  --white: #ffffff;
+  --off-white: #F7F7FC;
+  --shadow-sm: 0 4px 6px -1px rgba(107, 75, 255, 0.15);
+  --shadow-md: 0 8px 24px -4px rgba(107, 75, 255, 0.15);
+  --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Main container styles */
 .main {
-    flex-grow: .5;
-    background-image: url('../imgs/background.jpg');
-    background-size: cover;
-    background-position: center;
-    height: 100vh;
-    width: 100vw;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  min-height: 100vh;
+  background: var(--midnight-purple);
+  background: linear-gradient(135deg, rgba(45,27,105,0.97) 0%, rgba(107,75,255,0.95) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative background elements */
+.main::before {
+  content: '';
+  position: absolute;
+  width: 1000px;
+  height: 1000px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.03);
+  top: -400px;
+  right: -400px;
+  animation: float 20s infinite ease-in-out;
+}
+
+.main::after {
+  content: '';
+  position: absolute;
+  width: 800px;
+  height: 800px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.02);
+  bottom: -300px;
+  left: -300px;
+  animation: float 15s infinite ease-in-out reverse;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(50px, 50px) rotate(5deg); }
+  50% { transform: translate(0, 100px) rotate(0deg); }
+  75% { transform: translate(-50px, 50px) rotate(-5deg); }
 }
 
 /* Logo styles */
-.large-text {
-    font-size: 6rem;
-    font-weight: normal;
-    letter-spacing: 2px;
+.logo-container {
+  text-align: center;
+  margin: 2rem 0;
+  animation: fadeInDown 0.8s ease-out;
 }
 
-.it-text {
-    text-align: left; margin-left: 3px;
-    font-size: 6rem;
-    color: black;
-    margin-bottom: -10px;
+.logo-text-upper,
+.logo-text-bottom {
+  font-size: 4rem;
+  font-weight: 800;
+  background: linear-gradient(to right, #fff, #E0E7FF);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  line-height: 1.1;
+  font-family: 'Lexend', sans-serif;
 }
 
-.pid-text {
-    font-size: 6rem;
-    color: black;
-    text-align: center;
+/* Form styles */
+.form-group {
+  margin-bottom: 1.5rem;
+  position: relative;
+  animation: fadeInUp 0.6s ease-out;
 }
 
-.icon-lg {
-    font-size: 2.5rem;
+.label-font {
+  color: var(--white);
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  display: block;
+  text-transform: none;
+  font-family: 'Lexend', sans-serif;
+  opacity: 0.9;
 }
 
-/* Login and Register form styles */
+.form-control {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--white);
+  border-radius: 12px;
+  padding: 1rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: var(--transition);
+  font-family: 'Lexend', sans-serif;
+}
+
+.form-control:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+  color: var(--white);
+}
+
+.form-control::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.9rem;
+}
+
+/* Enhanced Button Styles */
 .btn {
-    display: block;
-    width: 100%;
-    padding: 0.9rem;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    font-family: 'Lexend Exa', sans-serif;
-    text-transform: uppercase;
-    cursor: pointer;
-  }
-
-  .register-btn {
-    margin-bottom: 1.5rem;
-  }
-
-  .label-font {
-    font-size: 1rem;
-    font-family: 'Lexend', sans-serif;
-    text-transform: uppercase;
-    color: #7A1CAC;
-    margin-left: 0.5rem;
-    margin-bottom: 0.1rem;
-  }
-
-  .input-margin {
-    margin-bottom: 1.1rem;
-  }
-
-  .logo-container {
-    margin-top: 3rem;
-    margin-bottom: 3rem;
-    text-align: center;
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  border-radius: 12px;
+  transition: var(--transition);
+  text-transform: none;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Lexend', sans-serif;
 }
-  
-/* Landing page logo styles */
-  .logo-text-upper {
-    font-size: 6rem;
-    font-weight: 600;
-    font-family: 'Lexend Deca', sans-serif;
-    color: black;
-    line-height: 0.80;
-    margin-right: 0.5rem;
-    margin-bottom: 0.1rem;
+
+/* Register Button Specific */
+.register-btn {
+  background: linear-gradient(45deg, var(--purple-accent), var(--purple-light));
+  color: var(--white) !important;
+  font-weight: 600;
+  padding: 1rem 2.5rem;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+}
+
+.register-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, var(--purple-light), var(--purple-accent));
+  opacity: 0;
+  transition: var(--transition);
+}
+
+.register-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Alert container */
+.alert-container {
+  margin: 1rem 0;
+  min-height: 60px;
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* Back button */
+.back-btn {
+  color: var(--white);
+  font-size: 2rem;
+  transition: var(--transition);
+  display: inline-block;
+  text-decoration: none;
+  opacity: 0.9;
+}
+
+.back-btn:hover {
+  transform: translateX(-5px);
+  opacity: 1;
+}
+
+/* Links */
+a {
+  color: var(--white) !important;
+  opacity: 0.9;
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+a:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+/* Ripple Effect */
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.btn-ripple:hover::after {
+  width: 650px;
+  height: 300px;
+}
+
+/* Loading State */
+.btn.is-loading {
+  pointer-events: none;
+  color: transparent !important;
+}
+
+.btn.is-loading::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: 50%;
+  left: 50%;
+  margin: -10px 0 0 -10px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--white);
+  border-radius: 50%;
+  animation: button-loading-spinner 0.8s ease infinite;
+}
+
+/* Animations */
+@keyframes fadeInDown {
+  from {
+      opacity: 0;
+      transform: translateY(-20px);
   }
-  
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+      opacity: 0;
+      transform: translateY(20px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes button-loading-spinner {
+  from { transform: rotate(0turn); }
+  to { transform: rotate(1turn); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .logo-text-upper,
   .logo-text-bottom {
-    font-size: 6rem;
-    font-weight: 600;
-    font-family: 'Lexend Deca', sans-serif;
-    color: black;
-    line-height: 0.88;
-    margin-bottom: 0.5rem;
+      font-size: 3rem;
   }
 
-  .reset-margin {
-    margin-top: 1rem;
+  .form-control {
+      font-size: 1rem;
   }
 
-  .alert-container {
-    height: 80px;
-    overflow: hidden;
-    margin-top: 1.1rem;
-    margin-bottom: 6rem;
+  .btn {
+      padding: 0.9rem 2rem;
+      font-size: 1rem;
+  }
+  
+  .register-btn {
+      padding: 0.9rem 2rem;
   }
 
-  .alert {
-    margin-bottom: 0;
+  .back-btn {
+      font-size: 1.8rem;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .main::before,
+  .main::after {
+      animation: none;
   }
 
-  .btn-container {
-    height: 50px;
-    overflow: hidden;
-    margin-top: 1rem;
+  .btn,
+  .btn::before,
+  .btn::after,
+  .form-control,
+  .back-btn,
+  .btn-ripple::after {
+      transition: none;
   }
 
-  .register-form-container {
-    height: 600px;
-    overflow: hidden;
+  .btn.is-loading::after {
+      animation: none;
   }
+}

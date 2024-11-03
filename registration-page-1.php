@@ -29,7 +29,7 @@ include('includes/header.php');
                 <!-- Registration Form -->
                 <h1>
                     <a href="index.php" class="text-decoration-none">
-                        <i class="bi bi-arrow-left-circle icon-lg" style="color: black;"></i>
+                        <i class="bi bi-arrow-left-circle icon-lg" style="color: white;"></i>
                     </a> 
                 </h1>
                 <br>
@@ -38,7 +38,7 @@ include('includes/header.php');
                 <br>
                 <form action="registration-page-2.php" method="POST" class="d-flex flex-column flex-grow-1 position-relative">
                     <div class="flex-grow-1 ">
-                    <h1 style="color: black; font-size: 2.5rem;">Register</h1>
+                    <h1 style="color: white; font-size: 2.5rem;">Register</h1>
                     <br>
                         <div class="form-group mb-3">
                             <label for="f_name" class="label-font">First Name</label>
@@ -75,7 +75,9 @@ include('includes/header.php');
                     </div>
                     <!-- Button at the bottom -->
                     <div class="form-group">
-                        <button type="submit" name="next_step" class="btn btn-custom-primary w-100 mt-auto register-btn">Continue</button>
+                    <button type="submit" name="register_btn" class="btn register-btn btn-ripple w-100">
+                        <span>Continue</span>
+                    </button>
                     </div>
                 </form>
             </div>

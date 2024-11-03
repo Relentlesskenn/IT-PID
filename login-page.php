@@ -47,7 +47,7 @@ include('includes/header.php');
                 
                 <h1>
                     <a href="index.php" class="text-decoration-none">
-                        <i class="bi bi-arrow-left-circle icon-lg" style="color: black;"></i>
+                        <i class="bi bi-arrow-left-circle icon-lg" style="color: white;"></i>
                     </a> 
                 </h1>
                 <!-- Logo Section -->
@@ -99,15 +99,16 @@ include('includes/header.php');
                     
                     <!-- Button at the bottom -->
                     <div class="form-group">
-                        <button type="submit" name="login_btn" class="btn btn-custom-primary w-100">Log in</button>
-                        <br><br>
-                        <a href="forgot_your_password-page.php" class="font-sm text-decoration-none" style="color: #7E60BF;">Forgot your Password?</a>
+                    <button type="submit" name="login_btn" class="btn register-btn btn-ripple w-100">
+                        <span>Log in</span>
+                    </button>
+                    <div class="mt-3">
+                        <a href="forgot_your_password-page.php" class="font-sm text-decoration-none d-block mb-2" style="color: #7E60BF;">Forgot your Password?</a>
+                        <p class="font-sm mb-0" style="color: white;">
+                            Didn't receive your Verification Email? 
+                            <a href="resend_email_verification-page.php" class="text-decoration-none" style="color: #7E60BF;">Resend</a>
+                        </p>
                     </div>
-                </form>
-                <p class="mt-1 font-sm" style="color: #433878;">
-                    Didn't receive your Verification Email?
-                    <a href="resend_email_verification-page.php" class="text-decoration-none" style="color: #7E60BF;">Resend</a>
-                </p>
             </div>
         </div>  
     </div>

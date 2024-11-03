@@ -30,7 +30,7 @@ include('includes/header.php');
 
                 <!-- Change Password Form -->
                 <div class="flex-grow-1">
-                <h1 style="color: black; font-size: 2rem; margin-top: 10rem;">Reset your password</h1>
+                <h1 style="color: white; font-size: 2rem; margin-top: 10rem;">Reset your password</h1>
                 <br>
                     <form action="password_reset-process.php" method="POST" id="passwordResetForm">
                         <input type="hidden" name="password_token" value="<?php if(isset($_GET['token'])){echo $_GET['token'];} ?>">
@@ -53,7 +53,7 @@ include('includes/header.php');
                             <input type="password" name="confirm_password" id="confirm_password" placeholder="Enter Confirm Password" class="form-control form-control-lg" required>
                         </div>
                         <div class="form-group">
-                            <button type="submit" name="password_update_btn" class="btn btn-custom-primary w-100 reset-margin">Update</button>
+                            <button type="submit" name="password_update_btn" class="btn register-btn btn-ripple w-100 reset-margin">Update</button>
                         </div>
 
                         <!-- Alert -->

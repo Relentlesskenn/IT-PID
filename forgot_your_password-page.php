@@ -29,10 +29,12 @@ include('includes/header.php');
 
                 <!-- Change Password Form -->
                 <div class="flex-grow-1">
-                    <a href="login-page.php" class="text-decoration-none">
-                        <i class="bi bi-arrow-left-circle icon-lg" style="color: black;"></i>
-                    </a>
-                    <h1 style="color: black; font-size: 2rem; margin-top: 10rem;">Reset your password</h1>
+                    <h1>
+                        <a href="index.php" class="text-decoration-none">
+                            <i class="bi bi-arrow-left-circle icon-lg" style="color: white;"></i>
+                        </a> 
+                    </h1>
+                    <h1 style="color: white; font-size: 2rem; margin-top: 10rem;">Reset your password</h1>
                     <br>
                     <form action="password_reset-process.php" method="POST">
                         <div class="form-group mb-3">
@@ -40,7 +42,7 @@ include('includes/header.php');
                             <input type="email" name="email" id="email" placeholder="Enter Email Address" class="form-control form-control-lg" required autocomplete="email">
                         </div>
                         <div class="form-group">
-                            <button type="submit" name="password_reset_btn" class="btn btn-custom-primary w-100 reset-margin">Submit</button>
+                            <button type="submit" name="password_reset_btn" class="btn register-btn btn-ripple w-100 reset-margin">Submit</button>
                         </div>
 
                     <!-- Alert -->
