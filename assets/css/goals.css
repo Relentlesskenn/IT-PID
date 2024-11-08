@@ -412,3 +412,20 @@
         margin-bottom: 0.5rem !important;
     }
 }
+
+/* Due Date Alert Styles */
+.toast.border-danger {
+    background-color: rgba(255, 220, 220, 0.9);
+}
+
+.toast.border-warning {
+    background-color: rgba(255, 243, 205, 0.9);
+}
+
+.toast.border-primary {
+    background-color: rgba(207, 226, 255, 0.9);
+}
+
+.toast.show {
+    opacity: 1;
+}

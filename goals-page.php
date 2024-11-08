@@ -80,6 +80,79 @@ function getUserGoals($conn, $userId, $sortBy = 'target_date', $sortOrder = 'ASC
     return $stmt->get_result();
 }
 
+// Function to check goals nearing due date
+function checkGoalsDueDate($conn, $userId) {
+    $alerts = array();
+    
+    // Get current date
+    $currentDate = new DateTime();
+    
+    // Get all active goals
+    $sql = "SELECT id, name, target_date, target_amount, current_amount 
+            FROM goals 
+            WHERE user_id = ? 
+            AND is_archived = FALSE 
+            AND current_amount < target_amount";
+            
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    while ($goal = $result->fetch_assoc()) {
+        $targetDate = new DateTime($goal['target_date']);
+        $interval = $currentDate->diff($targetDate);
+        $daysRemaining = (int)$interval->format('%R%a'); // Get days remaining with sign
+        
+        // Calculate progress percentage
+        $progress = ($goal['current_amount'] / $goal['target_amount']) * 100;
+        
+        // Alert conditions
+        if ($daysRemaining < 0) {
+            // Goal is overdue
+            $alerts[] = array(
+                'type' => 'danger',
+                'message' => sprintf(
+                    "Goal '%s' is overdue by %d day/s! Target: ₱%s, Current: ₱%s (%.1f%%)",
+                    $goal['name'],
+                    abs($daysRemaining),
+                    number_format($goal['target_amount'], 2),
+                    number_format($goal['current_amount'], 2),
+                    $progress
+                )
+            );
+        } elseif ($daysRemaining <= 7) {
+            // Goal is due within a week
+            $alerts[] = array(
+                'type' => 'warning',
+                'message' => sprintf(
+                    "Goal '%s' is due in %d day/s! Target: ₱%s, Current: ₱%s (%.1f%%)",
+                    $goal['name'],
+                    $daysRemaining,
+                    number_format($goal['target_amount'], 2),
+                    number_format($goal['current_amount'], 2),
+                    $progress
+                )
+            );
+        } elseif ($daysRemaining <= 30) {
+            // Goal is due within a month
+            $alerts[] = array(
+                'type' => 'primary',
+                'message' => sprintf(
+                    "Goal '%s' is due in %d day/s. Target: ₱%s, Current: ₱%s (%.1f%%)",
+                    $goal['name'],
+                    $daysRemaining,
+                    number_format($goal['target_amount'], 2),
+                    number_format($goal['current_amount'], 2),
+                    $progress
+                )
+            );
+        }
+    }
+    
+    return $alerts;
+}
+
 // Handle form submission for adding a new goal
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_goal'])) {
     $name = $_POST['goal_name'];
@@ -228,6 +301,9 @@ while ($goal = $goals->fetch_assoc()) {
 
 $totalGoals = count($activeGoals) + count($completedGoals);
 $overallProgress = $totalTargetAmount > 0 ? ($totalCurrentAmount / $totalTargetAmount) * 100 : 0;
+
+// Get due date alerts
+$dueDateAlerts = checkGoalsDueDate($conn, $userId);
 
 // List of goal categories
 $goalCategories = [
@@ -691,6 +767,52 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     /**
+     * Show due date alerts
+     * @param {Array} alerts - Array of alert objects
+     */
+    function showDueDateAlerts(alerts) {
+        const toastContainer = document.getElementById('liveToast');
+        if (!toastContainer || alerts.length === 0) return;
+
+        const toast = new bootstrap.Toast(toastContainer, {
+            animation: true,
+            autohide: true,
+            delay: 6000
+        });
+
+        let currentAlertIndex = 0;
+
+        function showNextAlert() {
+            if (currentAlertIndex >= alerts.length) return;
+
+            const alert = alerts[currentAlertIndex];
+            const toastBody = toastContainer.querySelector('.toast-body');
+            const toastHeader = toastContainer.querySelector('.toast-header strong');
+            
+            // Update toast content and styling
+            toastHeader.textContent = 'Goal Due Date Alert';
+            toastBody.textContent = alert.message;
+            toastContainer.classList.remove('border-primary', 'border-warning', 'border-danger');
+            toastContainer.classList.add(`border-${alert.type}`);
+
+            // Show the toast
+            toast.show();
+
+            // Setup listener for when toast is hidden
+            toastContainer.addEventListener('hidden.bs.toast', () => {
+                currentAlertIndex++;
+                // Short delay before showing the next alert
+                setTimeout(() => {
+                    showNextAlert();
+                }, 300);
+            }, { once: true });
+        }
+
+        // Start showing alerts
+        showNextAlert();
+    }
+
+    /**
      * Show toast notification
      */
     const handleToastNotification = () => {
@@ -704,9 +826,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (successMsg || errorMsg) {
             const toastBody = toastElement.querySelector('.toast-body');
+            const toastHeader = toastElement.querySelector('.toast-header strong');
             if (!toastBody) return;
 
             toastElement.classList.remove('border-primary', 'border-danger');
+            toastHeader.textContent = 'Notification';
 
             if (successMsg) {
                 toastBody.textContent = getSuccessMessage(successMsg);
@@ -861,6 +985,12 @@ document.addEventListener('DOMContentLoaded', function() {
         setupFormValidation();
         setupDateInput();
         updateProgressBars();
+
+        // Show due date alerts after other notifications
+        setTimeout(() => {
+            const dueDateAlerts = <?php echo json_encode($dueDateAlerts ?? []); ?>;
+            showDueDateAlerts(dueDateAlerts);
+        }, 6000);
     } catch (error) {
         console.error('Initialization error:', error);
     }
