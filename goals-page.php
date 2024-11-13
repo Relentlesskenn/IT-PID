@@ -8,6 +8,7 @@ include('includes/navbar.php');
 
 // Get the current user ID
 $userId = $_SESSION['auth_user']['user_id'];
+checkAndUpdatePastDueGoals($conn, $userId);
 
 // Function to update total balance for a user
 function updateCumulativeBalance($conn, $userId) {
@@ -62,16 +63,19 @@ function getUserGoals($conn, $userId, $sortBy = 'target_date', $sortOrder = 'ASC
     $sortBy = in_array($sortBy, $allowedSortFields) ? $sortBy : 'target_date';
     $sortOrder = $sortOrder === 'DESC' ? 'DESC' : 'ASC';
 
-    $sql = "SELECT * FROM goals WHERE user_id = ? AND is_archived = FALSE";
+    // Base SQL query with is_inactive condition
+    $sql = "SELECT * FROM goals WHERE user_id = ? AND is_archived = FALSE AND is_inactive = FALSE";
     $params = [$userId];
     $types = "i";
 
+    // Add category filter if provided
     if ($category) {
         $sql .= " AND category = ?";
         $params[] = $category;
         $types .= "s";
     }
 
+    // Add sorting
     $sql .= " ORDER BY $sortBy $sortOrder";
     
     $stmt = $conn->prepare($sql);
@@ -84,14 +88,16 @@ function getUserGoals($conn, $userId, $sortBy = 'target_date', $sortOrder = 'ASC
 function checkGoalsDueDate($conn, $userId) {
     $alerts = array();
     
-    // Get current date
-    $currentDate = new DateTime();
+    // Get current date without time component
+    $currentDate = new DateTime('now', new DateTimeZone('Asia/Manila'));
+    $currentDate->setTime(0, 0, 0); // Set time to start of day
     
     // Get all active goals
     $sql = "SELECT id, name, target_date, target_amount, current_amount 
             FROM goals 
             WHERE user_id = ? 
             AND is_archived = FALSE 
+            AND is_inactive = FALSE
             AND current_amount < target_amount";
             
     $stmt = $conn->prepare($sql);
@@ -100,33 +106,61 @@ function checkGoalsDueDate($conn, $userId) {
     $result = $stmt->get_result();
     
     while ($goal = $result->fetch_assoc()) {
-        $targetDate = new DateTime($goal['target_date']);
+        // Create target date object and set to start of day
+        $targetDate = new DateTime($goal['target_date'], new DateTimeZone('Asia/Manila'));
+        $targetDate->setTime(0, 0, 0);
+        
+        // Calculate days difference
         $interval = $currentDate->diff($targetDate);
-        $daysRemaining = (int)$interval->format('%R%a'); // Get days remaining with sign
+        $daysRemaining = $interval->days;
+        $isInFuture = $targetDate > $currentDate;
         
         // Calculate progress percentage
         $progress = ($goal['current_amount'] / $goal['target_amount']) * 100;
         
-        // Alert conditions
-        if ($daysRemaining < 0) {
+        // Alert conditions with corrected logic
+        if (!$isInFuture) {
             // Goal is overdue
             $alerts[] = array(
                 'type' => 'danger',
                 'message' => sprintf(
-                    "Goal '%s' is overdue by %d day/s! Target: ₱%s, Current: ₱%s (%.1f%%)",
+                    "Goal '%s' is overdue! Target: ₱%s, Current: ₱%s (%.1f%%)",
                     $goal['name'],
-                    abs($daysRemaining),
+                    number_format($goal['target_amount'], 2),
+                    number_format($goal['current_amount'], 2),
+                    $progress
+                )
+            );
+        } elseif ($daysRemaining == 0) {
+            // Due today
+            $alerts[] = array(
+                'type' => 'warning',
+                'message' => sprintf(
+                    "Goal '%s' is due today! Target: ₱%s, Current: ₱%s (%.1f%%)",
+                    $goal['name'],
+                    number_format($goal['target_amount'], 2),
+                    number_format($goal['current_amount'], 2),
+                    $progress
+                )
+            );
+        } elseif ($daysRemaining == 1) {
+            // Due tomorrow
+            $alerts[] = array(
+                'type' => 'warning',
+                'message' => sprintf(
+                    "Goal '%s' is due tomorrow! Target: ₱%s, Current: ₱%s (%.1f%%)",
+                    $goal['name'],
                     number_format($goal['target_amount'], 2),
                     number_format($goal['current_amount'], 2),
                     $progress
                 )
             );
         } elseif ($daysRemaining <= 7) {
-            // Goal is due within a week
+            // Due within a week
             $alerts[] = array(
                 'type' => 'warning',
                 'message' => sprintf(
-                    "Goal '%s' is due in %d day/s! Target: ₱%s, Current: ₱%s (%.1f%%)",
+                    "Goal '%s' is due in %d days! Target: ₱%s, Current: ₱%s (%.1f%%)",
                     $goal['name'],
                     $daysRemaining,
                     number_format($goal['target_amount'], 2),
@@ -135,11 +169,11 @@ function checkGoalsDueDate($conn, $userId) {
                 )
             );
         } elseif ($daysRemaining <= 30) {
-            // Goal is due within a month
+            // Due within a month
             $alerts[] = array(
                 'type' => 'primary',
                 'message' => sprintf(
-                    "Goal '%s' is due in %d day/s. Target: ₱%s, Current: ₱%s (%.1f%%)",
+                    "Goal '%s' is due in %d days. Target: ₱%s, Current: ₱%s (%.1f%%)",
                     $goal['name'],
                     $daysRemaining,
                     number_format($goal['target_amount'], 2),
@@ -151,6 +185,103 @@ function checkGoalsDueDate($conn, $userId) {
     }
     
     return $alerts;
+}
+
+// Add this new function after getUserGoals function:
+function moveGoalToActive($conn, $userId, $goalId) {
+    $sql = "UPDATE goals SET is_inactive = FALSE 
+            WHERE id = ? AND user_id = ? AND is_archived = FALSE";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $goalId, $userId);
+    return $stmt->execute();
+}
+
+// Add new function to get inactive goals
+function getInactiveGoals($conn, $userId) {
+    $sql = "SELECT * FROM goals 
+            WHERE user_id = ? 
+            AND is_archived = FALSE 
+            AND is_inactive = TRUE 
+            AND current_amount < target_amount 
+            ORDER BY target_date DESC";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    return $stmt->get_result();
+}
+
+// Add this to your POST handlers section:
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['move_to_inactive'])) {
+    $goalId = $_POST['goal_id'];
+    
+    $sql = "UPDATE goals SET is_inactive = TRUE WHERE id = ? AND user_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $goalId, $userId);
+    
+    if ($stmt->execute()) {
+        header("Location: " . $_SERVER['PHP_SELF'] . "?success=goal_moved_to_inactive");
+        exit();
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['continue_goal'])) {
+    $goalId = $_POST['goal_id'];
+    
+    if (moveGoalToActive($conn, $userId, $goalId)) {
+        header("Location: " . $_SERVER['PHP_SELF'] . "?success=goal_continued");
+        exit();
+    }
+}
+
+// Check and update past due goals
+function checkAndUpdatePastDueGoals($conn, $userId) {
+    // Get current date in correct timezone
+    $currentDate = new DateTime('now', new DateTimeZone('Asia/Manila'));
+    $currentDateStr = $currentDate->format('Y-m-d');
+    
+    // First get the goals that will be marked inactive
+    $sql = "SELECT id, name, target_date 
+            FROM goals 
+            WHERE user_id = ? 
+            AND target_date < ? 
+            AND current_amount < target_amount 
+            AND is_archived = FALSE 
+            AND is_inactive = FALSE";
+            
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("is", $userId, $currentDateStr);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    // If there are goals to be marked inactive, create notifications
+    while ($goal = $result->fetch_assoc()) {
+        $targetDate = new DateTime($goal['target_date']);
+        $daysOverdue = $currentDate->diff($targetDate)->format("%a");
+        
+        // Add notification
+        $message = sprintf(
+            "Goal '%s' is overdue by %d days and has been moved to inactive goals.",
+            $goal['name'],
+            $daysOverdue
+        );
+        
+        $notifStmt = $conn->prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, 'goal_inactive', ?)");
+        $notifStmt->bind_param("is", $userId, $message);
+        $notifStmt->execute();
+    }
+    
+    // Now update the goals to inactive
+    $updateSql = "UPDATE goals 
+                  SET is_inactive = TRUE 
+                  WHERE user_id = ? 
+                  AND target_date < ? 
+                  AND current_amount < target_amount 
+                  AND is_archived = FALSE 
+                  AND is_inactive = FALSE";
+                  
+    $updateStmt = $conn->prepare($updateSql);
+    $updateStmt->bind_param("is", $userId, $currentDateStr);
+    $updateStmt->execute();
 }
 
 // Handle form submission for adding a new goal
@@ -270,10 +401,14 @@ function getSuccessMessage($successType) {
             return "Goal progress updated successfully!";
         case 'goal_deleted':
             return "Goal deleted successfully!";
+        case 'goal_moved_to_inactive':
+            return "Goal moved to inactive successfully!";
+        case 'goal_continued':
+            return "Goal moved back to active successfully!";
         default:
             return "Operation completed successfully!";
+        }
     }
-}
 
 // Get current balance and goals
 updateCumulativeBalance($conn, $userId);
@@ -304,6 +439,9 @@ $overallProgress = $totalTargetAmount > 0 ? ($totalCurrentAmount / $totalTargetA
 
 // Get due date alerts
 $dueDateAlerts = checkGoalsDueDate($conn, $userId);
+
+// Get inactive goals
+$inactiveGoals = getInactiveGoals($conn, $userId);
 
 // List of goal categories
 $goalCategories = [
@@ -576,6 +714,106 @@ $goalCategories = [
             </div>
         </div>
         <?php endif; ?>
+
+        <!-- Inactive Goals Section -->
+        <?php if ($inactiveGoals && $inactiveGoals->num_rows > 0): ?>
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Inactive Goals</h5>
+                        <span class="badge bg-secondary"><?php echo $inactiveGoals->num_rows; ?> Inactive</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <?php while ($goal = $inactiveGoals->fetch_assoc()): ?>
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="card goal-card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                <h5 class="goal-card-title"><?php echo htmlspecialchars($goal['name']); ?></h5>
+                                                <span class="badge bg-secondary rounded-pill">Inactive</span>
+                                            </div>
+                                            <div class="goal-details mb-3">
+                                                <div class="row g-2">
+                                                    <div class="col-6">
+                                                        <small class="text-muted d-block">Target</small>
+                                                        <strong class="text-primary">₱<?php echo number_format($goal['target_amount'], 2); ?></strong>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <small class="text-muted d-block">Saved</small>
+                                                        <strong class="text-success">₱<?php echo number_format($goal['current_amount'], 2); ?></strong>
+                                                    </div>
+                                                    <div class="col-12 mt-2">
+                                                        <small class="text-muted d-block">Due Date</small>
+                                                        <strong><?php echo date('M d, Y', strtotime($goal['target_date'])); ?></strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <?php
+                                            $progress = ($goal['current_amount'] / $goal['target_amount']) * 100;
+                                            ?>
+                                            <div class="progress mb-2">
+                                                <div class="progress-bar bg-secondary" 
+                                                    role="progressbar" 
+                                                    style="width: <?php echo $progress; ?>%" 
+                                                    aria-valuenow="<?php echo $progress; ?>" 
+                                                    aria-valuemin="0" 
+                                                    aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                            <p class="text-end mb-3">
+                                                <strong><?php echo number_format($progress, 1); ?>%</strong> Complete
+                                            </p>
+                                            <div class="d-grid gap-2">
+                                                <button type="button" class="btn btn-outline-success" 
+                                                        onclick="openContinueModal(<?php echo $goal['id']; ?>, '<?php echo htmlspecialchars($goal['name']); ?>')">
+                                                    <i class="bi bi-play-circle me-2"></i>Continue Goal
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger" 
+                                                        onclick="openDeleteModal(<?php echo $goal['id']; ?>, '<?php echo htmlspecialchars($goal['name']); ?>')">
+                                                    <i class="bi bi-trash me-2"></i>Delete Goal
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endwhile; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Continue Goal Modal -->
+        <div class="modal fade" id="continueGoalModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-play-circle me-2"></i>Continue Goal
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-0">Continue working on "<span id="continueGoalName" class="fw-bold"></span>"?</p>
+                        <p class="text-muted mb-0 mt-2">
+                            <small><i class="bi bi-info-circle me-1"></i>The goal will be moved back to your active goals list.</small>
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form method="POST" id="continueGoalForm" class="d-inline">
+                            <input type="hidden" name="goal_id" id="continueGoalId">
+                            <button type="submit" name="continue_goal" class="btn btn-success">
+                                <i class="bi bi-play-circle me-2"></i>Continue Goal
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div> <!-- End of container -->
 
@@ -761,7 +999,9 @@ document.addEventListener('DOMContentLoaded', function() {
             'goal_added': 'Goal added successfully!',
             'goal_archived': 'Goal archived successfully!',
             'progress_updated': 'Goal progress updated successfully!',
-            'goal_deleted': 'Goal deleted successfully!'
+            'goal_deleted': 'Goal deleted successfully!',
+            'goal_moved_to_inactive': 'Goal moved to inactive successfully!',
+            'goal_continued': 'Goal moved back to active successfully!'
         };
         return messages[type] || 'Operation completed successfully!';
     };
@@ -905,6 +1145,38 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    // Continue Goal Modal
+    window.openContinueModal = function(goalId, goalName) {
+        const modal = document.getElementById('continueGoalModal');
+        const goalIdInput = document.getElementById('continueGoalId');
+        const goalNameSpan = document.getElementById('continueGoalName');
+
+        if (modal && goalIdInput && goalNameSpan) {
+            try {
+                const modalInstance = new bootstrap.Modal(modal);
+                goalIdInput.value = goalId;
+                goalNameSpan.textContent = goalName;
+                modalInstance.show();
+            } catch (error) {
+                console.error('Error opening continue modal:', error);
+            }
+        }
+    };
+
+    // Move to Inactive Modal
+    window.openMoveToInactiveModal = function(goalId, goalName) {
+        if (confirm(`Move "${goalName}" to inactive goals? You can reactivate it later if needed.`)) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.innerHTML = `
+                <input type="hidden" name="goal_id" value="${goalId}">
+                <input type="hidden" name="move_to_inactive">
+            `;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    };
+
     /**
      * Form Validation Setup
      */
@@ -967,13 +1239,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const progress = parseFloat(bar.getAttribute('aria-valuenow'));
             bar.style.width = `${progress}%`;
             
-            // Update progress bar color based on percentage
-            if (progress >= 75) {
-                bar.classList.add('bg-success');
-            } else if (progress >= 50) {
-                bar.classList.add('bg-warning');
-            } else {
-                bar.classList.add('bg-danger');
+            if (!bar.classList.contains('bg-secondary')) {
+                // Only update colors for non-inactive goals
+                if (progress >= 75) {
+                    bar.classList.add('bg-success');
+                } else if (progress >= 50) {
+                    bar.classList.add('bg-warning');
+                } else {
+                    bar.classList.add('bg-danger');
+                }
             }
         });
     };
@@ -995,7 +1269,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Initialization error:', error);
     }
 
-    // Clean up function for tooltips when the page is unloaded
+    // Clean up tooltips when the page is unloaded
     window.addEventListener('pagehide', function() {
         const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
         tooltips.forEach(element => {
