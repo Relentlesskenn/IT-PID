@@ -96,8 +96,7 @@ if(isset($_POST['register_btn']))
     mysqli_stmt_execute($stmt);
     mysqli_stmt_store_result($stmt);
 
-    if(mysqli_stmt_num_rows($stmt) > 0)
-    {
+    if (mysqli_stmt_num_rows($stmt) > 0) {
         $_SESSION['error'] = "Username already exists!";
         header("Location: registration-page-2.php");
         exit();
@@ -112,18 +111,25 @@ if(isset($_POST['register_btn']))
 
     // Check password strength
     $password_strength = is_password_strong($password);
-    if ($password_strength !== true) {
-        $_SESSION['error'] = "Password is not strong enough!";
+    if (is_array($password_strength)) {
+        $_SESSION['error'] = "Password is not strong enough. Please address the following:\n- " . implode("\n- ", $password_strength);
         header("Location: registration-page-2.php");
         exit();
     }
-
     // Hash the password
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-    $query = "INSERT INTO users (username, f_name, l_name, email, password, verify_token) VALUES (?, ?, ?, ?, ?, ?)";
+    // Check if the user is an admin
+    $is_admin = false; // Default to false
+    if ($email === 'lyodee1999@gmail.com') { // Replace with your admin email condition
+        $is_admin = true;
+    }
+
+    // Admin flag added
+    $is_admin = false;
+    $query = "INSERT INTO users (username, f_name, l_name, email, password, verify_token, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?)";
     $stmt = mysqli_prepare($conn, $query);
-    mysqli_stmt_bind_param($stmt, "ssssss", $username, $f_name, $l_name, $email, $hashed_password, $verify_token);
+    mysqli_stmt_bind_param($stmt, "ssssssi", $username, $f_name, $l_name, $email, $hashed_password, $verify_token, $is_admin);
     $query_run = mysqli_stmt_execute($stmt);
 
     if($query_run)

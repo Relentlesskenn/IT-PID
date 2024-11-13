@@ -52,9 +52,16 @@ if (isset($_POST['login_btn'])) {
                     'l_name' => $user['l_name'],
                     'f_name' => $user['f_name'],
                     'username' => $user['username'],
-                    'email' => $user['email']
+                    'email' => $user['email'],
+                    'is_admin' => $user['is_admin'] // Get the admin flag
                 ];
-                header("Location: dashboard-page.php");
+
+                // Check if the user is an admin
+                if ($user['is_admin']) {
+                    header("Location: admin-dashboard.php"); // Redirect to admin dashboard
+                } else {
+                    header("Location: dashboard-page.php"); // Redirect to regular user dashboard
+                }
                 exit();
             } else {
                 setSessionStatus("Please verify your email address to login");
