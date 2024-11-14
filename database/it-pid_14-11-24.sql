@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 22, 2024 at 12:06 AM
+-- Generation Time: Nov 14, 2024 at 04:24 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -22,6 +22,23 @@ SET time_zone = "+00:00";
 --
 CREATE DATABASE IF NOT EXISTS `it-pid` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `it-pid`;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `articles`
+--
+
+CREATE TABLE `articles` (
+  `id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `category` varchar(50) NOT NULL,
+  `preview` text NOT NULL,
+  `content` text NOT NULL,
+  `date_published` date DEFAULT curdate(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `status` varchar(20) DEFAULT 'published'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -136,6 +153,20 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `goal_alerts`
+--
+
+CREATE TABLE `goal_alerts` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `goal_id` int(11) NOT NULL,
+  `alert_type` varchar(20) NOT NULL,
+  `create_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Stand-in structure for view `goal_progress`
 -- (See below for the actual view)
 --
@@ -213,6 +244,12 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 
 --
+-- Indexes for table `articles`
+--
+ALTER TABLE `articles`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `balances`
 --
 ALTER TABLE `balances`
@@ -257,6 +294,14 @@ ALTER TABLE `goals`
   ADD KEY `idx_category` (`category`);
 
 --
+-- Indexes for table `goal_alerts`
+--
+ALTER TABLE `goal_alerts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `goal_id` (`goal_id`);
+
+--
 -- Indexes for table `incomes`
 --
 ALTER TABLE `incomes`
@@ -280,6 +325,12 @@ ALTER TABLE `users`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `articles`
+--
+ALTER TABLE `articles`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `balances`
@@ -315,6 +366,12 @@ ALTER TABLE `expenses`
 -- AUTO_INCREMENT for table `goals`
 --
 ALTER TABLE `goals`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `goal_alerts`
+--
+ALTER TABLE `goal_alerts`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -369,6 +426,13 @@ ALTER TABLE `expenses`
 --
 ALTER TABLE `goals`
   ADD CONSTRAINT `goals_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`);
+
+--
+-- Constraints for table `goal_alerts`
+--
+ALTER TABLE `goal_alerts`
+  ADD CONSTRAINT `goal_alerts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
+  ADD CONSTRAINT `goal_alerts_ibfk_2` FOREIGN KEY (`goal_id`) REFERENCES `goals` (`id`);
 
 --
 -- Constraints for table `incomes`
