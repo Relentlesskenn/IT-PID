@@ -285,6 +285,67 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_progress'])) {
     }
 }
 
+// Handle due goal actions
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['handle_due_goal'])) {
+    $goalId = $_POST['due_goal_id'];
+    $action = $_POST['due_action'];
+    
+    switch ($action) {
+        case 'extend':
+            $newDate = $_POST['new_target_date'];
+            $sql = "UPDATE goals SET 
+                    target_date = ?, 
+                    status = 'active',
+                    due_action = 'extended',
+                    action_date = NOW() 
+                    WHERE id = ? AND user_id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("sii", $newDate, $goalId, $userId);
+            break;
+            
+        case 'adjust':
+            $newAmount = $_POST['new_target_amount'];
+            $sql = "UPDATE goals SET 
+                    target_amount = ?, 
+                    status = 'active',
+                    due_action = 'adjusted',
+                    action_date = NOW() 
+                    WHERE id = ? AND user_id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("dii", $newAmount, $goalId, $userId);
+            break;
+            
+        case 'complete':
+            $sql = "UPDATE goals SET 
+                    status = 'completed',
+                    due_action = 'completed',
+                    action_date = NOW() 
+                    WHERE id = ? AND user_id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ii", $goalId, $userId);
+            break;
+            
+        case 'archive':
+            $sql = "UPDATE goals SET 
+                    status = 'archived',
+                    is_archived = TRUE,
+                    due_action = 'archived',
+                    action_date = NOW() 
+                    WHERE id = ? AND user_id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ii", $goalId, $userId);
+            break;
+    }
+    
+    if ($stmt->execute()) {
+        header("Location: " . $_SERVER['PHP_SELF'] . "?success=due_action_handled");
+        exit();
+    } else {
+        header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Error handling due goal: " . $conn->error));
+        exit();
+    }
+}
+
 // Check for success or error messages in URL parameters
 $successMessage = isset($_GET['success']) ? getSuccessMessage($_GET['success']) : null;
 $errorMessage = isset($_GET['error']) ? $_GET['error'] : null;
@@ -501,6 +562,28 @@ $goalCategories = [
                                                         <?php echo htmlspecialchars($goal['category']); ?>
                                                     </span>
                                                 </div>
+
+                                                <?php if (strtotime($goal['target_date']) < strtotime('today') && $goal['status'] === 'active'): ?>
+                                                    <div class="overdue-alert">
+                                                        <div class="overdue-content">
+                                                            <div class="overdue-icon">
+                                                                <i class="bi bi-exclamation-circle-fill"></i>
+                                                            </div>
+                                                            <div class="overdue-text">
+                                                                <p class="mb-0">Goal Overdue</p>
+                                                                <small>Take action to update this goal</small>
+                                                            </div>
+                                                        </div>
+                                                        <button class="btn btn-overdue" 
+                                                                onclick="openDueGoalModal(<?php echo $goal['id']; ?>, 
+                                                                        '<?php echo htmlspecialchars($goal['name']); ?>', 
+                                                                        <?php echo $goal['current_amount']; ?>, 
+                                                                        <?php echo $goal['target_amount']; ?>)">
+                                                            <i class="bi bi-arrow-right"></i>
+                                                        </button>
+                                                    </div>
+                                                <?php endif; ?>
+
                                                 <div class="goal-details mb-3">
                                                     <div class="row g-2">
                                                         <div class="col-6">
@@ -744,6 +827,123 @@ $goalCategories = [
     </div>
 </div>
 
+<!-- Goal Due Action Modal -->
+<div class="modal fade" id="goalDueActionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title d-flex align-items-center">
+                    <span class="modal-icon">
+                        <i class="bi bi-clock-history"></i>
+                    </span>
+                    Goal Action Required
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="goalDueActionForm" method="POST">
+                    <input type="hidden" id="due_goal_id" name="due_goal_id">
+                    
+                    <!-- Goal Status Card -->
+                    <div class="goal-status-card">
+                        <div class="status-header">
+                            <i class="bi bi-exclamation-diamond"></i>
+                            <h6 id="dueGoalName"></h6>
+                        </div>
+                        <div class="status-details">
+                            <div class="status-item">
+                                <span class="status-label">Progress</span>
+                                <span class="status-value"><span id="dueGoalProgress"></span>%</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Amount Saved</span>
+                                <span class="status-value">₱<span id="dueGoalAmount"></span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Selection -->
+                    <div class="action-selection">
+                        <h6 class="section-title">Choose an Action</h6>
+                        
+                        <!-- Extend Deadline Option -->
+                        <div class="action-option">
+                            <input class="form-check-input" type="radio" name="due_action" id="extend" value="extend">
+                            <label class="action-label" for="extend">
+                                <div class="action-icon">
+                                    <i class="bi bi-calendar-plus"></i>
+                                </div>
+                                <div class="action-content">
+                                    <span class="action-title">Extend Deadline</span>
+                                    <span class="action-description">Set a new target date for this goal</span>
+                                </div>
+                            </label>
+                            <div class="action-detail extend-detail">
+                                <input type="date" class="form-control" name="new_target_date">
+                            </div>
+                        </div>
+
+                        <!-- Adjust Amount Option -->
+                        <div class="action-option">
+                            <input class="form-check-input" type="radio" name="due_action" id="adjust" value="adjust">
+                            <label class="action-label" for="adjust">
+                                <div class="action-icon">
+                                    <i class="bi bi-currency-dollar"></i>
+                                </div>
+                                <div class="action-content">
+                                    <span class="action-title">Adjust Amount</span>
+                                    <span class="action-description">Modify the target amount</span>
+                                </div>
+                            </label>
+                            <div class="action-detail adjust-detail">
+                                <div class="input-group">
+                                    <span class="input-group-text">₱</span>
+                                    <input type="number" class="form-control" name="new_target_amount" step="0.01" min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Complete Option -->
+                        <div class="action-option">
+                            <input class="form-check-input" type="radio" name="due_action" id="complete" value="complete">
+                            <label class="action-label" for="complete">
+                                <div class="action-icon">
+                                    <i class="bi bi-check-circle"></i>
+                                </div>
+                                <div class="action-content">
+                                    <span class="action-title">Mark as Complete</span>
+                                    <span class="action-description">Complete goal with current amount</span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Archive Option -->
+                        <div class="action-option">
+                            <input class="form-check-input" type="radio" name="due_action" id="archive" value="archive">
+                            <label class="action-label" for="archive">
+                                <div class="action-icon">
+                                    <i class="bi bi-archive"></i>
+                                </div>
+                                <div class="action-content">
+                                    <span class="action-title">Archive Goal</span>
+                                    <span class="action-description">Move to archived goals</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" name="handle_due_goal" class="btn btn-confirm">
+                            Confirm Action
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Toast Notification -->
 <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080">
     <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
@@ -763,10 +963,12 @@ document.addEventListener('DOMContentLoaded', function() {
      * Initialize Bootstrap tooltips
      */
     const initializeTooltips = () => {
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        if (tooltipTriggerList.length > 0) {
+            tooltipTriggerList.forEach(element => {
+                new bootstrap.Tooltip(element);
+            });
+        }
     };
 
     /**
@@ -777,7 +979,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-PH', {
             style: 'currency',
-            currency: 'PHP'
+            currency: 'PHP',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
         }).format(amount);
     };
 
@@ -791,56 +995,11 @@ document.addEventListener('DOMContentLoaded', function() {
             'goal_added': 'Goal added successfully!',
             'goal_archived': 'Goal archived successfully!',
             'progress_updated': 'Goal progress updated successfully!',
-            'goal_deleted': 'Goal deleted successfully!'
+            'goal_deleted': 'Goal deleted successfully!',
+            'due_action_handled': 'Goal due date action completed successfully!'
         };
         return messages[type] || 'Operation completed successfully!';
     };
-
-    /**
-     * Show due date alerts
-     * @param {Array} alerts - Array of alert objects
-     */
-    function showDueDateAlerts(alerts) {
-        const toastContainer = document.getElementById('liveToast');
-        if (!toastContainer || alerts.length === 0) return;
-
-        const toast = new bootstrap.Toast(toastContainer, {
-            animation: true,
-            autohide: true,
-            delay: 6000
-        });
-
-        let currentAlertIndex = 0;
-
-        function showNextAlert() {
-            if (currentAlertIndex >= alerts.length) return;
-
-            const alert = alerts[currentAlertIndex];
-            const toastBody = toastContainer.querySelector('.toast-body');
-            const toastHeader = toastContainer.querySelector('.toast-header strong');
-            
-            // Update toast content and styling
-            toastHeader.textContent = 'Goal Due Date Alert';
-            toastBody.textContent = alert.message;
-            toastContainer.classList.remove('border-primary', 'border-warning', 'border-danger');
-            toastContainer.classList.add(`border-${alert.type}`);
-
-            // Show the toast
-            toast.show();
-
-            // Setup listener for when toast is hidden
-            toastContainer.addEventListener('hidden.bs.toast', () => {
-                currentAlertIndex++;
-                // Short delay before showing the next alert
-                setTimeout(() => {
-                    showNextAlert();
-                }, 300);
-            }, { once: true });
-        }
-
-        // Start showing alerts
-        showNextAlert();
-    }
 
     /**
      * Show toast notification
@@ -857,7 +1016,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (successMsg || errorMsg) {
             const toastBody = toastElement.querySelector('.toast-body');
             const toastHeader = toastElement.querySelector('.toast-header strong');
-            if (!toastBody) return;
+            if (!toastBody || !toastHeader) return;
 
             toastElement.classList.remove('border-primary', 'border-danger');
             toastHeader.textContent = 'Notification';
@@ -877,6 +1036,54 @@ document.addEventListener('DOMContentLoaded', function() {
             window.history.replaceState({}, '', cleanUrl);
         }
     };
+
+    /**
+     * Show due date alerts
+     * @param {Array} alerts - Array of alert objects
+     */
+    function showDueDateAlerts(alerts) {
+        const toastContainer = document.getElementById('liveToast');
+        if (!toastContainer || !alerts || alerts.length === 0) return;
+
+        const toast = new bootstrap.Toast(toastContainer, {
+            animation: true,
+            autohide: true,
+            delay: 6000
+        });
+
+        let currentAlertIndex = 0;
+
+        function showNextAlert() {
+            if (currentAlertIndex >= alerts.length) return;
+
+            const alert = alerts[currentAlertIndex];
+            const toastBody = toastContainer.querySelector('.toast-body');
+            const toastHeader = toastContainer.querySelector('.toast-header strong');
+            
+            if (toastBody && toastHeader) {
+                // Update toast content and styling
+                toastHeader.textContent = 'Goal Due Date Alert';
+                toastBody.textContent = alert.message;
+                toastContainer.classList.remove('border-primary', 'border-warning', 'border-danger');
+                toastContainer.classList.add(`border-${alert.type}`);
+
+                // Show the toast
+                toast.show();
+
+                // Setup listener for when toast is hidden
+                toastContainer.addEventListener('hidden.bs.toast', () => {
+                    currentAlertIndex++;
+                    // Short delay before showing the next alert
+                    setTimeout(() => {
+                        showNextAlert();
+                    }, 300);
+                }, { once: true });
+            }
+        }
+
+        // Start showing alerts
+        showNextAlert();
+    }
 
     /**
      * Modal Operation Functions
@@ -935,13 +1142,42 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    // Due Goal Modal
+    window.openDueGoalModal = function(goalId, goalName, currentAmount, targetAmount) {
+        const modal = document.getElementById('goalDueActionModal');
+        const goalIdInput = document.getElementById('due_goal_id');
+        const goalNameSpan = document.getElementById('dueGoalName');
+        const progressSpan = document.getElementById('dueGoalProgress');
+        const amountSpan = document.getElementById('dueGoalAmount');
+        
+        if (modal && goalIdInput && goalNameSpan && progressSpan && amountSpan) {
+            try {
+                const progress = ((currentAmount / targetAmount) * 100).toFixed(1);
+                
+                goalIdInput.value = goalId;
+                goalNameSpan.textContent = goalName;
+                progressSpan.textContent = progress;
+                amountSpan.textContent = currentAmount.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                
+                const modalInstance = new bootstrap.Modal(modal);
+                modalInstance.show();
+            } catch (error) {
+                console.error('Error opening due goal modal:', error);
+            }
+        }
+    };
+
     /**
      * Form Validation Setup
      */
     const setupFormValidation = () => {
         const addGoalForm = document.getElementById('addGoalForm');
+        const targetAmountInput = document.getElementById('target_amount');
+
         if (addGoalForm) {
-            // Add form validation
             addGoalForm.addEventListener('submit', function(e) {
                 if (!this.checkValidity()) {
                     e.preventDefault();
@@ -949,19 +1185,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 this.classList.add('was-validated');
             });
+        }
 
-            // Validate target amount
-            const targetAmountInput = document.getElementById('target_amount');
-            if (targetAmountInput) {
-                targetAmountInput.addEventListener('input', function() {
-                    const value = parseFloat(this.value);
-                    if (value <= 0) {
-                        this.setCustomValidity('Amount must be greater than 0');
-                    } else {
-                        this.setCustomValidity('');
-                    }
-                });
-            }
+        if (targetAmountInput) {
+            targetAmountInput.addEventListener('input', function() {
+                const value = parseFloat(this.value);
+                if (value <= 0) {
+                    this.setCustomValidity('Amount must be greater than 0');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
         }
     };
 
@@ -976,7 +1210,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const formattedDate = today.toISOString().split('T')[0];
             targetDateInput.setAttribute('min', formattedDate);
 
-            // Validate selected date
             targetDateInput.addEventListener('change', function() {
                 const selectedDate = new Date(this.value);
                 if (selectedDate < today) {
@@ -993,34 +1226,92 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     const updateProgressBars = () => {
         const progressBars = document.querySelectorAll('.progress-bar');
-        progressBars.forEach(bar => {
-            const progress = parseFloat(bar.getAttribute('aria-valuenow'));
-            bar.style.width = `${progress}%`;
-            
-            // Update colors based on progress
-            if (progress >= 75) {
-                bar.classList.add('bg-success');
-            } else if (progress >= 50) {
-                bar.classList.add('bg-warning');
-            } else {
-                bar.classList.add('bg-danger');
-            }
-        });
+        if (progressBars.length > 0) {
+            progressBars.forEach(bar => {
+                const progress = parseFloat(bar.getAttribute('aria-valuenow') || '0');
+                bar.style.width = `${progress}%`;
+                
+                bar.classList.remove('bg-success', 'bg-warning', 'bg-danger');
+                if (progress >= 75) {
+                    bar.classList.add('bg-success');
+                } else if (progress >= 50) {
+                    bar.classList.add('bg-warning');
+                } else {
+                    bar.classList.add('bg-danger');
+                }
+            });
+        }
     };
 
-    // Initialize all functions
+    /**
+     * Setup Due Goal Action Form
+     */
+    const setupDueGoalActionForm = () => {
+        const dueActionForm = document.getElementById('goalDueActionForm');
+        if (dueActionForm) {
+            const actionInputs = dueActionForm.querySelectorAll('input[name="due_action"]');
+            const actionDetails = dueActionForm.querySelectorAll('.action-detail');
+
+            actionInputs.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    // Hide all detail sections
+                    actionDetails.forEach(detail => detail.style.display = 'none');
+
+                    // Show relevant detail section
+                    const detailSection = dueActionForm.querySelector(`.${this.value}-detail`);
+                    if (detailSection) {
+                        detailSection.style.display = 'block';
+                    }
+                });
+            });
+
+            // Form validation
+            dueActionForm.addEventListener('submit', function(e) {
+                const selectedAction = this.querySelector('input[name="due_action"]:checked');
+                
+                if (!selectedAction) {
+                    e.preventDefault();
+                    alert('Please select an action.');
+                    return;
+                }
+
+                // Validate specific action requirements
+                switch (selectedAction.value) {
+                    case 'extend':
+                        const dateInput = this.querySelector('input[name="new_target_date"]');
+                        if (!dateInput || !dateInput.value) {
+                            e.preventDefault();
+                            alert('Please select a new target date.');
+                        }
+                        break;
+                    case 'adjust':
+                        const amountInput = this.querySelector('input[name="new_target_amount"]');
+                        if (!amountInput || !amountInput.value || amountInput.value <= 0) {
+                            e.preventDefault();
+                            alert('Please enter a valid target amount.');
+                        }
+                        break;
+                }
+            });
+        }
+    };
+
+    // Initialize all functions with error handling
     try {
         initializeTooltips();
         handleToastNotification();
         setupFormValidation();
         setupDateInput();
         updateProgressBars();
+        setupDueGoalActionForm();
 
         // Show due date alerts after other notifications
-        setTimeout(() => {
-            const dueDateAlerts = <?php echo json_encode($dueDateAlerts ?? []); ?>;
-            showDueDateAlerts(dueDateAlerts);
-        }, 6000);
+        const dueDateAlerts = <?php echo json_encode($dueDateAlerts ?? []); ?>;
+        if (dueDateAlerts && dueDateAlerts.length > 0) {
+            setTimeout(() => {
+                showDueDateAlerts(dueDateAlerts);
+            }, 6000);
+        }
     } catch (error) {
         console.error('Initialization error:', error);
     }
@@ -1028,12 +1319,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Clean up tooltips when the page is unloaded
     window.addEventListener('pagehide', function() {
         const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-        tooltips.forEach(element => {
-            const tooltip = bootstrap.Tooltip.getInstance(element);
-            if (tooltip) {
-                tooltip.dispose();
-            }
-        });
+        if (tooltips.length > 0) {
+            tooltips.forEach(element => {
+                const tooltip = bootstrap.Tooltip.getInstance(element);
+                if (tooltip) {
+                    tooltip.dispose();
+                }
+            });
+        }
     });
 });
 </script>
