@@ -740,7 +740,7 @@ $goalCategories = [
 </div>
 
 <!-- Update Progress Modal -->
-<div class="modal fade" id="updateProgressModal" tabindex="-1">
+<div class="modal fade" id="updateProgressModal" tabindex="-1" role="dialog" aria-labelledby="updateProgressModalLabel">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -828,15 +828,14 @@ $goalCategories = [
 </div>
 
 <!-- Goal Due Action Modal -->
-<div class="modal fade" id="goalDueActionModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade" id="goalDueActionModal" tabindex="-1" role="dialog" aria-labelledby="goalDueActionModalLabel">
+    <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title d-flex align-items-center">
+                <h5 class="modal-title" id="goalDueActionModalLabel">
                     <span class="modal-icon">
-                        <i class="bi bi-clock-history"></i>
+                        <i class="bi bi-clock-history"></i> Goal Action Required
                     </span>
-                    Goal Action Required
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
