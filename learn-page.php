@@ -29,7 +29,7 @@ if (isset($_POST['action'])) {
         }
         
         if ($_POST['action'] === 'filterArticles') {
-            $category = trim(filter_input(INPUT_POST, 'category', FILTER_SANITIZE_STRING));
+            $category = trim(filter_input(INPUT_POST, 'category'));
             $articles = getArticles($conn, $category);
             
             if ($articles === false) {
@@ -52,6 +52,19 @@ if (isset($_POST['action'])) {
             $response = [
                 'success' => true,
                 'data' => $articlesArray
+            ];
+            
+            echo json_encode($response, JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        if ($_POST['action'] === 'getQuotes') {
+            $category = trim(filter_input(INPUT_POST, 'category'));
+            $quotes = getQuotes($conn, $category ?: null, 3);
+            
+            $response = [
+                'success' => true,
+                'data' => $quotes
             ];
             
             echo json_encode($response, JSON_UNESCAPED_UNICODE);
@@ -153,6 +166,62 @@ function getArticleCountByCategory($conn, $category) {
     }
 }
 
+// Function to get random quotes with optional category filter
+function getQuotes($conn, $category = null, $limit = 3) {
+    try {
+        $sql = "SELECT id, content, author, category FROM quotes";
+        $params = [];
+        $types = "";
+        
+        if ($category) {
+            $sql .= " WHERE category = ?";
+            $params[] = $category;
+            $types .= "s";
+        }
+        
+        $sql .= " ORDER BY RAND() LIMIT ?";
+        $params[] = $limit;
+        $types .= "i";
+        
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            throw new Exception("Prepare failed: " . $conn->error);
+        }
+        
+        if (!empty($params)) {
+            $stmt->bind_param($types, ...$params);
+        }
+        
+        if (!$stmt->execute()) {
+            throw new Exception("Execute failed: " . $stmt->error);
+        }
+        
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
+        
+    } catch (Exception $e) {
+        error_log("Error in getQuotes: " . $e->getMessage());
+        return [];
+    }
+}
+
+// Function to get quote categories
+function getQuoteCategories($conn) {
+    try {
+        $stmt = $conn->prepare("SELECT DISTINCT category FROM quotes ORDER BY category");
+        if (!$stmt->execute()) {
+            throw new Exception("Execute failed: " . $stmt->error);
+        }
+        
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
+        
+    } catch (Exception $e) {
+        error_log("Error in getQuoteCategories: " . $e->getMessage());
+        return [];
+    }
+}
+
 // Get article counts for each category
 $basicsCount = getArticleCountByCategory($conn, 'basics');
 $savingsCount = getArticleCountByCategory($conn, 'savings');
@@ -177,6 +246,51 @@ $goalsCount = getArticleCountByCategory($conn, 'goals');
                         <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Quotes Section -->
+        <div class="quotes-section">
+            <div class="section-header">
+                <h2 class="mb-0">Financial Wisdom</h2>
+                <div class="quote-controls">
+                    <select class="quote-category-select" id="quoteCategory">
+                        <option value="">All Categories</option>
+                        <?php 
+                        $categories = getQuoteCategories($conn);
+                        foreach ($categories as $category): 
+                            $categoryName = ucfirst($category['category']);
+                        ?>
+                            <option value="<?= htmlspecialchars($category['category']) ?>">
+                                <?= htmlspecialchars($categoryName) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <button class="quote-refresh-btn" id="refreshQuotes">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        <span>Refresh Quotes</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="quotes-grid" id="quotesContainer">
+                <?php
+                $quotes = getQuotes($conn, null, 3);
+                foreach ($quotes as $quote):
+                ?>
+                    <div class="quote-card fade-in">
+                        <i class="bi bi-quote quote-icon"></i>
+                        <p class="quote-content">
+                            "<?= htmlspecialchars($quote['content']) ?>"
+                        </p>
+                        <p class="quote-author">
+                            <span>- <?= htmlspecialchars($quote['author']) ?></span>
+                            <small class="text-white-50">
+                                #<?= htmlspecialchars(ucfirst($quote['category'])) ?>
+                            </small>
+                        </p>
+                    </div>
+                <?php endforeach; ?>
             </div>
         </div>
 
@@ -519,6 +633,76 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Function to update quotes
+    function updateQuotes(category = '') {
+        const quotesContainer = document.getElementById('quotesContainer');
+        const refreshButton = document.getElementById('refreshQuotes');
+        const categorySelect = document.getElementById('quoteCategory');
+        
+        // Disable controls during loading
+        refreshButton.disabled = true;
+        categorySelect.disabled = true;
+        
+        // Add loading class to button icon
+        const refreshIcon = refreshButton.querySelector('i');
+        refreshIcon.classList.add('spin');
+        
+        // Show loading state
+        quotesContainer.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading quotes...</span>
+                </div>
+                <p class="text-muted mt-2">Refreshing quotes...</p>
+            </div>
+        `;
+        
+        // Fetch new quotes
+        fetch('learn-page.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `action=getQuotes&category=${category}`
+        })
+        .then(response => response.json())
+        .then(response => {
+            if (!response.success) {
+                throw new Error(response.error || 'Failed to load quotes');
+            }
+            
+            quotesContainer.innerHTML = response.data.map(quote => `
+                <div class="quote-card fade-in">
+                    <i class="bi bi-quote quote-icon"></i>
+                    <p class="quote-content">
+                        "${escapeHtml(quote.content)}"
+                    </p>
+                    <p class="quote-author">
+                        <span>- ${escapeHtml(quote.author)}</span>
+                        <small class="text-white-50">
+                            #${escapeHtml(quote.category.charAt(0).toUpperCase() + quote.category.slice(1))}
+                        </small>
+                    </p>
+                </div>
+            `).join('');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            quotesContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Error loading quotes. Please try again.
+                </div>
+            `;
+        })
+        .finally(() => {
+            // Re-enable controls
+            refreshButton.disabled = false;
+            categorySelect.disabled = false;
+            refreshIcon.classList.remove('spin');
+        });
+    }
+
     // Make cards keyboard accessible and handle clicks
     document.querySelectorAll('.category-card').forEach(card => {
         // Add keyboard support
@@ -602,6 +786,29 @@ document.addEventListener('DOMContentLoaded', function() {
         searchInput.dispatchEvent(new Event('input'));
         this.style.display = 'none';
     });
+
+    // Add event listeners for quotes
+    document.getElementById('quoteCategory').addEventListener('change', function() {
+        updateQuotes(this.value);
+    });
+
+    document.getElementById('refreshQuotes').addEventListener('click', function() {
+        const category = document.getElementById('quoteCategory').value;
+        updateQuotes(category);
+    });
+
+    // Add spin animation class
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+    `;
+    document.head.appendChild(style);
 
     // Initialize tooltips if any exist
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
