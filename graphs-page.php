@@ -126,6 +126,11 @@ if ($hasData) {
             <span>Reports</span>
         </a>
         <h1 class="h4 mb-0">Financial Graphs</h1>
+        <!-- Add print button -->
+        <button class="btn btn-custom-primary-rounded btn-sm" onclick="printGraphs()" id="printButton">
+            <i class="bi bi-printer"></i>
+            <span>Print Graphs</span>
+        </button>
     </div>
 
     <?php if ($hasData): ?>
@@ -248,9 +253,11 @@ if ($hasData) {
 // Add event listener to DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
     <?php if ($hasData): ?>
+    // Set global Chart.js defaults
     Chart.defaults.font.family = "'Lexend', 'sans-serif'";
     Chart.defaults.color = '#272727';
 
+    // Common chart options
     const chartOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -291,9 +298,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    // Initialize chart objects
+    let spendingBreakdownChart, incomeExpensesChart, expenseTrendChart;
+
     // Spending Breakdown Chart
     <?php if (!empty($spendingBreakdown)): ?>
-    new Chart(document.getElementById('spendingBreakdownChart').getContext('2d'), {
+    spendingBreakdownChart = new Chart(document.getElementById('spendingBreakdownChart').getContext('2d'), {
         type: 'doughnut',
         data: {
             labels: <?= json_encode($labels) ?>,
@@ -306,14 +316,18 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         options: {
             ...chartOptions,
-            cutout: '60%'
+            cutout: '60%',
+            animation: {
+                animateRotate: true,
+                animateScale: true
+            }
         }
     });
     <?php endif; ?>
 
     // Income vs Expenses Chart
     <?php if ($hasIncomeExpenseData): ?>
-    new Chart(document.getElementById('incomeExpensesChart').getContext('2d'), {
+    incomeExpensesChart = new Chart(document.getElementById('incomeExpensesChart').getContext('2d'), {
         type: 'bar',
         data: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
@@ -392,7 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Expense Trend Chart
     <?php if (!empty($expenseTrend)): ?>
-    new Chart(document.getElementById('expenseTrendChart').getContext('2d'), {
+    expenseTrendChart = new Chart(document.getElementById('expenseTrendChart').getContext('2d'), {
         type: 'line',
         data: {
             datasets: [{
@@ -485,9 +499,204 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     <?php endif; ?>
 
-    // Function to update chart sizes based on screen width
+    // Print functionality
+    window.printGraphs = async function() {
+        try {
+            // Show loading state
+            const printButton = document.getElementById('printButton');
+            const originalContent = printButton.innerHTML;
+            printButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Preparing...';
+            printButton.disabled = true;
+
+            // Create print window content
+            const printWindow = window.open('', '_blank');
+            const currentDate = new Date().toLocaleDateString('en-PH', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // Generate print content
+            let printContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Financial Graphs Report - ${currentDate}</title>
+                    <style>
+                        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&display=swap');
+                        
+                        body {
+                            font-family: 'Lexend', Arial, sans-serif;
+                            padding: 40px;
+                            margin: 0;
+                            color: #272727;
+                        }
+                        
+                        .print-header {
+                            text-align: center;
+                            margin-bottom: 40px;
+                            padding-bottom: 20px;
+                            border-bottom: 2px solid #433878;
+                        }
+                        
+                        .print-title {
+                            color: #433878;
+                            font-size: 24px;
+                            margin: 0 0 10px 0;
+                        }
+                        
+                        .print-date {
+                            color: #666;
+                            font-size: 14px;
+                        }
+                        
+                        .chart-container {
+                            page-break-inside: avoid;
+                            margin-bottom: 50px;
+                            padding: 20px;
+                            background: #fff;
+                            border-radius: 12px;
+                            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                        }
+                        
+                        .chart-title {
+                            font-size: 18px;
+                            color: #433878;
+                            margin-bottom: 20px;
+                            padding-bottom: 10px;
+                            border-bottom: 1px solid #eee;
+                        }
+                        
+                        .chart-image {
+                            max-width: 100%;
+                            height: auto;
+                            margin: 0 auto;
+                            display: block;
+                        }
+                        
+                        .categories-grid {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                            gap: 15px;
+                            margin-top: 20px;
+                        }
+                        
+                        .category-item {
+                            padding: 12px 15px;
+                            border-radius: 8px;
+                            color: white;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            font-size: 14px;
+                        }
+                        
+                        @media print {
+                            body { padding: 20px; }
+                            .chart-container { 
+                                break-inside: avoid;
+                                box-shadow: none;
+                                border: 1px solid #eee;
+                            }
+                            .chart-image {
+                                max-width: 90%;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-header">
+                        <h1 class="print-title">Financial Graphs Report</h1>
+                        <div class="print-date">Generated on ${currentDate}</div>
+                    </div>
+            `;
+
+            // Add charts
+            const chartContainers = document.querySelectorAll('.bento-card');
+            for (const container of chartContainers) {
+                const title = container.querySelector('.bento-card-title').textContent.trim();
+                const canvas = container.querySelector('canvas');
+                
+                if (canvas) {
+                    const chart = Chart.getChart(canvas);
+                    if (chart) {
+                        // Ensure chart is fully rendered
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        const imageUrl = canvas.toDataURL('image/png', 1.0);
+                        
+                        printContent += `
+                            <div class="chart-container">
+                                <div class="chart-title">${title}</div>
+                                <img src="${imageUrl}" class="chart-image" alt="${title}">
+                            </div>
+                        `;
+                    }
+                }
+            }
+
+            // Add categories if available
+            const categoryList = document.querySelector('.category-list');
+            if (categoryList) {
+                printContent += `
+                    <div class="chart-container">
+                        <div class="chart-title">Spending Categories Details</div>
+                        <div class="categories-grid">
+                `;
+
+                categoryList.querySelectorAll('.category-item').forEach(item => {
+                    const backgroundColor = item.style.backgroundColor;
+                    const categoryName = item.querySelector('strong:first-child').textContent;
+                    const amount = item.querySelector('strong:last-child').textContent;
+                    
+                    printContent += `
+                        <div class="category-item" style="background-color: ${backgroundColor}">
+                            <strong>${categoryName}</strong>
+                            <strong>${amount}</strong>
+                        </div>
+                    `;
+                });
+
+                printContent += `
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Close HTML structure
+            printContent += `
+                    </body>
+                </html>
+            `;
+
+            // Write to print window and print
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+
+            // Wait for images to load before printing
+            printWindow.onload = function() {
+                printWindow.print();
+                // Reset button state after printing
+                printButton.innerHTML = originalContent;
+                printButton.disabled = false;
+            };
+
+        } catch (error) {
+            console.error('Print error:', error);
+            // Reset button state on error
+            const printButton = document.getElementById('printButton');
+            printButton.innerHTML = '<i class="bi bi-printer"></i> Print Graphs';
+            printButton.disabled = false;
+            
+            // Show error message to user
+            alert('An error occurred while preparing the print. Please try again.');
+        }
+    };
+
+    // Chart resize handling
     function updateChartSizes() {
-        document.querySelectorAll('.card-body').forEach(container => {
+        document.querySelectorAll('.bento-card-body').forEach(container => {
             const canvas = container.querySelector('canvas');
             if (canvas) {
                 const chart = Chart.getChart(canvas);
@@ -499,30 +708,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Initial call to set chart sizes
+    // Initialize chart sizes
     updateChartSizes();
 
-    // Update chart sizes on window resize
+    // Window resize handler
     window.addEventListener('resize', updateChartSizes);
 
-    // Highlight corresponding chart segment when hovering over category item
+    // Category item hover effects
     <?php if (!empty($spendingBreakdown)): ?>
-    const spendingBreakdownChart = Chart.getChart('spendingBreakdownChart');
-    document.querySelectorAll('.category-item').forEach((item, index) => {
+    const categoryItems = document.querySelectorAll('.category-item');
+    categoryItems.forEach((item, index) => {
         item.addEventListener('mouseenter', () => {
-            spendingBreakdownChart.setActiveElements([{datasetIndex: 0, index: index}]);
-            spendingBreakdownChart.update();
+            if (spendingBreakdownChart) {
+                spendingBreakdownChart.setActiveElements([{datasetIndex: 0, index: index}]);
+                spendingBreakdownChart.setActiveElements([{datasetIndex: 0, index: index}]);
+                spendingBreakdownChart.update();
+            }
         });
+        
         item.addEventListener('mouseleave', () => {
-            spendingBreakdownChart.setActiveElements([]);
-            spendingBreakdownChart.update();
+            if (spendingBreakdownChart) {
+                spendingBreakdownChart.setActiveElements([]);
+                spendingBreakdownChart.update();
+            }
         });
     });
     <?php endif; ?>
-    
-    // Add resize observer to adjust chart sizes when card size changes
+
+    // ResizeObserver for dynamic chart resizing
     const resizeObserver = new ResizeObserver(entries => {
-        for (let entry of entries) {
+        entries.forEach(entry => {
             const canvas = entry.target.querySelector('canvas');
             if (canvas) {
                 const chart = Chart.getChart(canvas);
@@ -530,42 +745,88 @@ document.addEventListener('DOMContentLoaded', function() {
                     chart.resize();
                 }
             }
-        }
+        });
     });
 
-    document.querySelectorAll('.card-body').forEach(cardBody => {
+    // Observe all chart containers
+    document.querySelectorAll('.bento-card-body').forEach(cardBody => {
         resizeObserver.observe(cardBody);
     });
 
-    // Function to format currency
+    // Currency formatting helper
     function formatCurrency(value) {
-        return '₱' + value.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    // Update total amounts in the category list
-    function updateCategoryTotals() {
-        let total = 0;
-        document.querySelectorAll('.category-item span').forEach(span => {
-            const amount = parseFloat(span.textContent.replace('₱', '').replace(',', ''));
-            total += amount;
+        return '₱' + value.toLocaleString('en-PH', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
         });
-        
-        const totalElement = document.createElement('div');
-        totalElement.className = 'category-item total';
-        totalElement.innerHTML = `<strong>Total</strong><strong><span class="float-end">${formatCurrency(total)}</span></strong>`;
-        
-        const categoryList = document.querySelector('.category-list');
-        const existingTotal = categoryList.querySelector('.total');
-        if (existingTotal) {
-            categoryList.removeChild(existingTotal);
-        }
-        categoryList.appendChild(totalElement);
     }
 
-    // Call the function to update totals
+    // Update category totals
+    function updateCategoryTotals() {
+        const categoryItems = document.querySelectorAll('.category-item:not(.total)');
+        let total = 0;
+
+        categoryItems.forEach(item => {
+            const amountText = item.querySelector('strong:last-child').textContent;
+            const amount = parseFloat(amountText.replace('₱', '').replace(/,/g, ''));
+            if (!isNaN(amount)) {
+                total += amount;
+            }
+        });
+
+        // Create or update total element
+        const categoryList = document.querySelector('.category-list');
+        let totalElement = categoryList.querySelector('.category-item.total');
+        
+        if (!totalElement) {
+            totalElement = document.createElement('div');
+            totalElement.className = 'category-item total';
+            categoryList.appendChild(totalElement);
+        }
+
+        totalElement.innerHTML = `
+            <strong>Total</strong>
+            <strong>${formatCurrency(total)}</strong>
+        `;
+    }
+
+    // Initialize category totals
     updateCategoryTotals();
 
-    <?php endif;?> // End of if ($hasData)
+    // Add error handling for chart rendering
+    window.addEventListener('error', function(e) {
+        if (e.target.tagName === 'CANVAS') {
+            console.error('Canvas error:', e);
+            const container = e.target.closest('.bento-card-body');
+            if (container) {
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Error loading chart. Please refresh the page.
+                    </div>
+                `;
+            }
+        }
+    }, true);
+
+    <?php endif; ?> // End of if ($hasData)
+
+    // Global error handler
+    window.onerror = function(msg, url, line, col, error) {
+        console.error('Global error:', {msg, url, line, col, error});
+        return false;
+    };
+
+    // Handle print button keyboard navigation
+    const printButton = document.getElementById('printButton');
+    if (printButton) {
+        printButton.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+    }
 });
 </script>
 
