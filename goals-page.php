@@ -56,6 +56,29 @@ function getCurrentBalance($conn, $userId) {
     return $cumulativeBalance - $totalGoalAmount;
 }
 
+// Function to check if a user has available balance
+function hasAvailableBalance($conn, $userId) {
+    $currentBalance = getCurrentBalance($conn, $userId);
+    return $currentBalance > 0;
+}
+
+function validateGoalAmount($conn, $userId, $amount, $currentGoalId = null) {
+    $currentBalance = getCurrentBalance($conn, $userId);
+    
+    // If updating existing goal, add current goal amount to available balance
+    if ($currentGoalId) {
+        $sql = "SELECT current_amount FROM goals WHERE id = ? AND user_id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ii", $currentGoalId, $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $currentAmount = $result->fetch_assoc()['current_amount'] ?? 0;
+        $currentBalance += $currentAmount;
+    }
+    
+    return $amount <= $currentBalance && $amount > 0;
+}
+
 // Function to get all goals for a user
 function getUserGoals($conn, $userId, $sortBy = 'target_date', $sortOrder = 'ASC', $category = null) {
     $allowedSortFields = ['name', 'target_amount', 'current_amount', 'target_date', 'category'];
@@ -190,26 +213,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_goal'])) {
     $targetDate = $_POST['target_date'];
     $category = $_POST['category'];
 
+    // Validate the amount
+    if (!validateGoalAmount($conn, $userId, $targetAmount)) {
+        header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Invalid amount: Exceeds available balance"));
+        exit();
+    }
+
     $sql = "INSERT INTO goals (user_id, name, target_amount, target_date, category) VALUES (?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("isdss", $userId, $name, $targetAmount, $targetDate, $category);
     
     if ($stmt->execute()) {
-        if (!headers_sent()) {
-            header("Location: " . $_SERVER['PHP_SELF'] . "?success=goal_added");
-            exit();
-        } else {
-            echo "<script>window.location.href='" . $_SERVER['PHP_SELF'] . "?success=goal_added';</script>";
-            exit();
-        }
+        header("Location: " . $_SERVER['PHP_SELF'] . "?success=goal_added");
+        exit();
     } else {
-        if (!headers_sent()) {
-            header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Error adding goal: " . $conn->error));
-            exit();
-        } else {
-            echo "<script>window.location.href='" . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Error adding goal: " . $conn->error) . "';</script>";
-            exit();
-        }
+        header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Error adding goal: " . $conn->error));
+        exit();
     }
 }
 
@@ -271,6 +290,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['archive_goal'])) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_progress'])) {
     $goalId = $_POST['goal_id'];
     $newAmount = $_POST['current_amount'];
+    
+    // Validate the amount
+    if (!validateGoalAmount($conn, $userId, $newAmount, $goalId)) {
+        header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Invalid amount: Exceeds available balance"));
+        exit();
+    }
     
     $sql = "UPDATE goals SET current_amount = ? WHERE id = ? AND user_id = ?";
     $stmt = $conn->prepare($sql);
@@ -345,6 +370,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['handle_due_goal'])) {
         exit();
     }
 }
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_progress'])) {
+    // Check balance first
+    if (!hasAvailableBalance($conn, $userId)) {
+        if (!headers_sent()) {
+            header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Insufficient balance to update goals."));
+            exit();
+        } else {
+            echo "<script>window.location.href='" . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Insufficient balance to update goals."). "';</script>";
+            exit();
+        }
+    }
+
+    $goalId = $_POST['goal_id'];
+    $newAmount = $_POST['current_amount'];
+    
+    // Proceed with the update only if there's sufficient balance
+    $sql = "UPDATE goals SET current_amount = ? WHERE id = ? AND user_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("dii", $newAmount, $goalId, $userId);
+    
+    if ($stmt->execute()) {
+        header("Location: " . $_SERVER['PHP_SELF'] . "?success=progress_updated");
+        exit();
+    } else {
+        header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Error updating goal progress: " . $conn->error));
+        exit();
+    }
+}
+
+// Check if the user has available balance
+$hasBalance = hasAvailableBalance($conn, $userId);
 
 // Check for success or error messages in URL parameters
 $successMessage = isset($_GET['success']) ? getSuccessMessage($_GET['success']) : null;
@@ -621,8 +678,12 @@ $goalCategories = [
                                                             onclick="openDeleteModal(<?php echo $goal['id']; ?>, '<?php echo htmlspecialchars($goal['name']); ?>')">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
-                                                    <button class="btn btn-update" 
-                                                            onclick="openUpdateModal(<?php echo $goal['id']; ?>, <?php echo $goal['current_amount']; ?>)">
+                                                    <button class="btn btn-update <?php echo !$hasBalance ? 'disabled' : ''; ?>" 
+                                                            onclick="openUpdateModal(<?php echo $goal['id']; ?>, <?php echo $goal['current_amount']; ?>)"
+                                                            <?php if (!$hasBalance): ?>
+                                                            data-bs-toggle="tooltip" 
+                                                            title="Insufficient balance to update goals"
+                                                            <?php endif; ?>>
                                                         <i class="bi bi-pencil me-2"></i>Update
                                                     </button>
                                                 </div>
@@ -693,45 +754,99 @@ $goalCategories = [
 </div> <!-- End of container -->
 
 <!-- Add Goal Modal -->
-<div class="modal fade" id="addGoalModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade" id="addGoalModal" tabindex="-1" role="dialog" aria-labelledby="addGoalModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Create New Goal</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-semibold" id="addGoalModalLabel">Create New Goal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body px-4">
                 <form method="POST" id="addGoalForm">
-                    <div class="mb-3">
-                        <label for="goal_name" class="form-label">Goal Name</label>
-                        <input type="text" class="form-control" id="goal_name" name="goal_name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="target_amount" class="form-label">Target Amount</label>
+                    <!-- Goal Name -->
+                    <div class="mb-4">
+                        <label for="goal_name" class="form-label text-secondary fw-medium">Goal Name</label>
                         <div class="input-group">
-                            <span class="input-group-text">₱</span>
-                            <input type="number" class="form-control" id="target_amount" name="target_amount" 
-                                   step="0.01" required min="0">
+                            <input type="text" 
+                                   class="form-control form-control-lg border-2" 
+                                   id="goal_name" 
+                                   name="goal_name" 
+                                   placeholder="Enter goal name"
+                                   required>
+                            <span class="input-group-text border-2 bg-white">
+                                <i class="bi bi-flag" aria-hidden="true"></i>
+                            </span>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="target_date" class="form-label">Target Date</label>
-                        <input type="date" class="form-control" id="target_date" name="target_date" required>
-                    </div>
+
+                    <!-- Target Amount -->
                     <div class="mb-4">
-                        <label for="category" class="form-label">Category</label>
-                        <select class="form-select" id="category" name="category" required>
-                            <?php foreach ($goalCategories as $category => $description): ?>
-                                <option value="<?php echo htmlspecialchars($category); ?>" 
-                                        data-bs-toggle="tooltip" 
-                                        title="<?php echo htmlspecialchars($description); ?>">
-                                    <?php echo htmlspecialchars($category); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                        <label for="target_amount" class="form-label text-secondary fw-medium">Target Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text border-2 bg-white fw-medium">₱</span>
+                            <input type="number" 
+                                class="form-control form-control-lg border-2" 
+                                id="target_amount" 
+                                name="target_amount" 
+                                placeholder="0.00"
+                                step="0.01" 
+                                required 
+                                min="0">
+                            <button class="input-group-text border-2 bg-white" type="button" aria-label="Copy amount">
+                                <i class="bi bi-wallet2"></i>
+                            </button>
+                        </div>
                     </div>
-                    <button type="submit" name="add_goal" class="btn btn-add w-100">
-                        <i class="bi bi-plus-circle me-2"></i>Create Goal
+
+                    <!-- Available Balance Display -->
+                    <div class="d-flex align-items-center justify-content-between mb-4 py-3 border-top">
+                        <span class="text-secondary fw-medium">Available Balance:</span>
+                        <span class="text-primary fw-semibold">₱<?php echo number_format($currentBalance, 2); ?></span>
+                    </div>
+
+                    <!-- Target Date -->
+                    <div class="mb-4">
+                        <label for="target_date" class="form-label text-secondary fw-medium">Target Date</label>
+                        <div class="input-group">
+                            <input type="date" 
+                                   class="form-control form-control-lg border-2" 
+                                   id="target_date" 
+                                   name="target_date" 
+                                   placeholder="dd/mm/yyyy"
+                                   required>
+                            <span class="input-group-text border-2 bg-white">
+                                <i class="bi bi-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="mb-4">
+                        <label for="category" class="form-label text-secondary fw-medium">Category</label>
+                        <div class="input-group">
+                            <select class="form-select form-select-lg border-2" 
+                                    id="category" 
+                                    name="category" 
+                                    required>
+                                <?php foreach ($goalCategories as $category => $description): ?>
+                                    <option value="<?php echo htmlspecialchars($category); ?>" 
+                                            data-bs-toggle="tooltip" 
+                                            title="<?php echo htmlspecialchars($description); ?>">
+                                        <?php echo htmlspecialchars($category); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <span class="input-group-text border-2 bg-white">
+                                <i class="bi bi-tag"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" 
+                            name="add_goal" 
+                            class="btn btn-lg btn-add w-100 py-3">
+                        <i class="bi bi-plus-circle me-2" aria-hidden="true"></i>Create Goal
                     </button>
                 </form>
             </div>
@@ -956,8 +1071,49 @@ $goalCategories = [
 </div>
 
 <script>
+// Get PHP variables
+const hasAvailableBalance = <?php echo json_encode($hasBalance); ?>;
+const availableBalance = <?php echo json_encode($currentBalance); ?>;
+
 // Wait for DOM to be fully loaded before executing any code
 document.addEventListener('DOMContentLoaded', function() {
+    /**
+     * Format currency for display
+     * @param {number} amount 
+     * @returns {string}
+     */
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('en-PH', {
+            style: 'currency',
+            currency: 'PHP',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
+    };
+
+    /**
+     * Validate amount against available balance
+     * @param {HTMLInputElement} input 
+     * @param {number} currentAmount 
+     * @returns {boolean}
+     */
+    const validateAmount = (input, currentAmount = 0) => {
+        const value = parseFloat(input.value) || 0;
+        const maxAllowed = availableBalance + currentAmount;
+        
+        if (value > maxAllowed) {
+            input.setCustomValidity(`Amount cannot exceed available balance of ${formatCurrency(maxAllowed)}`);
+            showToast(`Cannot exceed available balance of ${formatCurrency(maxAllowed)}`, 'danger');
+            return false;
+        } else if (value <= 0) {
+            input.setCustomValidity('Amount must be greater than 0');
+            return false;
+        } else {
+            input.setCustomValidity('');
+            return true;
+        }
+    };
+
     /**
      * Initialize Bootstrap tooltips
      */
@@ -971,23 +1127,50 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     /**
-     * Format currency to PHP Peso
-     * @param {number} amount - The amount to format
-     * @returns {string} Formatted currency string
+     * Show toast notification
+     * @param {string} message - Message to display
+     * @param {string} type - Type of toast (primary/danger/warning)
      */
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-PH', {
-            style: 'currency',
-            currency: 'PHP',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }).format(amount);
+    const showToast = (message, type = 'primary') => {
+        const toastElement = document.getElementById('liveToast');
+        if (!toastElement) return;
+
+        const toastBody = toastElement.querySelector('.toast-body');
+        const toastHeader = toastElement.querySelector('.toast-header strong');
+        
+        if (toastBody && toastHeader) {
+            toastBody.textContent = message;
+            toastHeader.textContent = type === 'danger' ? 'Error' : 'Notification';
+            
+            toastElement.classList.remove('border-primary', 'border-danger', 'border-warning');
+            toastElement.classList.add(`border-${type}`);
+            
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+        }
+    };
+
+    /**
+     * Handle toast notifications from URL parameters
+     */
+    const handleToastNotification = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const successMsg = urlParams.get('success');
+        const errorMsg = urlParams.get('error');
+
+        if (successMsg) {
+            showToast(getSuccessMessage(successMsg), 'primary');
+        } else if (errorMsg) {
+            showToast(decodeURIComponent(errorMsg), 'danger');
+        }
+
+        // Clean URL after showing toast
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, '', cleanUrl);
     };
 
     /**
      * Get success message based on type
-     * @param {string} type - The type of success message
-     * @returns {string} The corresponding success message
      */
     const getSuccessMessage = (type) => {
         const messages = {
@@ -1001,94 +1184,116 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     /**
-     * Show toast notification
+     * Show due date alerts
      */
-    const handleToastNotification = () => {
-        const toastElement = document.getElementById('liveToast');
-        if (!toastElement) return;
+    function showDueDateAlerts(alerts) {
+        if (!alerts || alerts.length === 0) return;
+        
+        let currentAlertIndex = 0;
+        
+        const showNextAlert = () => {
+            if (currentAlertIndex >= alerts.length) return;
+            
+            const alert = alerts[currentAlertIndex];
+            showToast(alert.message, alert.type);
+            
+            currentAlertIndex++;
+            setTimeout(showNextAlert, 6000);
+        };
+        
+        setTimeout(showNextAlert, 1000);
+    }
 
-        const toast = new bootstrap.Toast(toastElement);
-        const urlParams = new URLSearchParams(window.location.search);
-        const successMsg = urlParams.get('success');
-        const errorMsg = urlParams.get('error');
+    /**
+     * Setup update form with balance validation
+     */
+    const setupUpdateForm = () => {
+        const updateForm = document.getElementById('updateProgressForm');
+        const amountInput = document.getElementById('current_amount');
+        let originalAmount = 0;
 
-        if (successMsg || errorMsg) {
-            const toastBody = toastElement.querySelector('.toast-body');
-            const toastHeader = toastElement.querySelector('.toast-header strong');
-            if (!toastBody || !toastHeader) return;
+        if (updateForm && amountInput) {
+            // Store original amount when modal opens
+            $('#updateProgressModal').on('show.bs.modal', function(e) {
+                originalAmount = parseFloat(amountInput.value) || 0;
+                
+                // Set max attribute
+                const maxAllowed = availableBalance + originalAmount;
+                amountInput.setAttribute('max', maxAllowed);
+                
+                // Add helper text
+                const helpText = document.createElement('small');
+                helpText.className = 'form-text text-muted mt-1';
+                helpText.textContent = `Maximum allowed: ${formatCurrency(maxAllowed)}`;
+                amountInput.parentNode.appendChild(helpText);
+            });
 
-            toastElement.classList.remove('border-primary', 'border-danger');
-            toastHeader.textContent = 'Notification';
+            // Clean up when modal closes
+            $('#updateProgressModal').on('hidden.bs.modal', function() {
+                const helpText = amountInput.parentNode.querySelector('.form-text');
+                if (helpText) {
+                    helpText.remove();
+                }
+            });
 
-            if (successMsg) {
-                toastBody.textContent = getSuccessMessage(successMsg);
-                toastElement.classList.add('border-primary');
-            } else if (errorMsg) {
-                toastBody.textContent = decodeURIComponent(errorMsg);
-                toastElement.classList.add('border-danger');
-            }
+            // Real-time validation
+            amountInput.addEventListener('input', function() {
+                validateAmount(this, originalAmount);
+                updateForm.classList.add('was-validated');
+            });
 
-            toast.show();
-
-            // Clean URL after showing toast
-            const cleanUrl = window.location.pathname;
-            window.history.replaceState({}, '', cleanUrl);
+            // Form submission validation
+            updateForm.addEventListener('submit', function(e) {
+                if (!validateAmount(amountInput, originalAmount)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
         }
     };
 
     /**
-     * Show due date alerts
-     * @param {Array} alerts - Array of alert objects
+     * Setup add goal form with balance validation
      */
-    function showDueDateAlerts(alerts) {
-        const toastContainer = document.getElementById('liveToast');
-        if (!toastContainer || !alerts || alerts.length === 0) return;
+    const setupAddGoalForm = () => {
+        const addForm = document.getElementById('addGoalForm');
+        const amountInput = document.getElementById('target_amount');
 
-        const toast = new bootstrap.Toast(toastContainer, {
-            animation: true,
-            autohide: true,
-            delay: 6000
-        });
-
-        let currentAlertIndex = 0;
-
-        function showNextAlert() {
-            if (currentAlertIndex >= alerts.length) return;
-
-            const alert = alerts[currentAlertIndex];
-            const toastBody = toastContainer.querySelector('.toast-body');
-            const toastHeader = toastContainer.querySelector('.toast-header strong');
+        if (addForm && amountInput) {
+            // Set max attribute
+            amountInput.setAttribute('max', availableBalance);
             
-            if (toastBody && toastHeader) {
-                // Update toast content and styling
-                toastHeader.textContent = 'Goal Due Date Alert';
-                toastBody.textContent = alert.message;
-                toastContainer.classList.remove('border-primary', 'border-warning', 'border-danger');
-                toastContainer.classList.add(`border-${alert.type}`);
+            // Add helper text
+            const helpText = document.createElement('small');
+            helpText.className = 'form-text text-muted mt-1';
+            amountInput.parentNode.appendChild(helpText);
 
-                // Show the toast
-                toast.show();
+            // Real-time validation
+            amountInput.addEventListener('input', function() {
+                validateAmount(this);
+                addForm.classList.add('was-validated');
+            });
 
-                // Setup listener for when toast is hidden
-                toastContainer.addEventListener('hidden.bs.toast', () => {
-                    currentAlertIndex++;
-                    // Short delay before showing the next alert
-                    setTimeout(() => {
-                        showNextAlert();
-                    }, 300);
-                }, { once: true });
-            }
+            // Form submission validation
+            addForm.addEventListener('submit', function(e) {
+                if (!validateAmount(amountInput)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
         }
-
-        // Start showing alerts
-        showNextAlert();
-    }
+    };
 
     /**
      * Modal Operation Functions
      */
     // Update Progress Modal
     window.openUpdateModal = function(goalId, currentAmount) {
+        if (!hasAvailableBalance) {
+            showToast("Cannot update goals: Insufficient balance", "danger");
+            return;
+        }
+
         const modal = document.getElementById('updateProgressModal');
         const goalIdInput = document.getElementById('update_goal_id');
         const amountInput = document.getElementById('current_amount');
@@ -1170,35 +1375,6 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     /**
-     * Form Validation Setup
-     */
-    const setupFormValidation = () => {
-        const addGoalForm = document.getElementById('addGoalForm');
-        const targetAmountInput = document.getElementById('target_amount');
-
-        if (addGoalForm) {
-            addGoalForm.addEventListener('submit', function(e) {
-                if (!this.checkValidity()) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                this.classList.add('was-validated');
-            });
-        }
-
-        if (targetAmountInput) {
-            targetAmountInput.addEventListener('input', function() {
-                const value = parseFloat(this.value);
-                if (value <= 0) {
-                    this.setCustomValidity('Amount must be greater than 0');
-                } else {
-                    this.setCustomValidity('');
-                }
-            });
-        }
-    };
-
-    /**
      * Date Input Setup
      */
     const setupDateInput = () => {
@@ -1251,12 +1427,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const actionInputs = dueActionForm.querySelectorAll('input[name="due_action"]');
             const actionDetails = dueActionForm.querySelectorAll('.action-detail');
 
+            // Handle radio button changes
             actionInputs.forEach(radio => {
                 radio.addEventListener('change', function() {
-                    // Hide all detail sections
                     actionDetails.forEach(detail => detail.style.display = 'none');
-
-                    // Show relevant detail section
                     const detailSection = dueActionForm.querySelector(`.${this.value}-detail`);
                     if (detailSection) {
                         detailSection.style.display = 'block';
@@ -1270,7 +1444,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (!selectedAction) {
                     e.preventDefault();
-                    alert('Please select an action.');
+                    showToast('Please select an action.', 'danger');
                     return;
                 }
 
@@ -1280,17 +1454,31 @@ document.addEventListener('DOMContentLoaded', function() {
                         const dateInput = this.querySelector('input[name="new_target_date"]');
                         if (!dateInput || !dateInput.value) {
                             e.preventDefault();
-                            alert('Please select a new target date.');
+                            showToast('Please select a new target date.', 'danger');
                         }
                         break;
                     case 'adjust':
                         const amountInput = this.querySelector('input[name="new_target_amount"]');
                         if (!amountInput || !amountInput.value || amountInput.value <= 0) {
                             e.preventDefault();
-                            alert('Please enter a valid target amount.');
+                            showToast('Please enter a valid target amount.', 'danger');
                         }
                         break;
                 }
+            });
+        }
+    };
+
+    /**
+     * Setup Update Button States
+     */
+    const setupUpdateButtons = () => {
+        if (!hasAvailableBalance) {
+            const updateButtons = document.querySelectorAll('.btn-update');
+            updateButtons.forEach(button => {
+                button.classList.add('disabled');
+                button.setAttribute('title', 'Insufficient balance to update goals');
+                new bootstrap.Tooltip(button);
             });
         }
     };
@@ -1299,10 +1487,12 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
         initializeTooltips();
         handleToastNotification();
-        setupFormValidation();
+        setupAddGoalForm();
+        setupUpdateForm();
         setupDateInput();
         updateProgressBars();
         setupDueGoalActionForm();
+        setupUpdateButtons();
 
         // Show due date alerts after other notifications
         const dueDateAlerts = <?php echo json_encode($dueDateAlerts ?? []); ?>;
@@ -1318,14 +1508,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Clean up tooltips when the page is unloaded
     window.addEventListener('pagehide', function() {
         const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-        if (tooltips.length > 0) {
-            tooltips.forEach(element => {
-                const tooltip = bootstrap.Tooltip.getInstance(element);
-                if (tooltip) {
-                    tooltip.dispose();
-                }
-            });
-        }
+        tooltips.forEach(element => {
+            const tooltip = bootstrap.Tooltip.getInstance(element);
+            if (tooltip) {
+                tooltip.dispose();
+            }
+        });
     });
 });
 </script>
