@@ -468,53 +468,55 @@ $goalsCount = getArticleCountByCategory($conn, 'goals');
         </div>
 
         <!-- Latest Articles Section -->
-        <div class="container">
-            <div class="section-header mb-4">
-                <h2>Latest Articles</h2>
-                <span class="articles-status">Showing all articles</span>
-            </div>
-            
-            <div class="articles-grid">
-                <?php
-                $articles = getArticles($conn);
+        <div class="row g-2 mb-4"> <!-- Use same row structure as other sections -->
+            <div class="col-12">
+                <div class="section-header">
+                    <h2 class="mb-0">Latest Articles</h2>
+                    <span class="articles-status">Showing all articles</span>
+                </div>
                 
-                if ($articles === false) {
-                    ?>
-                    <div class="alert alert-danger" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        Error loading articles. Please try again later.
-                    </div>
+                <div class="articles-grid">
                     <?php
-                } else if ($articles->num_rows === 0) {
-                    ?>
-                    <div class="alert alert-custom-info" role="alert">
-                        <i class="bi bi-info-circle-fill me-2"></i>
-                        No articles available at the moment.
-                    </div>
-                    <?php
-                } else {
-                    while ($article = $articles->fetch_assoc()):
-                    ?>
-                    <article class="article-card">
-                        <h3 class="article-title">
-                            <?= htmlspecialchars($article['title']) ?>
-                        </h3>
-                        <p class="article-description">
-                            <?= htmlspecialchars($article['preview']) ?>
-                        </p>
-                        <div class="article-footer">
-                            <span class="article-date">
-                                <?= date('M d, Y', strtotime($article['date_published'])) ?>
-                            </span>
-                            <button class="read-more-btn" onclick="showArticle(<?= $article['id'] ?>)">
-                                Read More
-                            </button>
+                    $articles = getArticles($conn);
+                    
+                    if ($articles === false) {
+                        ?>
+                        <div class="alert alert-danger" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            Error loading articles. Please try again later.
                         </div>
-                    </article>
-                    <?php 
-                    endwhile;
-                }
-                ?>
+                        <?php
+                    } else if ($articles->num_rows === 0) {
+                        ?>
+                        <div class="alert alert-custom-info" role="alert">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            No articles available at the moment.
+                        </div>
+                        <?php
+                    } else {
+                        while ($article = $articles->fetch_assoc()):
+                        ?>
+                        <article class="article-card">
+                            <h3 class="article-title">
+                                <?= htmlspecialchars($article['title']) ?>
+                            </h3>
+                            <p class="article-description">
+                                <?= htmlspecialchars($article['preview']) ?>
+                            </p>
+                            <div class="article-footer">
+                                <span class="article-date">
+                                    <?= date('M d, Y', strtotime($article['date_published'])) ?>
+                                </span>
+                                <button class="read-more-btn" onclick="showArticle(<?= $article['id'] ?>)">
+                                    Read More
+                                </button>
+                            </div>
+                        </article>
+                        <?php 
+                        endwhile;
+                    }
+                    ?>
+                </div>
             </div>
         </div>
 
@@ -529,7 +531,7 @@ $goalsCount = getArticleCountByCategory($conn, 'goals');
                         <option value="intermediate">Intermediate</option>
                         <option value="advanced">Advanced</option>
                     </select>
-                    <button class="video-filter-reset" id="resetVideoFilters">
+                    <button class="quote-refresh-btn" id="resetVideoFilters">
                         <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Filters
                     </button>
                 </div>
