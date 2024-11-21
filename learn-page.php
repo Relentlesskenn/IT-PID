@@ -258,29 +258,43 @@ function getQuoteCategories($conn) {
 // Function to get video tutorials with optional filters
 function getVideoTutorials($conn, $category = null, $level = null) {
     try {
-        $sql = "SELECT * FROM videos WHERE status = 'active'";
+        // Base SQL query
+        $sql = "SELECT 
+                id,
+                title,
+                description,
+                CONCAT('assets/imgs/thumbnails/', id, '.jpg') as thumbnail_url,
+                video_url,
+                category,
+                duration,
+                level,
+                views 
+                FROM videos 
+                WHERE status = 'active'";
+        
         $params = [];
         $types = "";
         
+        // Add category filter if provided
         if ($category) {
             $sql .= " AND category = ?";
             $params[] = $category;
             $types .= "s";
         }
         
+        // Add level filter if provided
         if ($level) {
             $sql .= " AND level = ?";
             $params[] = $level;
             $types .= "s";
         }
         
+        // Order by most recent
         $sql .= " ORDER BY date_added DESC";
         
         $stmt = $conn->prepare($sql);
-        if (!$stmt) {
-            throw new Exception("Prepare failed: " . $conn->error);
-        }
         
+        // Bind parameters if any
         if (!empty($params)) {
             $stmt->bind_param($types, ...$params);
         }
@@ -319,6 +333,18 @@ function getVideoCountByCategory($conn, $category) {
         error_log("Error in getVideoCountByCategory: " . $e->getMessage());
         return 0;
     }
+}
+
+function getThumbnailUrl($videoId) {
+    $thumbnailPath = "assets/imgs/thumbnails/{$videoId}.jpg";
+    
+    // Check if thumbnail exists
+    if (file_exists($thumbnailPath)) {
+        return $thumbnailPath;
+    }
+    
+    // Return default thumbnail if original doesn't exist
+    return "assets/imgs/thumbnails/default.jpg";
 }
 
 // Get article counts for each category
@@ -527,10 +553,14 @@ $goalsCount = getArticleCountByCategory($conn, 'goals');
                     echo '<div class="alert alert-custom-info">No video tutorials available at the moment.</div>';
                 } else {
                     while ($video = $videos->fetch_assoc()):
+                        $thumbnailUrl = getThumbnailUrl($video['id']);
                     ?>
                     <div class="video-card">
                         <div class="video-thumbnail">
-                            <img src="<?= htmlspecialchars($video['thumbnail_url']) ?>" alt="<?= htmlspecialchars($video['title']) ?>" loading="lazy">
+                            <img src="<?= htmlspecialchars($thumbnailUrl) ?>" 
+                                alt="<?= htmlspecialchars($video['title']) ?>" 
+                                loading="lazy"
+                                onerror="this.src='assets/imgs/thumbnails/default.jpg'">
                             <span class="video-duration"><?= htmlspecialchars($video['duration']) ?></span>
                             <div class="video-play-overlay">
                                 <i class="bi bi-play-circle"></i>
@@ -862,7 +892,10 @@ document.addEventListener('DOMContentLoaded', function() {
             videoContainer.innerHTML = videos.map(video => `
                 <div class="video-card" onclick="playVideo('${video.video_url}', '${escapeHtml(video.title)}')">
                     <div class="video-thumbnail">
-                        <img src="${video.thumbnail_url}" alt="${escapeHtml(video.title)}" loading="lazy">
+                        <img src="${video.thumbnail_url}" 
+                            alt="${escapeHtml(video.title)}" 
+                            loading="lazy"
+                            onerror="this.src='assets/imgs/thumbnails/default.jpg'">
                         <span class="video-duration">${video.duration}</span>
                         <div class="video-play-overlay">
                             <i class="bi bi-play-circle"></i>
