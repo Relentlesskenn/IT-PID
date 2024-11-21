@@ -70,6 +70,39 @@ if (isset($_POST['action'])) {
             echo json_encode($response, JSON_UNESCAPED_UNICODE);
             exit;
         }
+
+        if ($_POST['action'] === 'filterVideos') {
+            $category = trim(filter_input(INPUT_POST, 'category'));
+            $level = trim(filter_input(INPUT_POST, 'level'));
+            $videos = getVideoTutorials($conn, $category, $level);
+            
+            if ($videos === false) {
+                throw new Exception('Database error while fetching videos');
+            }
+            
+            $videosArray = [];
+            while ($row = $videos->fetch_assoc()) {
+                $videosArray[] = [
+                    'id' => (int)$row['id'],
+                    'title' => htmlspecialchars_decode($row['title']),
+                    'description' => htmlspecialchars_decode($row['description']),
+                    'thumbnail_url' => $row['thumbnail_url'],
+                    'video_url' => $row['video_url'],
+                    'category' => htmlspecialchars_decode($row['category']),
+                    'duration' => $row['duration'],
+                    'level' => $row['level'],
+                    'views' => (int)$row['views']
+                ];
+            }
+            
+            $response = [
+                'success' => true,
+                'data' => $videosArray
+            ];
+            
+            echo json_encode($response, JSON_UNESCAPED_UNICODE);
+            exit;
+        }
         
         throw new Exception('Invalid action');
         
@@ -219,6 +252,72 @@ function getQuoteCategories($conn) {
     } catch (Exception $e) {
         error_log("Error in getQuoteCategories: " . $e->getMessage());
         return [];
+    }
+}
+
+// Function to get video tutorials with optional filters
+function getVideoTutorials($conn, $category = null, $level = null) {
+    try {
+        $sql = "SELECT * FROM videos WHERE status = 'active'";
+        $params = [];
+        $types = "";
+        
+        if ($category) {
+            $sql .= " AND category = ?";
+            $params[] = $category;
+            $types .= "s";
+        }
+        
+        if ($level) {
+            $sql .= " AND level = ?";
+            $params[] = $level;
+            $types .= "s";
+        }
+        
+        $sql .= " ORDER BY date_added DESC";
+        
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            throw new Exception("Prepare failed: " . $conn->error);
+        }
+        
+        if (!empty($params)) {
+            $stmt->bind_param($types, ...$params);
+        }
+        
+        if (!$stmt->execute()) {
+            throw new Exception("Execute failed: " . $stmt->error);
+        }
+        
+        return $stmt->get_result();
+        
+    } catch (Exception $e) {
+        error_log("Error in getVideoTutorials: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Function to get video count by category
+function getVideoCountByCategory($conn, $category) {
+    try {
+        $stmt = $conn->prepare("SELECT COUNT(*) as count FROM videos WHERE category = ? AND status = 'active'");
+        if (!$stmt) {
+            throw new Exception("Prepare failed: " . $conn->error);
+        }
+        
+        $stmt->bind_param("s", $category);
+        
+        if (!$stmt->execute()) {
+            throw new Exception("Execute failed: " . $stmt->error);
+        }
+        
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        return $row['count'];
+        
+    } catch (Exception $e) {
+        error_log("Error in getVideoCountByCategory: " . $e->getMessage());
+        return 0;
     }
 }
 
@@ -393,6 +492,87 @@ $goalsCount = getArticleCountByCategory($conn, 'goals');
             </div>
         </div>
 
+        <!-- Video Tutorials Section -->
+        <div class="video-tutorials-section mb-4">
+            <div class="section-header">
+                <h2 class="mb-0">Video Tutorials</h2>
+                <div class="video-controls">
+                    <select class="video-filter-select me-2" id="videoLevel">
+                        <option value="">All Levels</option>
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                    <button class="video-filter-reset" id="resetVideoFilters">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Filters
+                    </button>
+                </div>
+            </div>
+
+            <!-- Video Category Pills -->
+            <div class="video-categories mb-4">
+                <button class="video-category-pill active" data-category="">All Videos</button>
+                <button class="video-category-pill" data-category="basics">Basics</button>
+                <button class="video-category-pill" data-category="savings">Savings</button>
+                <button class="video-category-pill" data-category="goals">Goals</button>
+            </div>
+
+            <!-- Videos Grid -->
+            <div class="videos-grid" id="videosContainer">
+                <?php
+                $videos = getVideoTutorials($conn);
+                if ($videos === false) {
+                    echo '<div class="alert alert-danger">Error loading videos. Please try again later.</div>';
+                } else if ($videos->num_rows === 0) {
+                    echo '<div class="alert alert-custom-info">No video tutorials available at the moment.</div>';
+                } else {
+                    while ($video = $videos->fetch_assoc()):
+                    ?>
+                    <div class="video-card">
+                        <div class="video-thumbnail">
+                            <img src="<?= htmlspecialchars($video['thumbnail_url']) ?>" alt="<?= htmlspecialchars($video['title']) ?>" loading="lazy">
+                            <span class="video-duration"><?= htmlspecialchars($video['duration']) ?></span>
+                            <div class="video-play-overlay">
+                                <i class="bi bi-play-circle"></i>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3 class="video-title"><?= htmlspecialchars($video['title']) ?></h3>
+                            <div class="video-meta">
+                                <span class="video-level <?= htmlspecialchars($video['level']) ?>">
+                                    <?= ucfirst(htmlspecialchars($video['level'])) ?>
+                                </span>
+                                <span class="video-category">
+                                    <?= ucfirst(htmlspecialchars($video['category'])) ?>
+                                </span>
+                            </div>
+                            <p class="video-description"><?= htmlspecialchars($video['description']) ?></p>
+                        </div>
+                    </div>
+                    <?php
+                    endwhile;
+                }
+                ?>
+            </div>
+        </div>
+
+        <!-- Video Modal -->
+        <div class="modal fade" id="videoModal" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="video-wrapper ratio ratio-16x9">
+                            <iframe src="" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Quick Tips Section -->
         <div class="row g-2">
             <div class="col-12">
@@ -467,13 +647,24 @@ $goalsCount = getArticleCountByCategory($conn, 'goals');
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Cache DOM elements
     const searchInput = document.getElementById('searchInput');
     const clearSearch = document.getElementById('clearSearch');
-    const articlesContainer = document.getElementById('articlesContainer');
     const categoryIndicator = document.getElementById('categoryIndicator');
-    let currentCategory = null;
+    const videoContainer = document.getElementById('videosContainer');
+    const videoLevelSelect = document.getElementById('videoLevel');
+    const videoCategoryPills = document.querySelectorAll('.video-category-pill');
+    const resetVideoFilters = document.getElementById('resetVideoFilters');
+    const videoModal = document.getElementById('videoModal');
+    const quoteCategorySelect = document.getElementById('quoteCategory');
+    const refreshQuotesBtn = document.getElementById('refreshQuotes');
 
-    // Function to safely escape HTML
+    // State variables
+    let currentArticleCategory = null;
+    let currentVideoCategory = '';
+    let currentVideoLevel = '';
+
+    // Utility Functions
     function escapeHtml(unsafe) {
         return unsafe
             .replace(/&/g, "&amp;")
@@ -483,13 +674,12 @@ document.addEventListener('DOMContentLoaded', function() {
             .replace(/'/g, "&#039;");
     }
 
-    // Function to format date
     function formatDate(dateString) {
         const options = { year: 'numeric', month: 'short', day: 'numeric' };
         return new Date(dateString).toLocaleDateString('en-US', options);
     }
 
-    // Show article in modal
+    // Article Functions
     window.showArticle = function(articleId) {
         const modal = new bootstrap.Modal(document.getElementById('articleModal'));
         const modalTitle = document.querySelector('#articleModal .modal-title');
@@ -535,12 +725,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    // Function to update articles based on category
     function updateArticles(category = null) {
-        currentCategory = category;
+        currentArticleCategory = category;
+        const articlesGrid = document.querySelector('.articles-grid');
         
         // Show loading state
-        document.querySelector('.articles-grid').innerHTML = `
+        articlesGrid.innerHTML = `
             <div class="text-center py-4">
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Loading...</span>
@@ -548,17 +738,17 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
 
-        // Reset all cards
+        // Reset category cards
         document.querySelectorAll('.category-card').forEach(card => {
             card.classList.remove('active');
         });
 
-        // Update active category if one is selected
+        // Update active category if selected
         if (category) {
             document.querySelector(`[data-category="${category}"]`).classList.add('active');
         }
 
-        // Update category indicator
+        // Update articles status
         const articlesStatus = document.querySelector('.articles-status');
         articlesStatus.textContent = category ? 
             `Showing ${category.charAt(0).toUpperCase() + category.slice(1)} articles` : 
@@ -578,7 +768,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(response.error || 'Failed to load articles');
             }
 
-            const articlesGrid = document.querySelector('.articles-grid');
             const articles = response.data;
 
             if (!articles || articles.length === 0) {
@@ -591,30 +780,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Clear and rebuild articles grid
-            articlesGrid.innerHTML = '';
-            
-            articles.forEach(article => {
-                const articleCard = `
-                    <article class="article-card fade-in">
-                        <h3 class="article-title">
-                            ${escapeHtml(article.title)}
-                        </h3>
-                        <p class="article-description">
-                            ${escapeHtml(article.preview)}
-                        </p>
-                        <div class="article-footer">
-                            <span class="article-date">
-                                ${formatDate(article.date_published)}
-                            </span>
-                            <button class="read-more-btn" onclick="showArticle(${article.id})">
-                                Read More
-                            </button>
-                        </div>
-                    </article>
-                `;
-                articlesGrid.insertAdjacentHTML('beforeend', articleCard);
-            });
+            // Build articles grid
+            articlesGrid.innerHTML = articles.map(article => `
+                <article class="article-card fade-in">
+                    <h3 class="article-title">
+                        ${escapeHtml(article.title)}
+                    </h3>
+                    <p class="article-description">
+                        ${escapeHtml(article.preview)}
+                    </p>
+                    <div class="article-footer">
+                        <span class="article-date">
+                            ${formatDate(article.date_published)}
+                        </span>
+                        <button class="read-more-btn" onclick="showArticle(${article.id})">
+                            Read More
+                        </button>
+                    </div>
+                </article>
+            `).join('');
 
             // Reset search if category changes
             if (searchInput.value) {
@@ -624,7 +808,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error:', error);
-            document.querySelector('.articles-grid').innerHTML = `
+            articlesGrid.innerHTML = `
                 <div class="alert alert-danger">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>
                     ${error.message || 'Error loading articles. Please try again later.'}
@@ -633,21 +817,107 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Function to update quotes
+    // Video Functions
+    function updateVideos(category = '', level = '') {
+        videoContainer.innerHTML = `
+            <div class="video-loading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading videos...</span>
+                </div>
+            </div>
+        `;
+
+        // Update active category pill
+        videoCategoryPills.forEach(pill => {
+            pill.classList.toggle('active', pill.dataset.category === category);
+        });
+
+        // Fetch filtered videos
+        fetch('learn-page.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `action=filterVideos&category=${category}&level=${level}`
+        })
+        .then(response => response.json())
+        .then(response => {
+            if (!response.success) {
+                throw new Error(response.error || 'Failed to load videos');
+            }
+
+            const videos = response.data;
+
+            if (!videos || videos.length === 0) {
+                videoContainer.innerHTML = `
+                    <div class="no-videos-found">
+                        <i class="bi bi-camera-video"></i>
+                        <h4>No Videos Found</h4>
+                        <p class="mb-0">Try adjusting your filters or check back later for new content.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            videoContainer.innerHTML = videos.map(video => `
+                <div class="video-card" onclick="playVideo('${video.video_url}', '${escapeHtml(video.title)}')">
+                    <div class="video-thumbnail">
+                        <img src="${video.thumbnail_url}" alt="${escapeHtml(video.title)}" loading="lazy">
+                        <span class="video-duration">${video.duration}</span>
+                        <div class="video-play-overlay">
+                            <i class="bi bi-play-circle"></i>
+                        </div>
+                    </div>
+                    <div class="video-info">
+                        <h3 class="video-title">${escapeHtml(video.title)}</h3>
+                        <div class="video-meta">
+                            <span class="video-level ${video.level}">
+                                ${video.level.charAt(0).toUpperCase() + video.level.slice(1)}
+                            </span>
+                            <span class="video-category">
+                                ${video.category.charAt(0).toUpperCase() + video.category.slice(1)}
+                            </span>
+                        </div>
+                        <p class="video-description">${escapeHtml(video.description)}</p>
+                    </div>
+                </div>
+            `).join('');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            videoContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Error loading videos. Please try again later.
+                </div>
+            `;
+        });
+    }
+
+    // Video player function
+    window.playVideo = function(videoUrl, videoTitle) {
+        const modalTitle = videoModal.querySelector('.modal-title');
+        const videoFrame = videoModal.querySelector('iframe');
+        
+        modalTitle.textContent = videoTitle;
+        videoFrame.src = videoUrl;
+        
+        const modal = new bootstrap.Modal(videoModal);
+        modal.show();
+    };
+
+    // Quotes Functions
     function updateQuotes(category = '') {
         const quotesContainer = document.getElementById('quotesContainer');
         const refreshButton = document.getElementById('refreshQuotes');
         const categorySelect = document.getElementById('quoteCategory');
         
-        // Disable controls during loading
         refreshButton.disabled = true;
         categorySelect.disabled = true;
         
-        // Add loading class to button icon
         const refreshIcon = refreshButton.querySelector('i');
         refreshIcon.classList.add('spin');
         
-        // Show loading state
         quotesContainer.innerHTML = `
             <div class="text-center py-5">
                 <div class="spinner-border text-primary" role="status">
@@ -657,7 +927,6 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
         
-        // Fetch new quotes
         fetch('learn-page.php', {
             method: 'POST',
             headers: {
@@ -696,19 +965,17 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         })
         .finally(() => {
-            // Re-enable controls
             refreshButton.disabled = false;
             categorySelect.disabled = false;
             refreshIcon.classList.remove('spin');
         });
     }
 
-    // Make cards keyboard accessible and handle clicks
+    // Event Listeners
+    // Category cards
     document.querySelectorAll('.category-card').forEach(card => {
-        // Add keyboard support
         card.setAttribute('tabindex', '0');
         
-        // Handle keyboard events
         card.addEventListener('keypress', function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -716,21 +983,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Add explicit click handling
         card.addEventListener('click', function() {
             const category = this.dataset.category;
             const isCurrentlyActive = this.classList.contains('active');
-            
-            if (isCurrentlyActive) {
-                updateArticles(null); // Show all articles
-            } else {
-                updateArticles(category); // Show category articles
-            }
+            updateArticles(isCurrentlyActive ? null : category);
         });
     });
 
-    // Show all articles button handler
-    document.getElementById('showAllButton').addEventListener('click', function() {
+    // Show all button
+    document.getElementById('showAllButton').addEventListener('click', () => {
         updateArticles(null);
     });
 
@@ -743,61 +1004,81 @@ document.addEventListener('DOMContentLoaded', function() {
         articles.forEach(article => {
             const title = article.querySelector('.article-title').textContent.toLowerCase();
             const preview = article.querySelector('.article-description').textContent.toLowerCase();
+            const isVisible = title.includes(searchTerm) || preview.includes(searchTerm);
             
-            if (title.includes(searchTerm) || preview.includes(searchTerm)) {
-                article.style.display = '';
-                visibleCount++;
-            } else {
-                article.style.display = 'none';
-            }
+            article.style.display = isVisible ? '' : 'none';
+            if (isVisible) visibleCount++;
         });
         
-        // Update clear button visibility
         clearSearch.style.display = searchTerm ? 'block' : 'none';
         
-        // Update status text during search
         const articlesStatus = document.querySelector('.articles-status');
         articlesStatus.textContent = searchTerm ? 
             `Found ${visibleCount} article${visibleCount !== 1 ? 's' : ''}` :
-            (currentCategory ? 
-                `Showing ${currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1)} articles` : 
+            (currentArticleCategory ? 
+                `Showing ${currentArticleCategory.charAt(0).toUpperCase() + currentArticleCategory.slice(1)} articles` : 
                 'Showing all articles');
 
-        // Show/hide no results message
+        // No results message
         const existingAlert = document.querySelector('.alert-custom-info');
         if (existingAlert) {
             existingAlert.remove();
         }
 
         if (visibleCount === 0) {
-            const noResultsMessage = `
+            document.querySelector('.articles-grid').insertAdjacentHTML('beforeend', `
                 <div class="alert alert-custom-info">
                     <i class="bi bi-info-circle-fill me-2"></i>
                     No articles found matching "${escapeHtml(searchTerm)}"
                 </div>
-            `;
-            document.querySelector('.articles-grid').insertAdjacentHTML('beforeend', noResultsMessage);
+            `);
         }
     });
 
-    // Clear search handler
+    // Clear search
     clearSearch.addEventListener('click', function() {
         searchInput.value = '';
         searchInput.dispatchEvent(new Event('input'));
         this.style.display = 'none';
     });
 
-    // Add event listeners for quotes
-    document.getElementById('quoteCategory').addEventListener('change', function() {
+    // Video section event listeners
+    videoCategoryPills.forEach(pill => {
+        pill.addEventListener('click', function() {
+            currentVideoCategory = this.dataset.category;
+            updateVideos(currentVideoCategory, currentVideoLevel);
+        });
+    });
+
+    videoLevelSelect.addEventListener('change', function() {
+        currentVideoLevel = this.value;
+        updateVideos(currentVideoCategory, currentVideoLevel);
+    });
+
+    resetVideoFilters.addEventListener('click', function() {
+        currentVideoCategory = '';
+        currentVideoLevel = '';
+        videoLevelSelect.value = '';
+        updateVideos();
+    });
+
+    // Quotes section event listeners
+    quoteCategorySelect.addEventListener('change', function() {
         updateQuotes(this.value);
     });
 
-    document.getElementById('refreshQuotes').addEventListener('click', function() {
-        const category = document.getElementById('quoteCategory').value;
+    refreshQuotesBtn.addEventListener('click', function() {
+        const category = quoteCategorySelect.value;
         updateQuotes(category);
     });
 
-    // Add spin animation class
+    // Modal event listeners
+    videoModal.addEventListener('hidden.bs.modal', function () {
+        const iframe = this.querySelector('iframe');
+        iframe.src = iframe.src; // Reload iframe to stop video
+    });
+
+    // Spin animation for refresh button
     const style = document.createElement('style');
     style.textContent = `
         @keyframes spin {
@@ -810,14 +1091,179 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
     document.head.appendChild(style);
 
-    // Initialize tooltips if any exist
+    // Initialize tooltips
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 
-    // Initial setup
-    clearSearch.style.display = 'none';
+    // Lazy loading for images
+    function lazyLoadImages() {
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src;
+                    img.classList.remove('lazy');
+                    observer.unobserve(img);
+                }
+            });
+        });
+
+        document.querySelectorAll('img.lazy').forEach(img => {
+            imageObserver.observe(img);
+        });
+    }
+
+    // Handle scroll performance
+    let scrollTimeout;
+    function throttleScroll() {
+        if (scrollTimeout) {
+            return;
+        }
+
+        scrollTimeout = setTimeout(() => {
+            scrollTimeout = null;
+            lazyLoadImages();
+        }, 250);
+    }
+
+    // Scroll event listener with throttling
+    window.addEventListener('scroll', throttleScroll, { passive: true });
+
+    // Handle window resize
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        if (resizeTimeout) {
+            clearTimeout(resizeTimeout);
+        }
+        resizeTimeout = setTimeout(function() {
+            // Reinitialize any responsive components
+            adjustLayoutForScreenSize();
+        }, 250);
+    });
+
+    // Adjust layout based on screen size
+    function adjustLayoutForScreenSize() {
+        const isMobile = window.innerWidth < 768;
+        const videosGrid = document.querySelector('.videos-grid');
+        const articlesGrid = document.querySelector('.articles-grid');
+
+        if (isMobile) {
+            videosGrid?.classList.add('mobile-layout');
+            articlesGrid?.classList.add('mobile-layout');
+        } else {
+            videosGrid?.classList.remove('mobile-layout');
+            articlesGrid?.classList.remove('mobile-layout');
+        }
+    }
+
+    // Handle keyboard navigation
+    function handleKeyboardNavigation() {
+        const focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+        
+        document.addEventListener('keydown', function(e) {
+            // Handle escape key
+            if (e.key === 'Escape') {
+                const activeModal = document.querySelector('.modal.show');
+                if (activeModal) {
+                    const modalInstance = bootstrap.Modal.getInstance(activeModal);
+                    modalInstance.hide();
+                }
+            }
+
+            // Handle tab navigation in modals
+            if (e.key === 'Tab') {
+                const activeModal = document.querySelector('.modal.show');
+                if (activeModal) {
+                    const focusable = activeModal.querySelectorAll(focusableElements);
+                    const firstFocusable = focusable[0];
+                    const lastFocusable = focusable[focusable.length - 1];
+
+                    if (e.shiftKey) {
+                        if (document.activeElement === firstFocusable) {
+                            lastFocusable.focus();
+                            e.preventDefault();
+                        }
+                    } else {
+                        if (document.activeElement === lastFocusable) {
+                            firstFocusable.focus();
+                            e.preventDefault();
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Error handling function
+    function handleError(error, container, message = 'An error occurred. Please try again later.') {
+        console.error('Error:', error);
+        container.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                ${message}
+            </div>
+        `;
+    }
+
+    // Initialize video progress tracking
+    function initVideoProgress() {
+        const videoCards = document.querySelectorAll('.video-card');
+        videoCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const videoId = this.dataset.videoId;
+                if (videoId) {
+                    // Store video progress in localStorage
+                    const progress = localStorage.getItem(`video-progress-${videoId}`) || '0';
+                    const videoFrame = videoModal.querySelector('iframe');
+                    if (videoFrame && videoFrame.contentWindow.postMessage) {
+                        // Send progress to video player (if supported)
+                        videoFrame.contentWindow.postMessage({
+                            event: 'seekTo',
+                            time: parseFloat(progress)
+                        }, '*');
+                    }
+                }
+            });
+        });
+    }
+
+    // Save video progress
+    window.addEventListener('message', function(event) {
+        if (event.data.event === 'videoProgress') {
+            const videoId = document.querySelector('.video-card.active')?.dataset.videoId;
+            if (videoId) {
+                localStorage.setItem(`video-progress-${videoId}`, event.data.time);
+            }
+        }
+    });
+
+    // Initialize everything
+    function init() {
+        // Initial setup
+        clearSearch.style.display = 'none';
+        adjustLayoutForScreenSize();
+        handleKeyboardNavigation();
+        initVideoProgress();
+
+        // Load initial content
+        updateVideos();
+        lazyLoadImages();
+
+        // Add visibility change handler for video modal
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                const activeModal = bootstrap.Modal.getInstance(videoModal);
+                if (activeModal) {
+                    activeModal.hide();
+                }
+            }
+        });
+    }
+
+    // Call init function
+    init();
 });
 </script>
 
