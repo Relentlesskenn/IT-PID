@@ -376,66 +376,85 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
     <!-- Budget Details Modal -->
     <div class="modal fade" id="budgetDetailsModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 overflow-hidden">
-            <!-- Header Section -->
-            <div class="modal-header border-0 bg-gradient-primary p-4">
-                <h5 class="modal-title text-white mb-0">
-                    <span class="badge rounded-pill me-2" id="categoryColor">&nbsp;</span>
-                    <span id="budgetTitle" class="fw-bold"></span>
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="modal-content border-0">
+            <!-- Header with Category and Date -->
+            <div class="modal-header flex-column border-0 bg-gradient-primary p-4">
+                <button type="button" class="btn-close opacity-75" data-bs-dismiss="modal"></button>
+                
+                <div class="category-badge mb-2">
+                    <span class="badge bg-white bg-opacity-10 rounded-pill px-3 py-2" id="budgetPeriod"></span> 
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <span class="badge rounded-circle me-2" id="categoryColor"></span>
+                    <h3 class="modal-title text-white mb-0" id="budgetTitle"></h3>
+                </div>
             </div>
-            
-            <!-- Body Section -->
+
+            <!-- Budget Content -->
             <div class="modal-body p-4">
-                <!-- Amount Summary Card -->
-                <div class="card shadow-sm border-0 rounded-4 mb-4">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-end mb-3">
-                            <div>
-                                <span class="text-muted small">Total Budget</span>
-                                <div class="d-flex align-items-center gap-2">
-                                    <h3 class="fw-bold mb-0" id="budgetAmount"></h3>
-                                    <button class="btn btn-sm btn-link text-primary p-0" onclick="toggleBudgetEdit()">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </button>
-                                </div>
-                                <!-- Add this edit form -->
-                                <div id="budgetEditForm" class="d-none mt-2">
-                                    <div class="input-group">
-                                        <span class="input-group-text">₱</span>
-                                        <input type="number" id="newBudgetAmount" class="form-control" step="0.01" min="0">
-                                        <button class="btn btn-primary" onclick="updateBudget()">Save</button>
-                                        <button class="btn btn-outline-secondary" onclick="toggleBudgetEdit()">Cancel</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="badge bg-primary rounded-pill text-uppercase" id="budgetPeriod"></span>
+                <!-- Total Budget Amount -->
+                <div class="budget-amount text-center mb-4">
+                    <span class="text-muted small">Total Budget</span>
+                    <div class="d-flex align-items-center justify-content-center gap-2">
+                        <h3 class="mb-0 fw-bold" id="budgetAmount"></h3>
+                        <button class="btn btn-link p-0 text-muted" onclick="toggleBudgetEdit()">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                    </div>
+
+                    <!-- Edit Budget Form -->
+                    <div id="budgetEditForm" class="d-none mt-3">
+                        <div class="input-group">
+                            <span class="input-group-text">₱</span>
+                            <input type="number" id="newBudgetAmount" class="form-control" step="0.01" min="0">
+                            <button class="btn btn-primary px-3" onclick="updateBudget()">Save</button>
+                            <button class="btn btn-outline-secondary" onclick="toggleBudgetEdit()">Cancel</button>
                         </div>
-                        
-                        <div class="progress mb-3" style="height: 0.8rem;">
-                            <div class="progress-bar rounded-pill" id="budgetProgress" role="progressbar"></div>
-                        </div>
-                        
-                        <p class="text-center small mb-0" id="progressText"></p>
                     </div>
                 </div>
 
-                <!-- Expense Breakdown -->
+                <!-- Progress Circle -->
+                <div class="progress-circle text-center mb-4">
+                    <div class="position-relative" style="width: 200px; height: 200px; margin: 0 auto;">
+                        <svg class="w-100 h-100" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="#f0f0f0" stroke-width="10"/>
+                            <circle id="progressRing" cx="50" cy="50" r="45" fill="none" 
+                                stroke="#433878" stroke-width="10" stroke-dasharray="282.74" 
+                                stroke-linecap="round" transform="rotate(-90 50 50)"/>
+                        </svg>
+                        <div class="position-absolute top-50 start-50 translate-middle text-center">
+                            <div class="h2 mb-0 fw-bold" id="progressText"></div>
+                            <div class="text-muted small">of budget used</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Budget Stats -->
                 <div class="row g-3">
                     <div class="col-6">
-                        <div class="card border-0 rounded-4 bg-light">
-                            <div class="card-body p-3 text-center">
-                                <div class="small text-muted mb-1">Spent</div>
-                                <div class="fw-bold text-danger" id="spentAmount"></div>
+                        <div class="stat-card spent">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-circle me-3">
+                                    <i class="bi bi-arrow-down"></i>
+                                </div>
+                                <div>
+                                    <div class="stat-label">Spent</div>
+                                    <div class="stat-value" id="spentAmount"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="card border-0 rounded-4 bg-light">
-                            <div class="card-body p-3 text-center">
-                                <div class="small text-muted mb-1">Remaining</div>
-                                <div class="fw-bold text-success" id="remainingBalance"></div>
+                        <div class="stat-card remaining">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-circle me-3">
+                                    <i class="bi bi-arrow-up"></i>
+                                </div>
+                                <div>
+                                    <div class="stat-label">Remaining</div>
+                                    <div class="stat-value" id="remainingBalance"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -519,7 +538,7 @@ function showBudgetDetails(card, data) {
     currentBudgetId = data.id;
     const modal = new bootstrap.Modal(document.getElementById('budgetDetailsModal'));
     
-    // Update modal content
+    // Update basic content
     document.getElementById('categoryColor').style.backgroundColor = data.color;
     document.getElementById('budgetTitle').textContent = data.name;
     document.getElementById('budgetAmount').textContent = '₱' + parseFloat(data.amount).toLocaleString(undefined, {minimumFractionDigits: 2});
@@ -527,12 +546,22 @@ function showBudgetDetails(card, data) {
     document.getElementById('remainingBalance').textContent = '₱' + parseFloat(data.remaining).toLocaleString(undefined, {minimumFractionDigits: 2});
     document.getElementById('budgetPeriod').textContent = new Date(data.period).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     
-    // Update progress bar
-    const progressBar = document.getElementById('budgetProgress');
-    progressBar.style.width = data.percentage + '%';
-    progressBar.className = 'progress-bar ' + (data.percentage >= 90 ? 'bg-custom-danger' : (data.percentage >= 70 ? 'bg-warning' : 'bg-success'));
+    // Update progress ring
+    const ring = document.getElementById('progressRing');
+    const radius = ring.r.baseVal.value;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (data.percentage / 100 * circumference);
     
-    document.getElementById('progressText').textContent = `${data.percentage.toFixed(1)}% of budget used`;
+    ring.style.strokeDasharray = `${circumference} ${circumference}`;
+    ring.style.strokeDashoffset = offset;
+    
+    // Set color based on percentage
+    const progressColor = data.percentage >= 90 ? '#DC2626' : 
+                         data.percentage >= 70 ? '#FBBF24' : 
+                         '#16A34A';
+    ring.style.stroke = progressColor;
+    
+    document.getElementById('progressText').textContent = `${data.percentage.toFixed(1)}%`;
     
     modal.show();
 }

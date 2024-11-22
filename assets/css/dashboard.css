@@ -268,34 +268,78 @@
 
 /* Modal Styles */
 .modal-content {
-    border: none !important;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important;
+    border-radius: 20px;
+    overflow: hidden;
 }
 
 .bg-gradient-primary {
-    background: linear-gradient(45deg, #433878, #7d62b4) !important;
+    background: linear-gradient(135deg, #433878 0%, #7d62b4 100%);
 }
 
-.progress {
-    background-color: #f0f0f0 !important;
-    border-radius: 1rem !important;
+.modal-header .btn-close {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    filter: brightness(0) invert(1);
 }
 
-.progress-bar {
-    border-radius: 1rem !important;
-    transition: width 0.5s ease !important;
+/* Progress Circle */
+.progress-circle circle {
+    transition: stroke-dashoffset 0.35s;
 }
 
-.modal .card {
-    transition: transform 0.2s ease !important;
+/* Stat Cards */
+.stat-card {
+    padding: 1rem;
+    border-radius: 16px;
 }
 
-.modal .card:hover {
-    transform: translateY(-2px) !important;
+.stat-card.spent {
+    background-color: #FFF5F5;
+}
+
+.stat-card.remaining {
+    background-color: #F0FDF4;
+}
+
+.icon-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spent .icon-circle {
+    background-color: #FEE2E2;
+    color: #DC2626;
+}
+
+.remaining .icon-circle {
+    background-color: #DCFCE7;
+    color: #16A34A;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: #6B7280;
+    margin-bottom: 0.25rem;
+}
+
+.spent .stat-value {
+    color: #DC2626;
+    font-weight: 600;
+}
+
+.remaining .stat-value {
+    color: #16A34A;
+    font-weight: 600;
 }
 
 #categoryColor {
-    width: 2rem !important;
-    height: 2rem !important;
-    border: 2px solid rgba(255,255,255,0.5) !important;
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+    margin-right: 0.5rem;
 }
