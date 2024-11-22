@@ -233,3 +233,69 @@
     background-color: #8E7AB5 !important;
     color: white !important;
 }
+
+/* Budget Details Modal Styles */
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    padding: 1rem 0;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.detail-label {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.detail-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #433878;
+}
+
+#categoryColor {
+    width: 1rem;
+    height: 1rem;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Modal Styles */
+.modal-content {
+    border: none !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(45deg, #433878, #7d62b4) !important;
+}
+
+.progress {
+    background-color: #f0f0f0 !important;
+    border-radius: 1rem !important;
+}
+
+.progress-bar {
+    border-radius: 1rem !important;
+    transition: width 0.5s ease !important;
+}
+
+.modal .card {
+    transition: transform 0.2s ease !important;
+}
+
+.modal .card:hover {
+    transform: translateY(-2px) !important;
+}
+
+#categoryColor {
+    width: 2rem !important;
+    height: 2rem !important;
+    border: 2px solid rgba(255,255,255,0.5) !important;
+}

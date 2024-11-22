@@ -301,7 +301,16 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
             ?>
                     <!-- Budget Card Content -->
                     <div class="col">
-                        <div class="card h-100">
+                    <div class="card h-100" onclick="showBudgetDetails(this, <?= htmlspecialchars(json_encode([
+                            'id' => $budgetId,
+                            'name' => $budgetName,
+                            'amount' => $budgetAmount,
+                            'spent' => $totalExpenses,
+                            'remaining' => $remainingBalance,
+                            'period' => $monthCreated,
+                            'color' => $row['color'],
+                            'percentage' => $percentageUsed
+                        ])) ?>)">
                             <div class="card-body d-flex flex-column p-2">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <h6 class="card-title mb-0" style="font-size: 1rem; font-weight: bold;">
@@ -339,6 +348,64 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
             }
             ?>        
         </div>
+    </div>
+
+    <!-- Budget Details Modal -->
+    <div class="modal fade" id="budgetDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 overflow-hidden">
+            <!-- Header Section -->
+            <div class="modal-header border-0 bg-gradient-primary p-4">
+                <h5 class="modal-title text-white mb-0">
+                    <span class="badge rounded-pill me-2" id="categoryColor">&nbsp;</span>
+                    <span id="budgetTitle" class="fw-bold"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <!-- Body Section -->
+            <div class="modal-body p-4">
+                <!-- Amount Summary Card -->
+                <div class="card shadow-sm border-0 rounded-4 mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-end mb-3">
+                            <div>
+                                <span class="text-muted small">Total Budget</span>
+                                <h3 class="fw-bold mb-0" id="budgetAmount"></h3>
+                            </div>
+                            <span class="badge bg-primary rounded-pill text-uppercase" id="budgetPeriod"></span>
+                        </div>
+                        
+                        <div class="progress mb-3" style="height: 0.8rem;">
+                            <div class="progress-bar rounded-pill" id="budgetProgress" role="progressbar"></div>
+                        </div>
+                        
+                        <p class="text-center small mb-0" id="progressText"></p>
+                    </div>
+                </div>
+
+                <!-- Expense Breakdown -->
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="card border-0 rounded-4 bg-light">
+                            <div class="card-body p-3 text-center">
+                                <div class="small text-muted mb-1">Spent</div>
+                                <div class="fw-bold text-danger" id="spentAmount"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card border-0 rounded-4 bg-light">
+                            <div class="card-body p-3 text-center">
+                                <div class="small text-muted mb-1">Remaining</div>
+                                <div class="fw-bold text-success" id="remainingBalance"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 
     <!-- Toast container for budget alerts -->
@@ -406,6 +473,28 @@ function showBudgetAlerts(alerts) {
     }
 
     showNextAlert(0);
+}
+
+// Show budget details modal
+function showBudgetDetails(card, data) {
+    const modal = new bootstrap.Modal(document.getElementById('budgetDetailsModal'));
+    
+    // Update modal content
+    document.getElementById('categoryColor').style.backgroundColor = data.color;
+    document.getElementById('budgetTitle').textContent = data.name;
+    document.getElementById('budgetAmount').textContent = '₱' + parseFloat(data.amount).toLocaleString(undefined, {minimumFractionDigits: 2});
+    document.getElementById('spentAmount').textContent = '₱' + parseFloat(data.spent).toLocaleString(undefined, {minimumFractionDigits: 2});
+    document.getElementById('remainingBalance').textContent = '₱' + parseFloat(data.remaining).toLocaleString(undefined, {minimumFractionDigits: 2});
+    document.getElementById('budgetPeriod').textContent = new Date(data.period).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    
+    // Update progress bar
+    const progressBar = document.getElementById('budgetProgress');
+    progressBar.style.width = data.percentage + '%';
+    progressBar.className = 'progress-bar ' + (data.percentage >= 90 ? 'bg-custom-danger' : (data.percentage >= 70 ? 'bg-warning' : 'bg-success'));
+    
+    document.getElementById('progressText').textContent = `${data.percentage.toFixed(1)}% of budget used`;
+    
+    modal.show();
 }
 
 // Show budget alerts when the page loads
