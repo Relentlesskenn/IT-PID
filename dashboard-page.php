@@ -1,7 +1,30 @@
 <?php
-$page_title = "Dashboard · IT-PID";
 include('_dbconnect.php');
 include('includes/authentication.php');
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['budget_id'])) {
+    header('Content-Type: application/json');
+    
+    $budgetId = filter_input(INPUT_POST, 'budget_id', FILTER_VALIDATE_INT);
+    $newAmount = filter_input(INPUT_POST, 'new_amount', FILTER_VALIDATE_FLOAT);
+    $userId = $_SESSION['auth_user']['user_id'];
+
+    try {
+        $stmt = $conn->prepare("UPDATE budgets SET amount = ? WHERE id = ? AND user_id = ?");
+        $stmt->bind_param("dii", $newAmount, $budgetId, $userId);
+        
+        if ($stmt->execute()) {
+            echo json_encode(['success' => true]);
+        } else {
+            throw new Exception('Failed to update budget');
+        }
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    }
+    exit;
+}
+
+$page_title = "Dashboard · IT-PID";
 include('includes/header.php');
 include('includes/navbar.php');
 
@@ -371,7 +394,21 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                         <div class="d-flex justify-content-between align-items-end mb-3">
                             <div>
                                 <span class="text-muted small">Total Budget</span>
-                                <h3 class="fw-bold mb-0" id="budgetAmount"></h3>
+                                <div class="d-flex align-items-center gap-2">
+                                    <h3 class="fw-bold mb-0" id="budgetAmount"></h3>
+                                    <button class="btn btn-sm btn-link text-primary p-0" onclick="toggleBudgetEdit()">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                </div>
+                                <!-- Add this edit form -->
+                                <div id="budgetEditForm" class="d-none mt-2">
+                                    <div class="input-group">
+                                        <span class="input-group-text">₱</span>
+                                        <input type="number" id="newBudgetAmount" class="form-control" step="0.01" min="0">
+                                        <button class="btn btn-primary" onclick="updateBudget()">Save</button>
+                                        <button class="btn btn-outline-secondary" onclick="toggleBudgetEdit()">Cancel</button>
+                                    </div>
+                                </div>
                             </div>
                             <span class="badge bg-primary rounded-pill text-uppercase" id="budgetPeriod"></span>
                         </div>
@@ -475,8 +512,11 @@ function showBudgetAlerts(alerts) {
     showNextAlert(0);
 }
 
+let currentBudgetId = null;
+
 // Show budget details modal
 function showBudgetDetails(card, data) {
+    currentBudgetId = data.id;
     const modal = new bootstrap.Modal(document.getElementById('budgetDetailsModal'));
     
     // Update modal content
@@ -495,6 +535,43 @@ function showBudgetDetails(card, data) {
     document.getElementById('progressText').textContent = `${data.percentage.toFixed(1)}% of budget used`;
     
     modal.show();
+}
+
+// Edit budget amount
+function toggleBudgetEdit() {
+    const form = document.getElementById('budgetEditForm');
+    const currentAmount = document.getElementById('budgetAmount').textContent
+        .replace('₱', '').replace(',', '');
+    
+    document.getElementById('newBudgetAmount').value = parseFloat(currentAmount);
+    form.classList.toggle('d-none');
+}
+
+// Update budget amount
+function updateBudget() {
+    const newAmount = document.getElementById('newBudgetAmount').value;
+    
+    fetch('dashboard-page.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `budget_id=${currentBudgetId}&new_amount=${newAmount}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('budgetAmount').textContent = '₱' + 
+                parseFloat(newAmount).toLocaleString(undefined, {minimumFractionDigits: 2});
+            toggleBudgetEdit();
+            location.reload();
+        } else {
+            throw new Error(data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error updating budget: ' + error.message);
+    });
 }
 
 // Show budget alerts when the page loads
