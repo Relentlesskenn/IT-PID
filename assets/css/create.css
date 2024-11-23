@@ -1,3 +1,70 @@
+/* Main container styles */
+.create-page-container {
+    min-height: 100vh !important;
+    padding: 2rem 1rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+/* Card wrapper styles */
+.create-card-wrapper {
+    width: 100% !important;
+    max-width: 400px !important;
+    margin: 0 auto !important;
+}
+
+/* Card styles */
+.create-card {
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    margin-bottom: 1rem !important;
+}
+
+/* Form content styles */
+.form-content {
+    height: auto !important;
+    overflow: visible !important;
+}
+
+/* Accordion styles */
+.accordion {
+    margin-top: 2rem !important;
+    transition: all 0.3s ease-in-out !important;
+}
+
+.accordion-collapse {
+    overflow: hidden !important;
+}
+
+/* Recent items container */
+.recent-items {
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+/* Responsive adjustments */
+@media (max-height: 700px) {
+    .create-page-container {
+        padding: 1rem !important;
+        justify-content: flex-start !important;
+    }
+}
+
+/* Animation for accordion expansion */
+.accordion-collapse.collapsing {
+    transition-duration: 0.35s !important;
+}
+
+/* Toast container positioning */
+.toast-container {
+    z-index: 1060 !important;
+    position: fixed !important;
+    top: 1rem !important;
+}
+
 /* Card styling */
 .card {
     border: none !important;
@@ -168,4 +235,157 @@
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     padding: 0.75rem 1.25rem !important;
     transition: all 0.2s ease !important;
+}
+
+/* Recent Items Accordion Styling */
+.accordion {
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    margin-top: 2rem !important;
+    box-shadow: 0 2px 8px rgba(67, 56, 120, 0.1) !important;
+}
+
+.accordion-item {
+    border: none !important;
+    background-color: #fff !important;
+}
+
+.accordion-item:first-of-type .accordion-button {
+    border-top-left-radius: 16px !important;
+    border-top-right-radius: 16px !important;
+}
+
+.accordion-button {
+    padding: 1.25rem !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    color: #433878 !important;
+    background-color: #fff !important;
+    border-bottom: 1px solid rgba(67, 56, 120, 0.1) !important;
+    transition: all 0.3s ease !important;
+}
+
+.accordion-button:not(.collapsed) {
+    background: linear-gradient(135deg, #433878, #7d62b4) !important;
+    color: #fff !important;
+}
+
+.accordion-button:not(.collapsed)::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e") !important;
+}
+
+.accordion-button:focus {
+    box-shadow: none !important;
+    border-color: rgba(67, 56, 120, 0.1) !important;
+}
+
+.accordion-body {
+    padding: 1.5rem !important;
+    background-color: #f8f9fa !important;
+}
+
+/* Recent Items Container */
+.recent-items {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+}
+
+/* Recent Item Card */
+.recent-item {
+    background-color: #fff !important;
+    border-radius: 12px !important;
+    padding: 1rem !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.2s ease-in-out !important;
+    border: 1px solid rgba(67, 56, 120, 0.1) !important;
+}
+
+.recent-item:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(67, 56, 120, 0.15) !important;
+}
+
+/* Recent Item Content */
+.recent-item-details {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.recent-item-name {
+    font-weight: 600 !important;
+    color: #433878 !important;
+    font-size: 0.95rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+.recent-item-name::before {
+    content: '' !important;
+    display: inline-block !important;
+    width: 8px !important;
+    height: 8px !important;
+    background-color: #433878 !important;
+    border-radius: 50% !important;
+}
+
+.recent-item-amount {
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+    color: #00875A !important;
+    background-color: rgba(0, 135, 90, 0.1) !important;
+    padding: 0.25rem 0.75rem !important;
+    border-radius: 20px !important;
+}
+
+/* For expense amounts (red color) */
+.recent-item.expense .recent-item-amount {
+    color: #E34935 !important;
+    background-color: rgba(227, 73, 53, 0.1) !important;
+}
+
+.recent-item-comment {
+    margin: 0.5rem 0 !important;
+    color: #666 !important;
+    font-size: 0.85rem !important;
+    padding-left: 1rem !important;
+    border-left: 2px solid rgba(67, 56, 120, 0.2) !important;
+}
+
+/* Date Display */
+.recent-item small.text-muted {
+    display: block !important;
+    font-size: 0.75rem !important;
+    color: #6c757d !important;
+    text-align: right !important;
+}
+
+/* Empty State */
+.recent-items p.text-muted {
+    text-align: center !important;
+    padding: 1.5rem !important;
+    font-size: 0.9rem !important;
+    color: #6c757d !important;
+    background-color: rgba(67, 56, 120, 0.05) !important;
+    border-radius: 12px !important;
+    margin: 0 !important;
+}
+
+/* Animations */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.accordion-collapse.show {
+    animation: slideDown 0.3s ease-out;
 }

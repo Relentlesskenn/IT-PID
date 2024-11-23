@@ -24,6 +24,8 @@ $budgetCategories = [
 // Functions
 // Function to show the income form
 function showIncome() {
+    global $conn;
+    $userId = $_SESSION['auth_user']['user_id'];
     echo '
         <form method="post">
             <div class="mb-3">
@@ -53,11 +55,41 @@ function showIncome() {
             </a>
         </form>
     ';
+    echo '
+        <div class="accordion mt-4" id="recentIncomesAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#recentIncomesCollapse">
+                        Recently Added Incomes
+                    </button>
+                </h2>
+                <div id="recentIncomesCollapse" class="accordion-collapse collapse" data-bs-parent="#recentIncomesAccordion">
+                    <div class="accordion-body">
+                        <div class="recent-items">';
+                        $recentIncomes = getRecentIncomes($conn, $userId);
+                        if ($recentIncomes->num_rows > 0) {
+                            while ($income = $recentIncomes->fetch_assoc()) {
+                                echo '<div class="recent-item">
+                                    <div class="recent-item-details">
+                                        <span class="recent-item-name">' . htmlspecialchars($income['name']) . '</span>
+                                        <span class="recent-item-amount">₱' . number_format($income['amount'], 2) . '</span>
+                                    </div>
+                                    <small class="text-muted">' . date('M d, Y g:i A', strtotime($income['date'])) . '</small>
+                                </div>';
+                            }
+                        } else {
+                            echo '<p class="text-muted mb-0">No recent incomes found.</p>';
+                        }
+    echo '          </div>
+                </div>
+            </div>
+        </div>';
 }
 
 // Function to show the budget form
 function showBudget() {
-    global $budgetCategories;
+    global $conn, $budgetCategories;
+    $userId = $_SESSION['auth_user']['user_id'];
     $current_month = date('Y-m');
     echo '   
         <form method="post">
@@ -91,10 +123,41 @@ function showBudget() {
             </a>
         </form>
     ';
+    echo '
+        <div class="accordion mt-4" id="recentBudgetsAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#recentBudgetsCollapse">
+                        Recently Added Budgets
+                    </button>
+                </h2>
+                <div id="recentBudgetsCollapse" class="accordion-collapse collapse" data-bs-parent="#recentBudgetsAccordion">
+                    <div class="accordion-body">
+                        <div class="recent-items">';
+                        $recentBudgets = getRecentBudgets($conn, $userId);
+                        if ($recentBudgets->num_rows > 0) {
+                            while ($budget = $recentBudgets->fetch_assoc()) {
+                                echo '<div class="recent-item">
+                                        <div class="recent-item-details">
+                                            <span class="recent-item-name">' . htmlspecialchars($budget['name']) . '</span>
+                                            <span class="recent-item-amount">₱' . number_format($budget['amount'], 2) . '</span>
+                                        </div>
+                                        <small class="text-muted">' . date('M d, Y', strtotime($budget['date'])) . '</small>
+                                    </div>';
+                            }
+                        } else {
+                            echo '<p class="text-muted mb-0">No recent budgets found.</p>';
+                        }
+    echo '          </div>
+                </div>
+            </div>
+        </div>';
 }
 
 // Function to show the expense form
 function showExpense() {
+    global $conn;
+    $userId = $_SESSION['auth_user']['user_id'];
     $current_month = date('Y-m');
     echo '
         <form method="post">
@@ -125,6 +188,40 @@ function showExpense() {
             </a>
         </form>
     ';
+    echo '
+        <div class="accordion mt-4" id="recentExpensesAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#recentExpensesCollapse">
+                        Recently Added Expenses
+                    </button>
+                </h2>
+                <div id="recentExpensesCollapse" class="accordion-collapse collapse" data-bs-parent="#recentExpensesAccordion">
+                    <div class="accordion-body">
+                        <div class="recent-items">';
+                        $recentExpenses = getRecentExpenses($conn, $userId);
+                        if ($recentExpenses->num_rows > 0) {
+                            while ($expense = $recentExpenses->fetch_assoc()) {
+                                echo '<div class="recent-item expense">
+                                    <div class="recent-item-details">
+                                        <span class="recent-item-name">' . htmlspecialchars($expense['category_name']) . '</span>
+                                        <span class="recent-item-amount">₱' . number_format($expense['amount'], 2) . '</span>
+                                    </div>';
+                            if (!empty($expense['comment'])) {
+                                echo '<div class="recent-item-comment">
+                                        <small>' . htmlspecialchars($expense['comment']) . '</small>
+                                    </div>';
+                            }
+                            echo    '<small class="text-muted">' . date('M d, Y g:i A', strtotime($expense['date'])) . '</small>
+                                </div>';
+                            }
+                        } else {
+                            echo '<p class="text-muted mb-0">No recent expenses found.</p>';
+                        }
+    echo '          </div>
+                </div>
+            </div>
+        </div>';
 }
 
 // Fetch Budget Categories
@@ -154,6 +251,44 @@ function addNotification($userId, $type, $message) {
     $stmt->bind_param("iss", $userId, $type, $message);
     $stmt->execute();
     $stmt->close();
+}
+
+// Function to fetch recent budgets
+function getRecentBudgets($conn, $userId, $limit = 5) {
+    $current_month = date('Y-m');
+    $stmt = $conn->prepare("SELECT name, amount, date 
+                           FROM budgets 
+                           WHERE user_id = ? AND month = ? 
+                           ORDER BY date DESC 
+                           LIMIT ?");
+    $stmt->bind_param("isi", $userId, $current_month, $limit);
+    $stmt->execute();
+    return $stmt->get_result();
+}
+
+// Function to fetch recent incomes
+function getRecentIncomes($conn, $userId, $limit = 5) {
+    $stmt = $conn->prepare("SELECT name, amount, date 
+                           FROM incomes 
+                           WHERE user_id = ? 
+                           ORDER BY date DESC 
+                           LIMIT ?");
+    $stmt->bind_param("ii", $userId, $limit);
+    $stmt->execute();
+    return $stmt->get_result();
+}
+
+// Function to fetch recent expenses
+function getRecentExpenses($conn, $userId, $limit = 5) {
+    $stmt = $conn->prepare("SELECT e.amount, e.date, e.comment, b.name as category_name 
+                           FROM expenses e 
+                           JOIN budgets b ON e.category_id = b.id 
+                           WHERE e.user_id = ? 
+                           ORDER BY e.date DESC 
+                           LIMIT ?");
+    $stmt->bind_param("ii", $userId, $limit);
+    $stmt->execute();
+    return $stmt->get_result();
 }
 
 // Process form submissions
@@ -296,33 +431,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <link rel="stylesheet" href="./assets/css/create.css">
 
 <!-- HTML content -->
-<div class="container-fluid vh-100 d-flex flex-column justify-content-center align-items-center">
-    <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
-        <div class="card-body">
-        <form method="post" action="" id="pageForm" class="mt-2 mb-4">
-            <input type="hidden" name="submitted_page" value="<?php echo htmlspecialchars($selected_page); ?>">
-            <div class="btn-group w-100" role="group" aria-label="Page Selection">
-                <input type="radio" class="btn-check" name="page" id="income" value="income" autocomplete="off" <?php echo ($selected_page == 'income') ? 'checked' : ''; ?>>
-                <label class="btn btn-outline-primary" for="income">Income</label>
+<div class="create-page-container">
+    <div class="create-card-wrapper">
+        <div class="card create-card shadow-sm">
+            <div class="card-body">
+                <form method="post" action="" id="pageForm" class="mt-2 mb-4">
+                    <input type="hidden" name="submitted_page" value="<?php echo htmlspecialchars($selected_page); ?>">
+                    <div class="btn-group w-100" role="group" aria-label="Page Selection">
+                        <input type="radio" class="btn-check" name="page" id="income" value="income" autocomplete="off" <?php echo ($selected_page == 'income') ? 'checked' : ''; ?>>
+                        <label class="btn btn-outline-primary" for="income">Income</label>
 
-                <input type="radio" class="btn-check" name="page" id="budget" value="budget" autocomplete="off" <?php echo ($selected_page == 'budget') ? 'checked' : ''; ?>>
-                <label class="btn btn-outline-success" for="budget">Budget</label>
+                        <input type="radio" class="btn-check" name="page" id="budget" value="budget" autocomplete="off" <?php echo ($selected_page == 'budget') ? 'checked' : ''; ?>>
+                        <label class="btn btn-outline-success" for="budget">Budget</label>
 
-                <input type="radio" class="btn-check" name="page" id="expense" value="expense" autocomplete="off" <?php echo ($selected_page == 'expense') ? 'checked' : ''; ?>>
-                <label class="btn btn-outline-danger" for="expense">Expense</label>
-            </div>
-        </form>
-            
-            <div class="content">
-                <?php
-                    if ($selected_page == 'income') {
-                        showIncome();
-                    } elseif ($selected_page == 'budget') {
-                        showBudget();
-                    } elseif ($selected_page == 'expense') {
-                        showExpense();
-                    }
-                ?>
+                        <input type="radio" class="btn-check" name="page" id="expense" value="expense" autocomplete="off" <?php echo ($selected_page == 'expense') ? 'checked' : ''; ?>>
+                        <label class="btn btn-outline-danger" for="expense">Expense</label>
+                    </div>
+                </form>
+                
+                <div class="form-content">
+                    <?php
+                        if ($selected_page == 'income') {
+                            showIncome();
+                        } elseif ($selected_page == 'budget') {
+                            showBudget();
+                        } elseif ($selected_page == 'expense') {
+                            showExpense();
+                        }
+                    ?>
+                </div>
             </div>
         </div>
     </div>
