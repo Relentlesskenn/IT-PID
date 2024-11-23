@@ -25,6 +25,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         exit;
     }
+
+    // Transaction retrieval handler
+    if (isset($_POST['action']) && $_POST['action'] === 'get_transactions') {
+        try {
+            $budgetId = filter_input(INPUT_POST, 'budget_id', FILTER_VALIDATE_INT);
+            $userId = $_SESSION['auth_user']['user_id'];
+            
+            if (!$budgetId) {
+                throw new Exception('Invalid budget ID');
+            }
+
+            // Verify the budget belongs to the user
+            $stmt = $conn->prepare("SELECT id FROM budgets WHERE id = ? AND user_id = ?");
+            $stmt->bind_param("ii", $budgetId, $userId);
+            $stmt->execute();
+            if ($stmt->get_result()->num_rows === 0) {
+                throw new Exception('Unauthorized');
+            }
+
+            // Get recent transactions
+            $transactions = getRecentTransactions($conn, $budgetId);
+            $transactionsArray = [];
+            while ($row = $transactions->fetch_assoc()) {
+                $transactionsArray[] = $row;
+            }
+
+            echo json_encode([
+                'success' => true,
+                'transactions' => $transactionsArray
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+        exit;
+    }
     
     // Budget deletion handler
     if (isset($_POST['action']) && $_POST['action'] === 'delete') {
@@ -231,6 +270,19 @@ function markAlertAsShown($userId, $budgetId, $alertType) {
     $stmt = $conn->prepare("INSERT INTO budget_alerts (user_id, budget_id, alert_type) VALUES (?, ?, ?)");
     $stmt->bind_param("iis", $userId, $budgetId, $alertType);
     $stmt->execute();
+}
+
+function getRecentTransactions($conn, $budgetId, $limit = 5) {
+    $stmt = $conn->prepare("
+        SELECT amount, comment, DATE_FORMAT(date, '%M %d, %Y') as formatted_date 
+        FROM expenses 
+        WHERE category_id = ? 
+        ORDER BY date DESC 
+        LIMIT ?
+    ");
+    $stmt->bind_param("ii", $budgetId, $limit);
+    $stmt->execute();
+    return $stmt->get_result();
 }
 
 // Get current month, year, and set default year
@@ -520,6 +572,17 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                     </div>
                 </div>
 
+                <!-- Recent Transactions Section -->
+                <div class="recent-transactions mt-4">
+                    <h6 class="d-flex align-items-center">
+                        <i class="bi bi-clock-history me-2"></i>
+                        Recent Transactions
+                    </h6>
+                    <div class="transactions-list" id="transactionsList">
+                        <!-- Transactions will be loaded here -->
+                    </div>
+                </div>
+
                 <!-- Delete Budget Button -->
                 <div class="mt-4 d-flex justify-content-end">
                     <button type="button" class="btn btn-danger w-100" onclick="confirmDeleteBudget()">
@@ -613,7 +676,6 @@ function showBudgetAlerts(alerts) {
 
         // Wait for the toast to hide before showing the next one
         toastContainer.addEventListener('hidden.bs.toast', () => {
-            // Short delay before showing the next toast for smoother transition
             setTimeout(() => {
                 showNextAlert(index + 1);
             }, 400);
@@ -625,37 +687,125 @@ function showBudgetAlerts(alerts) {
 
 let currentBudgetId = null;
 
+// Utility function to format currency
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        minimumFractionDigits: 2
+    }).format(amount);
+}
+
+// Function to update progress ring
+function updateProgressRing(percentage) {
+    const ring = document.getElementById('progressRing');
+    const radius = ring.r.baseVal.value;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (percentage / 100 * circumference);
+    
+    ring.style.strokeDasharray = `${circumference} ${circumference}`;
+    ring.style.strokeDashoffset = offset;
+    
+    // Set color based on percentage
+    const progressColor = percentage >= 90 ? '#DC2626' : 
+                         percentage >= 70 ? '#FBBF24' : 
+                         '#16A34A';
+    ring.style.stroke = progressColor;
+    
+    document.getElementById('progressText').textContent = `${percentage.toFixed(1)}%`;
+}
+
+// Function to fetch recent transactions
+async function fetchRecentTransactions(budgetId) {
+    try {
+        const response = await fetch('dashboard-page.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `action=get_transactions&budget_id=${budgetId}`
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch transactions');
+        }
+        
+        const data = await response.json();
+        return data.transactions || [];
+    } catch (error) {
+        console.error('Error fetching transactions:', error);
+        throw error;
+    }
+}
+
 // Show budget details modal
-function showBudgetDetails(card, data) {
+async function showBudgetDetails(card, data) {
     currentBudgetId = data.id;
     const modal = new bootstrap.Modal(document.getElementById('budgetDetailsModal'));
     
     // Update basic content
     document.getElementById('categoryColor').style.backgroundColor = data.color;
     document.getElementById('budgetTitle').textContent = data.name;
-    document.getElementById('budgetAmount').textContent = '₱' + parseFloat(data.amount).toLocaleString(undefined, {minimumFractionDigits: 2});
-    document.getElementById('spentAmount').textContent = '₱' + parseFloat(data.spent).toLocaleString(undefined, {minimumFractionDigits: 2});
-    document.getElementById('remainingBalance').textContent = '₱' + parseFloat(data.remaining).toLocaleString(undefined, {minimumFractionDigits: 2});
-    document.getElementById('budgetPeriod').textContent = new Date(data.period).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    document.getElementById('budgetAmount').textContent = formatCurrency(data.amount);
+    document.getElementById('spentAmount').textContent = formatCurrency(data.spent);
+    document.getElementById('remainingBalance').textContent = formatCurrency(data.remaining);
+    document.getElementById('budgetPeriod').textContent = new Date(data.period).toLocaleDateString('en-US', { 
+        month: 'long', 
+        year: 'numeric' 
+    });
     
-    // Update progress ring
-    const ring = document.getElementById('progressRing');
-    const radius = ring.r.baseVal.value;
-    const circumference = 2 * Math.PI * radius;
-    const offset = circumference - (data.percentage / 100 * circumference);
-    
-    ring.style.strokeDasharray = `${circumference} ${circumference}`;
-    ring.style.strokeDashoffset = offset;
-    
-    // Set color based on percentage
-    const progressColor = data.percentage >= 90 ? '#DC2626' : 
-                         data.percentage >= 70 ? '#FBBF24' : 
-                         '#16A34A';
-    ring.style.stroke = progressColor;
-    
-    document.getElementById('progressText').textContent = `${data.percentage.toFixed(1)}%`;
-    
+    // Show loading state for transactions
+    document.getElementById('transactionsList').innerHTML = `
+        <div class="text-center p-3">
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="visually-hidden">Loading transactions...</span>
+            </div>
+        </div>
+    `;
+
+    // Update progress ring and show modal
+    updateProgressRing(data.percentage);
     modal.show();
+    
+    // Fetch and display recent transactions
+    try {
+        const transactions = await fetchRecentTransactions(data.id);
+        const transactionsList = document.getElementById('transactionsList');
+        
+        if (transactions.length === 0) {
+            transactionsList.innerHTML = `
+                <div class="no-transactions">
+                    <i class="bi bi-inbox me-2"></i>No recent transactions
+                </div>
+            `;
+            return;
+        }
+        
+        const transactionsHtml = transactions.map(transaction => `
+            <div class="transaction-item">
+                <div class="transaction-info">
+                    <div class="d-flex justify-content-between">
+                        <span class="transaction-amount">${formatCurrency(transaction.amount)}</span>
+                        <span class="transaction-date">${transaction.formatted_date}</span>
+                    </div>
+                    ${transaction.comment ? `
+                        <div class="transaction-comment">
+                            <small>${transaction.comment}</small>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `).join('');
+        
+        transactionsList.innerHTML = transactionsHtml;
+    } catch (error) {
+        document.getElementById('transactionsList').innerHTML = `
+            <div class="alert alert-danger m-3">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                Failed to load transactions. Please try again.
+            </div>
+        `;
+    }
 }
 
 // Edit budget amount
@@ -669,30 +819,41 @@ function toggleBudgetEdit() {
 }
 
 // Update budget amount
-function updateBudget() {
+async function updateBudget() {
     const newAmount = document.getElementById('newBudgetAmount').value;
+    const updateButton = document.querySelector('#budgetEditForm .btn-primary');
     
-    fetch('dashboard-page.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `budget_id=${currentBudgetId}&new_amount=${newAmount}`
-    })
-    .then(response => response.json())
-    .then(data => {
+    // Disable button and show loading state
+    updateButton.disabled = true;
+    updateButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating...';
+    
+    try {
+        const response = await fetch('dashboard-page.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `budget_id=${currentBudgetId}&new_amount=${newAmount}`
+        });
+
+        const data = await response.json();
         if (data.success) {
-            document.getElementById('budgetAmount').textContent = '₱' + 
-                parseFloat(newAmount).toLocaleString(undefined, {minimumFractionDigits: 2});
+            document.getElementById('budgetAmount').textContent = formatCurrency(newAmount);
             toggleBudgetEdit();
             location.reload();
         } else {
-            throw new Error(data.message);
+            throw new Error(data.message || 'Failed to update budget');
         }
-    })
-    .catch(error => {
-        alert('Error updating budget: ' + error.message);
-    });
+    } catch (error) {
+        const toast = new bootstrap.Toast(document.getElementById('budgetAlertToast'));
+        const toastBody = document.querySelector('#budgetAlertToast .toast-body');
+        toastBody.textContent = error.message;
+        document.getElementById('budgetAlertToast').classList.add('border-danger');
+        toast.show();
+    } finally {
+        updateButton.disabled = false;
+        updateButton.innerHTML = 'Save';
+    }
 }
 
 // Budget deletion functions
@@ -701,78 +862,62 @@ function confirmDeleteBudget() {
     const deleteModal = new bootstrap.Modal(document.getElementById('deleteBudgetModal'));
     document.getElementById('deleteBudgetName').textContent = budgetTitle;
     
-    // Hide the details modal before showing delete confirmation
     bootstrap.Modal.getInstance(document.getElementById('budgetDetailsModal')).hide();
     deleteModal.show();
 }
 
-function deleteBudget() {
+// Delete budget function
+async function deleteBudget() {
     if (!currentBudgetId) return;
 
-    // Show loading state
+    // Show loading state and disable button
     const deleteButton = document.querySelector('#deleteBudgetModal .btn-danger');
     const originalContent = deleteButton.innerHTML;
     deleteButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
     deleteButton.disabled = true;
 
-    // Send delete request to the server
-    fetch('dashboard-page.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `action=delete&budget_id=${currentBudgetId}`
-    })
-    .then(response => response.json())
-    .then(data => {
+    try {
+        const response = await fetch('dashboard-page.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `action=delete&budget_id=${currentBudgetId}`
+        });
+
+        const data = await response.json();
         if (data.success) {
-            // Hide delete modal
             bootstrap.Modal.getInstance(document.getElementById('deleteBudgetModal')).hide();
             
-            // Show success message
             const toast = new bootstrap.Toast(document.getElementById('budgetAlertToast'));
             const toastBody = document.querySelector('#budgetAlertToast .toast-body');
             toastBody.textContent = data.message || 'Budget deleted successfully.';
             document.getElementById('budgetAlertToast').classList.add('border-primary');
             toast.show();
 
-            // Remove the budget card from the display
-            const budgetCard = document.querySelector(`[data-budget-id="${currentBudgetId}"]`);
-            if (budgetCard) {
-                budgetCard.closest('.col').remove();
-            }
-            
-            // Refresh the page after a short delay
             setTimeout(() => {
                 location.reload();
             }, 1500);
         } else {
             throw new Error(data.message || 'Failed to delete budget');
         }
-    })
-    .catch(error => {
-        // Show error message
+    } catch (error) {
         const toast = new bootstrap.Toast(document.getElementById('budgetAlertToast'));
         const toastBody = document.querySelector('#budgetAlertToast .toast-body');
         toastBody.textContent = error.message;
         document.getElementById('budgetAlertToast').classList.add('border-danger');
         toast.show();
-    })
-    .finally(() => {
-        // Reset button state
+    } finally {
         deleteButton.innerHTML = originalContent;
         deleteButton.disabled = false;
-    });
+    }
 }
 
-// Show budget alerts when the page loads
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize event listeners
+document.addEventListener('DOMContentLoaded', function() {
     const budgetAlerts = <?php echo json_encode($budgetAlerts); ?>;
     showBudgetAlerts(budgetAlerts);
-});
 
-// Add event listeners
-document.addEventListener('DOMContentLoaded', function() {
     const notificationBtn = document.getElementById('notificationBtn');
     const notificationIcon = document.getElementById('notificationIcon');
     const searchInput = document.getElementById('searchBudget');
@@ -781,18 +926,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const resetButtonMobile = document.getElementById('resetSearchMobile');
     const budgetCards = document.querySelectorAll('#budgetCardsContainer .col:not(.no-results-message)');
     
+    // Notification button click handler
     notificationBtn.addEventListener('click', function(e) {
-        e.preventDefault(); // Prevent the default link behavior
-        
-        // Add the shake-icon class to trigger the animation on the icon
+        e.preventDefault();
         notificationIcon.classList.add('shake-icon');
-        
-        // Remove the shake-icon class after the animation completes
         setTimeout(() => {
             notificationIcon.classList.remove('shake-icon');
-            // Navigate to the notifications page after the animation
             window.location.href = this.href;
-        }, 200); // Adjust this timing to match your CSS animation duration
+        }, 200);
     });
 
     // Search functionality
@@ -813,7 +954,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateNoResultsMessage(visibleCards);
     }
 
-    // Function to update the no results message
+    // Function to update the no results message when no budgets are found
     function updateNoResultsMessage(visibleCards) {
         let noResultsMessage = document.querySelector('#budgetCardsContainer .no-results-message');
         
@@ -837,7 +978,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Reset search
+    // Reset search input
     function resetSearch() {
         searchInput.value = '';
         searchInputMobile.value = '';
@@ -847,7 +988,7 @@ document.addEventListener('DOMContentLoaded', function() {
         resetButtonMobile.style.display = 'none';
     }
 
-    // Perform search on input
+    // Event listeners for search functionality
     searchInput.addEventListener('input', function() {
         performSearch();
         resetButton.style.display = this.value ? 'block' : 'none';
@@ -859,7 +1000,7 @@ document.addEventListener('DOMContentLoaded', function() {
         resetButtonMobile.style.display = this.value ? 'block' : 'none';
     });
 
-    // Reset search input
+    // Reset search button click handler
     resetButton.addEventListener('click', resetSearch);
     resetButtonMobile.addEventListener('click', resetSearch);
 

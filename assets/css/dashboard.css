@@ -343,3 +343,76 @@
     display: inline-block;
     margin-right: 0.5rem;
 }
+
+/* Recent Transactions Styles */
+.recent-transactions {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 1rem;
+}
+
+.transactions-list {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+    background-color: #f8f9fa;
+    transition: all 0.2s ease;
+}
+
+.transaction-item:hover {
+    background-color: #f0f0f0;
+}
+
+.transaction-info {
+    flex: 1;
+}
+
+.transaction-amount {
+    font-weight: 600;
+    color: #433878;
+}
+
+.transaction-date {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.transaction-comment {
+    font-size: 0.875rem;
+    color: #4b5563;
+    margin-top: 0.25rem;
+    word-break: break-word;
+}
+
+.no-transactions {
+    text-align: center;
+    padding: 1rem;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Scrollbar styling for transactions list */
+.transactions-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.transactions-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.transactions-list::-webkit-scrollbar-thumb {
+    background: #433878;
+    border-radius: 3px;
+}
+
+.transactions-list::-webkit-scrollbar-thumb:hover {
+    background: #7d62b4;
+}
