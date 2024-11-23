@@ -1,27 +1,87 @@
 <?php
-include('_dbconnect.php');
-include('includes/authentication.php');
+require_once('_dbconnect.php');
+require_once('includes/authentication.php');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['budget_id'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
     
-    $budgetId = filter_input(INPUT_POST, 'budget_id', FILTER_VALIDATE_INT);
-    $newAmount = filter_input(INPUT_POST, 'new_amount', FILTER_VALIDATE_FLOAT);
-    $userId = $_SESSION['auth_user']['user_id'];
+    // Budget amount update handler
+    if (isset($_POST['budget_id']) && isset($_POST['new_amount'])) {
+        try {
+            $budgetId = filter_input(INPUT_POST, 'budget_id', FILTER_VALIDATE_INT);
+            $newAmount = filter_input(INPUT_POST, 'new_amount', FILTER_VALIDATE_FLOAT);
+            $userId = $_SESSION['auth_user']['user_id'];
 
-    try {
-        $stmt = $conn->prepare("UPDATE budgets SET amount = ? WHERE id = ? AND user_id = ?");
-        $stmt->bind_param("dii", $newAmount, $budgetId, $userId);
-        
-        if ($stmt->execute()) {
-            echo json_encode(['success' => true]);
-        } else {
-            throw new Exception('Failed to update budget');
+            $stmt = $conn->prepare("UPDATE budgets SET amount = ? WHERE id = ? AND user_id = ?");
+            $stmt->bind_param("dii", $newAmount, $budgetId, $userId);
+            
+            if ($stmt->execute()) {
+                echo json_encode(['success' => true]);
+            } else {
+                throw new Exception('Failed to update budget');
+            }
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
-    } catch (Exception $e) {
-        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        exit;
     }
-    exit;
+    
+    // Budget deletion handler
+    if (isset($_POST['action']) && $_POST['action'] === 'delete') {
+        try {
+            $budgetId = filter_input(INPUT_POST, 'budget_id', FILTER_VALIDATE_INT);
+            $userId = $_SESSION['auth_user']['user_id'];
+
+            if (!$budgetId) {
+                throw new Exception('Invalid budget ID');
+            }
+
+            $conn->begin_transaction();
+
+            try {
+                // Get budget name before deletion
+                $stmt = $conn->prepare("SELECT name FROM budgets WHERE id = ? AND user_id = ?");
+                $stmt->bind_param("ii", $budgetId, $userId);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $budgetData = $result->fetch_assoc();
+                
+                if (!$budgetData) {
+                    throw new Exception('Budget not found or unauthorized');
+                }
+                
+                $budgetName = $budgetData['name'];
+
+                // Delete associated expenses
+                $stmt = $conn->prepare("DELETE FROM expenses WHERE category_id = ? AND user_id = ?");
+                $stmt->bind_param("ii", $budgetId, $userId);
+                $stmt->execute();
+
+                // Delete the budget
+                $stmt = $conn->prepare("DELETE FROM budgets WHERE id = ? AND user_id = ?");
+                $stmt->bind_param("ii", $budgetId, $userId);
+                $stmt->execute();
+
+                // Add notification with budget name
+                $stmt = $conn->prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, 'budget', ?)");
+                $message = "Budget '{$budgetName}' has been successfully deleted";
+                $stmt->bind_param("is", $userId, $message);
+                $stmt->execute();
+
+                $conn->commit();
+                echo json_encode(['success' => true, 'message' => "Budget '{$budgetName}' deleted successfully"]);
+
+            } catch (Exception $e) {
+                $conn->rollback();
+                throw $e;
+            }
+
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        exit;
+    }
 }
 
 $page_title = "Dashboard · IT-PID";
@@ -459,9 +519,41 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                         </div>
                     </div>
                 </div>
+
+                <!-- Delete Budget Button -->
+                <div class="mt-4 d-flex justify-content-end">
+                    <button type="button" class="btn btn-danger w-100" onclick="confirmDeleteBudget()">
+                        <i class="bi bi-trash-fill me-2"></i>Delete Budget
+                    </button>
+                </div>
+
             </div>
         </div>
     </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteBudgetModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-danger">
+                    <h5 class="modal-title text-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Delete Budget
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this budget? This action cannot be undone.</p>
+                    <p class="mb-0"><strong>Budget: </strong><span id="deleteBudgetName"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteBudget()">
+                        <i class="bi bi-trash-fill me-2"></i>Delete Budget
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Toast container for budget alerts -->
@@ -600,6 +692,76 @@ function updateBudget() {
     })
     .catch(error => {
         alert('Error updating budget: ' + error.message);
+    });
+}
+
+// Budget deletion functions
+function confirmDeleteBudget() {
+    const budgetTitle = document.getElementById('budgetTitle').textContent;
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteBudgetModal'));
+    document.getElementById('deleteBudgetName').textContent = budgetTitle;
+    
+    // Hide the details modal before showing delete confirmation
+    bootstrap.Modal.getInstance(document.getElementById('budgetDetailsModal')).hide();
+    deleteModal.show();
+}
+
+function deleteBudget() {
+    if (!currentBudgetId) return;
+
+    // Show loading state
+    const deleteButton = document.querySelector('#deleteBudgetModal .btn-danger');
+    const originalContent = deleteButton.innerHTML;
+    deleteButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
+    deleteButton.disabled = true;
+
+    // Send delete request to the server
+    fetch('dashboard-page.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `action=delete&budget_id=${currentBudgetId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Hide delete modal
+            bootstrap.Modal.getInstance(document.getElementById('deleteBudgetModal')).hide();
+            
+            // Show success message
+            const toast = new bootstrap.Toast(document.getElementById('budgetAlertToast'));
+            const toastBody = document.querySelector('#budgetAlertToast .toast-body');
+            toastBody.textContent = data.message || 'Budget deleted successfully.';
+            document.getElementById('budgetAlertToast').classList.add('border-primary');
+            toast.show();
+
+            // Remove the budget card from the display
+            const budgetCard = document.querySelector(`[data-budget-id="${currentBudgetId}"]`);
+            if (budgetCard) {
+                budgetCard.closest('.col').remove();
+            }
+            
+            // Refresh the page after a short delay
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            throw new Error(data.message || 'Failed to delete budget');
+        }
+    })
+    .catch(error => {
+        // Show error message
+        const toast = new bootstrap.Toast(document.getElementById('budgetAlertToast'));
+        const toastBody = document.querySelector('#budgetAlertToast .toast-body');
+        toastBody.textContent = error.message;
+        document.getElementById('budgetAlertToast').classList.add('border-danger');
+        toast.show();
+    })
+    .finally(() => {
+        // Reset button state
+        deleteButton.innerHTML = originalContent;
+        deleteButton.disabled = false;
     });
 }
 
