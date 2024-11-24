@@ -1,0 +1,136 @@
+/* Custom styling for settings page */
+.card {
+    border-radius: 15px;
+    border: none;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0;
+    background: white;
+}
+
+.btn-custom-primary {
+    background-color: #433878;
+    border-color: #433878;
+    color: white;
+}
+
+.btn-custom-primary:hover {
+    background-color: #362d62;
+    border-color: #362d62;
+    color: white;
+}
+
+.form-control:focus {
+    border-color: #433878;
+    box-shadow: 0 0 0 0.2rem rgba(67, 56, 120, 0.25);
+}
+
+/* Animation for delete account card */
+.border-danger {
+    animation: pulse 2s infinite;
+}
+
+/* Alert styling */
+.alert {
+    border-radius: 10px;
+}
+
+/* Modal styling */
+.modal-content {
+    border-radius: 15px;
+    border: none;
+}
+
+.modal-header {
+    border-bottom: none;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+/* Additional styles for accordion */
+.settings-accordion .accordion-item {
+    border: none;
+    background: white;
+    border-radius: 15px;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.settings-accordion .accordion-button {
+    border-radius: 15px;
+    background: white;
+    font-weight: 500;
+    padding: 1.25rem;
+    color: #433878;
+}
+
+.settings-accordion .accordion-button:not(.collapsed) {
+    background: white;
+    color: #433878;
+    box-shadow: none;
+}
+
+.settings-accordion .accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(67, 56, 120, 0.1);
+}
+
+.settings-accordion .accordion-body {
+    padding: 1.5rem;
+}
+
+.settings-accordion .accordion-button::after {
+    background-size: 1.25rem;
+    height: 1.25rem;
+    width: 1.25rem;
+}
+
+/* Input group styling */
+.input-group-text {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+}
+
+.toggle-password {
+    border-left: none;
+}
+
+.toggle-password:hover {
+    background-color: #f8f9fa;
+}
+
+/* Animation for icons */
+.bi {
+    transition: transform 0.2s;
+}
+
+.accordion-button:hover .bi {
+    transform: scale(1.1);
+}
+
+/* Custom scrollbar for accordion body */
+.accordion-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.accordion-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.accordion-body::-webkit-scrollbar-thumb {
+    background: #433878;
+    border-radius: 4px;
+}
+
+.accordion-body::-webkit-scrollbar-thumb:hover {
+    background: #362d62;
+}
