@@ -537,6 +537,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <link rel="stylesheet" href="./assets/css/create.css">
 
 <!-- HTML content -->
+<body class="graphs-page">
 <div class="create-page-container">
     <div class="create-card-wrapper">
         <div class="card create-card shadow-sm">
