@@ -344,10 +344,19 @@ include('includes/navbar.php');
                 <div class="alert alert-warning">
                     <strong>Warning!</strong> This action cannot be undone. All your data will be permanently deleted.
                 </div>
-                <form method="POST" action="">
+                <form method="POST" action="" class="needs-validation" novalidate>
                     <div class="mb-3">
                         <label class="form-label">Enter your password to confirm:</label>
-                        <input type="password" name="confirm_password" class="form-control" required>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-key"></i></span>
+                            <input type="password" name="confirm_password" class="form-control" required>
+                            <button class="btn btn-outline-secondary toggle-password" type="button">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <div class="invalid-feedback">
+                                Please enter your password to confirm.
+                            </div>
+                        </div>
                     </div>
                     <div class="d-grid">
                         <button type="submit" name="delete_account" class="btn btn-danger">
@@ -361,7 +370,48 @@ include('includes/navbar.php');
 </div>
 
 <script>
-// Toggle password visibility
+// Form validation
+(() => {
+    'use strict';
+    
+    // Fetch all forms that need validation
+    const forms = document.querySelectorAll('.needs-validation');
+    
+    // Loop over them and prevent submission
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            // Additional password match validation for password form
+            if (form.id === 'passwordForm') {
+                const newPassword = form.querySelector('[name="new_password"]').value;
+                const confirmPassword = form.querySelector('[name="confirm_password"]').value;
+                
+                if (newPassword !== confirmPassword) {
+                    event.preventDefault();
+                    form.querySelector('[name="confirm_password"]').setCustomValidity('Passwords do not match');
+                } else {
+                    form.querySelector('[name="confirm_password"]').setCustomValidity('');
+                }
+            }
+            
+            form.classList.add('was-validated');
+        }, false);
+        
+        // Clear custom validity when user types in confirm password field
+        if (form.id === 'passwordForm') {
+            const confirmPasswordInput = form.querySelector('[name="confirm_password"]');
+            confirmPasswordInput.addEventListener('input', () => {
+                confirmPasswordInput.setCustomValidity('');
+            });
+        }
+    });
+})();
+
+// Password visibility toggle
 document.querySelectorAll('.toggle-password').forEach(button => {
     button.addEventListener('click', function() {
         const input = this.parentElement.querySelector('input');
@@ -377,16 +427,52 @@ document.querySelectorAll('.toggle-password').forEach(button => {
     });
 });
 
-// Form validation
-document.getElementById('passwordForm').addEventListener('submit', function(e) {
-    const newPassword = this.querySelector('[name="new_password"]').value;
-    const confirmPassword = this.querySelector('[name="confirm_password"]').value;
+// Toast notification for messages
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-dismiss alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 5000);
+    });
     
-    if (newPassword !== confirmPassword) {
+    // Add fade out animation before closing
+    document.querySelectorAll('.alert .btn-close').forEach(button => {
+        button.addEventListener('click', function() {
+            const alert = this.closest('.alert');
+            alert.style.opacity = '0';
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 150);
+        });
+    });
+});
+
+// Enable tooltips
+const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+});
+
+// Prevent accordion collapse when clicking inside forms
+document.querySelectorAll('.accordion-body form').forEach(form => {
+    form.addEventListener('click', event => {
+        event.stopPropagation();
+    });
+});
+
+// Show confirmation dialog before account deletion
+document.querySelector('button[name="delete_account"]').addEventListener('click', function(e) {
+    if (!confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
         e.preventDefault();
-        alert('New passwords do not match!');
     }
 });
 </script>
 
-<?php include('includes/footer.php'); ?>
+<?php 
+include('includes/footer.php');
+ob_end_flush(); 
+?>
