@@ -389,3 +389,25 @@
 .accordion-collapse.show {
     animation: slideDown 0.3s ease-out;
 }
+
+/* Edit button styles */
+.recent-item .btn {
+    font-size: 0.8rem !important;
+    padding: 0.25rem 0.75rem !important;
+    border-radius: 20px !important;
+    transition: all 0.2s ease !important;
+}
+
+.recent-item .btn:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Recent item spacing */
+.recent-item-details {
+    margin-bottom: 0.5rem !important;
+}
+
+.recent-item-comment {
+    margin-bottom: 0.5rem !important;
+}

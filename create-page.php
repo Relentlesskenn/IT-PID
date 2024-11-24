@@ -1,8 +1,77 @@
 <?php
-$page_title = "Create · IT-PID";
+// Start the session at the very beginning
+session_start();
+
+// Include database connection
 include('_dbconnect.php');
 include('includes/authentication.php');
-include('includes/header.php'); 
+include('includes/header.php');
+
+// Check if user is logged in
+if (!isset($_SESSION['auth_user'])) {
+    // Not logged in, redirect to login page
+    header("Location: login.php");
+    exit();
+}
+
+// Initialize redirect URL before using it
+$redirect_url = 'create-page.php?page=' . (isset($_GET['page']) ? $_GET['page'] : 'budget');
+
+// Get current user ID
+$userId = $_SESSION['auth_user']['user_id'];
+
+// Edit Income Amount
+if (isset($_POST['edit_income'])) {
+    $incomeId = intval($_POST['income_id']);
+    $newAmount = floatval($_POST['new_income_amount']);
+    
+    // Validate user owns this income
+    $checkStmt = $conn->prepare("SELECT id FROM incomes WHERE id = ? AND user_id = ?");
+    $checkStmt->bind_param("ii", $incomeId, $userId);
+    $checkStmt->execute();
+    $result = $checkStmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        $stmt = $conn->prepare("UPDATE incomes SET amount = ? WHERE id = ? AND user_id = ? AND MONTH(date) = MONTH(CURRENT_DATE()) AND YEAR(date) = YEAR(CURRENT_DATE())");
+        $stmt->bind_param("dii", $newAmount, $incomeId, $userId);
+        
+        if ($stmt->execute()) {
+            $redirect_url .= '&message=' . urlencode("Income has been successfully updated to ₱" . number_format($newAmount, 2)) . '&type=primary';
+            addNotification($userId, 'income', "Income amount has been updated to ₱" . number_format($newAmount, 2));
+        } else {
+            $redirect_url .= '&message=' . urlencode('Error updating income') . '&type=danger';
+        }
+        $stmt->close();
+    }
+    $checkStmt->close();
+}
+
+// Edit Expense Amount and Comment
+if (isset($_POST['edit_expense'])) {
+    $expenseId = intval($_POST['expense_id']);
+    $newAmount = floatval($_POST['new_expense_amount']);
+    $newComment = substr(mysqli_real_escape_string($conn, $_POST['new_expense_comment']), 0, 100);
+    
+    // Validate user owns this expense
+    $checkStmt = $conn->prepare("SELECT id FROM expenses WHERE id = ? AND user_id = ?");
+    $checkStmt->bind_param("ii", $expenseId, $userId);
+    $checkStmt->execute();
+    $result = $checkStmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        $stmt = $conn->prepare("UPDATE expenses SET amount = ?, comment = ? WHERE id = ? AND user_id = ? AND MONTH(date) = MONTH(CURRENT_DATE()) AND YEAR(date) = YEAR(CURRENT_DATE())");
+        $stmt->bind_param("dsii", $newAmount, $newComment, $expenseId, $userId);
+        
+        if ($stmt->execute()) {
+            $redirect_url .= '&message=' . urlencode("Expense has been successfully updated to ₱" . number_format($newAmount, 2)) . '&type=primary';
+            addNotification($userId, 'expense', "Expense has been updated to ₱" . number_format($newAmount, 2));
+        } else {
+            $redirect_url .= '&message=' . urlencode('Error updating expense') . '&type=danger';
+        }
+        $stmt->close();
+    }
+    $checkStmt->close();
+}
 
 // Initialize variables
 $selected_page = isset($_GET['page']) ? $_GET['page'] : 'budget';
@@ -70,12 +139,18 @@ function showIncome() {
                         if ($recentIncomes->num_rows > 0) {
                             while ($income = $recentIncomes->fetch_assoc()) {
                                 echo '<div class="recent-item">
-                                    <div class="recent-item-details">
-                                        <span class="recent-item-name">' . htmlspecialchars($income['name']) . '</span>
-                                        <span class="recent-item-amount">₱' . number_format($income['amount'], 2) . '</span>
-                                    </div>
-                                    <small class="text-muted">' . date('M d, Y g:i A', strtotime($income['date'])) . '</small>
-                                </div>';
+                                        <div class="recent-item-details">
+                                            <span class="recent-item-name">' . htmlspecialchars($income['name']) . '</span>
+                                            <span class="recent-item-amount">₱' . number_format($income['amount'], 2) . '</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">' . date('M d, Y', strtotime($income['date'])) . '</small>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                    onclick="openEditIncomeModal(' . $income['id'] . ', ' . $income['amount'] . ')">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </button>
+                                        </div>
+                                      </div>';
                             }
                         } else {
                             echo '<p class="text-muted mb-0">No recent incomes found.</p>';
@@ -203,17 +278,23 @@ function showExpense() {
                         if ($recentExpenses->num_rows > 0) {
                             while ($expense = $recentExpenses->fetch_assoc()) {
                                 echo '<div class="recent-item expense">
-                                    <div class="recent-item-details">
-                                        <span class="recent-item-name">' . htmlspecialchars($expense['category_name']) . '</span>
-                                        <span class="recent-item-amount">₱' . number_format($expense['amount'], 2) . '</span>
+                                        <div class="recent-item-details">
+                                            <span class="recent-item-name">' . htmlspecialchars($expense['category_name']) . '</span>
+                                            <span class="recent-item-amount">₱' . number_format($expense['amount'], 2) . '</span>
+                                        </div>';
+                                if (!empty($expense['comment'])) {
+                                    echo '<div class="recent-item-comment">
+                                            <small>' . htmlspecialchars($expense['comment']) . '</small>
+                                          </div>';
+                                }
+                                echo '<div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">' . date('M d, Y', strtotime($expense['date'])) . '</small>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                onclick="openEditExpenseModal(' . $expense['id'] . ', ' . $expense['amount'] . ', \'' . htmlspecialchars(addslashes($expense['comment']), ENT_QUOTES) . '\')">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
+                                      </div>
                                     </div>';
-                            if (!empty($expense['comment'])) {
-                                echo '<div class="recent-item-comment">
-                                        <small>' . htmlspecialchars($expense['comment']) . '</small>
-                                    </div>';
-                            }
-                            echo    '<small class="text-muted">' . date('M d, Y g:i A', strtotime($expense['date'])) . '</small>
-                                </div>';
                             }
                         } else {
                             echo '<p class="text-muted mb-0">No recent expenses found.</p>';
@@ -268,9 +349,11 @@ function getRecentBudgets($conn, $userId, $limit = 5) {
 
 // Function to fetch recent incomes
 function getRecentIncomes($conn, $userId, $limit = 5) {
-    $stmt = $conn->prepare("SELECT name, amount, date 
+    $stmt = $conn->prepare("SELECT id, name, amount, date 
                            FROM incomes 
                            WHERE user_id = ? 
+                           AND MONTH(date) = MONTH(CURRENT_DATE()) 
+                           AND YEAR(date) = YEAR(CURRENT_DATE())
                            ORDER BY date DESC 
                            LIMIT ?");
     $stmt->bind_param("ii", $userId, $limit);
@@ -280,15 +363,38 @@ function getRecentIncomes($conn, $userId, $limit = 5) {
 
 // Function to fetch recent expenses
 function getRecentExpenses($conn, $userId, $limit = 5) {
-    $stmt = $conn->prepare("SELECT e.amount, e.date, e.comment, b.name as category_name 
+    $stmt = $conn->prepare("SELECT e.id, e.amount, e.date, e.comment, b.name as category_name 
                            FROM expenses e 
                            JOIN budgets b ON e.category_id = b.id 
                            WHERE e.user_id = ? 
+                           AND MONTH(e.date) = MONTH(CURRENT_DATE()) 
+                           AND YEAR(e.date) = YEAR(CURRENT_DATE())
                            ORDER BY e.date DESC 
                            LIMIT ?");
     $stmt->bind_param("ii", $userId, $limit);
     $stmt->execute();
     return $stmt->get_result();
+}
+
+// Function to get income by ID
+function getIncomeById($conn, $incomeId, $userId) {
+    $stmt = $conn->prepare("SELECT * FROM incomes WHERE id = ? AND user_id = ? AND MONTH(date) = MONTH(CURRENT_DATE()) AND YEAR(date) = YEAR(CURRENT_DATE())");
+    $stmt->bind_param("ii", $incomeId, $userId);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_assoc();
+}
+
+// Function to get expense by ID
+function getExpenseById($conn, $expenseId, $userId) {
+    $stmt = $conn->prepare("SELECT e.*, b.name as category_name 
+                           FROM expenses e 
+                           JOIN budgets b ON e.category_id = b.id 
+                           WHERE e.id = ? AND e.user_id = ? 
+                           AND MONTH(e.date) = MONTH(CURRENT_DATE()) 
+                           AND YEAR(e.date) = YEAR(CURRENT_DATE())");
+    $stmt->bind_param("ii", $expenseId, $userId);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_assoc();
 }
 
 // Process form submissions
@@ -510,6 +616,64 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   </div>
 </div>
 
+<!-- Edit Income Modal -->
+<div class="modal fade" id="editIncomeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Income</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    <input type="hidden" name="income_id" id="edit_income_id">
+                    <div class="mb-3">
+                        <label for="new_income_amount" class="form-label">Amount</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">₱</span>
+                            <input type="number" step="0.01" class="form-control" name="new_income_amount" id="new_income_amount" required inputmode="decimal">
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" name="edit_income" class="btn btn-custom-primary-rounded btn-lg">Update Income</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Expense Modal -->
+<div class="modal fade" id="editExpenseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Expense</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    <input type="hidden" name="expense_id" id="edit_expense_id">
+                    <div class="mb-3">
+                        <label for="new_expense_amount" class="form-label">Amount</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">₱</span>
+                            <input type="number" step="0.01" class="form-control" name="new_expense_amount" id="new_expense_amount" required inputmode="decimal">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_expense_comment" class="form-label">Comment</label>
+                        <textarea class="form-control" name="new_expense_comment" id="new_expense_comment" rows="3" maxlength="100"></textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" name="edit_expense" class="btn btn-custom-primary-rounded btn-lg">Update Expense</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 // Add event listener to radio buttons
 document.querySelectorAll('input[name="page"]').forEach(radio => {
@@ -526,6 +690,32 @@ if (addCategoryBtn) {
         myModal.show();
     });
 }
+
+// Function to open edit income modal
+function openEditIncomeModal(id, amount) {
+    document.getElementById('edit_income_id').value = id;
+    document.getElementById('new_income_amount').value = parseFloat(amount).toFixed(2);
+    new bootstrap.Modal(document.getElementById('editIncomeModal')).show();
+}
+
+// Function to open edit expense modal
+function openEditExpenseModal(id, amount, comment) {
+    document.getElementById('edit_expense_id').value = id;
+    document.getElementById('new_expense_amount').value = parseFloat(amount).toFixed(2);
+    document.getElementById('new_expense_comment').value = comment ? comment.replace(/\\'/g, "'") : '';
+    new bootstrap.Modal(document.getElementById('editExpenseModal')).show();
+}
+
+// Add form validation
+document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        if (!this.checkValidity()) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        this.classList.add('was-validated');
+    });
+});
 
 // Toast notification script
 window.addEventListener('DOMContentLoaded', (event) => {

@@ -1,11 +1,22 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    // Configure session settings before starting the session
+    $secure = true; // Set to true if using HTTPS
+    $httponly = true; // Prevent JavaScript access to session cookie
+    $samesite = 'Strict'; // Control how cookie is sent with cross-site requests
+    
+    session_set_cookie_params([
+        'lifetime' => 0, // Session cookie expires when browser closes
+        'path' => '/',
+        'domain' => '',
+        'secure' => $secure,
+        'httponly' => $httponly,
+        'samesite' => $samesite
+    ]);
 
-// Secure cookie settings
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', 1);
-
-session_start();
+    // Start the session
+    session_start();
+}
 
 // Regenerate session ID periodically
 if (!isset($_SESSION['last_regeneration'])) {
@@ -17,11 +28,9 @@ if (!isset($_SESSION['last_regeneration'])) {
 }
 
 // Check if user is authenticated
-if(!isset($_SESSION['authenticated']))
-{
+if (!isset($_SESSION['authenticated'])) {
     $_SESSION['status'] = "Please Login!";
     header('Location: login-page.php');
     exit(0);
 }
-
 ?>

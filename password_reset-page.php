@@ -23,58 +23,81 @@ include('includes/header.php');
 <link rel="stylesheet" href="./assets/css/custom-strength-meter.css">
 
 <!-- HTML content -->
-<div class="py-5 px-2 vh-100 d-flex flex-column main">
-    <div class="container flex-grow-1">
-        <div class="row justify-content-center h-100">
-            <div class="col-md-6 d-flex flex-column justify-content-between">
+<div class="main">
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
 
                 <!-- Change Password Form -->
-                <div class="flex-grow-1">
-                <h1 style="color: white; font-size: 2rem; margin-top: 10rem;">Reset your password</h1>
-                <br>
+                <div class="password-reset-container">
+                    <h1 class="text-white mb-4" style="margin-top: 100px;">Reset your password</h1>
+                    
                     <form action="password_reset-process.php" method="POST" id="passwordResetForm">
                         <input type="hidden" name="password_token" value="<?php if(isset($_GET['token'])){echo $_GET['token'];} ?>">
                                 
                         <div class="form-group mb-3">
                             <label for="email" class="form-label label-font">Email Address</label>
-                            <input type="email" name="email" id="email" value="<?php if(isset($_GET['email'])){echo $_GET['email'];} ?>" class="form-control form-control-lg" required autocomplete="email">
+                            <input type="email" 
+                                   name="email" 
+                                   id="email" 
+                                   value="<?php if(isset($_GET['email'])){echo $_GET['email'];} ?>" 
+                                   class="form-control form-control-lg" 
+                                   required 
+                                   autocomplete="email">
                         </div>
+
                         <div class="form-group mb-3">
                             <label for="new_password" class="form-label label-font">New Password</label>
-                            <input type="password" name="new_password" id="new_password" placeholder="Enter New Password" class="form-control form-control-lg" required onkeyup="checkPasswordStrength()">
+                            <input type="password" 
+                                   name="new_password" 
+                                   id="new_password" 
+                                   placeholder="Enter New Password" 
+                                   class="form-control form-control-lg" 
+                                   required 
+                                   onkeyup="checkPasswordStrength()">
                             <div class="password-strength-meter">
                                 <div id="password-strength-meter-fill" class="password-strength-meter-fill"></div>
                             </div>
                             <p id="password-strength-text" class="password-strength-text"></p>
                             <div id="password-requirements" class="password-requirements"></div>
                         </div>
+
                         <div class="form-group mb-3">
                             <label for="confirm_password" class="form-label label-font">Confirm Password</label>
-                            <input type="password" name="confirm_password" id="confirm_password" placeholder="Enter Confirm Password" class="form-control form-control-lg" required>
-                        </div>
-                        <div class="form-group">
-                            <button type="submit" name="password_update_btn" class="btn register-btn btn-ripple w-100 reset-margin">Update</button>
+                            <input type="password" 
+                                   name="confirm_password" 
+                                   id="confirm_password" 
+                                   placeholder="Enter Confirm Password" 
+                                   class="form-control form-control-lg" 
+                                   required>
                         </div>
 
-                        <!-- Alert -->
+                        <!-- Alert Container -->
                         <div class="alert-container">
-                        <?php
-                            include('includes/alert_helper.php');
+                            <?php
+                                include('includes/alert_helper.php');
 
-                            if (isset($_SESSION['status'])) {
-                                $status_type = $_SESSION['status_type'] ?? 'primary';
-                                echo generate_custom_alert($_SESSION['status'], $status_type);
-                                unset($_SESSION['status']);
-                                unset($_SESSION['status_type']);
-                            }
+                                if (isset($_SESSION['status'])) {
+                                    $status_type = $_SESSION['status_type'] ?? 'primary';
+                                    echo generate_custom_alert($_SESSION['status'], $status_type);
+                                    unset($_SESSION['status']);
+                                    unset($_SESSION['status_type']);
+                                }
 
-                            if (isset($_SESSION['error'])) {
-                                echo generate_custom_alert($_SESSION['error'], 'danger');
-                                unset($_SESSION['error']);
-                            }
-                        ?>
+                                if (isset($_SESSION['error'])) {
+                                    echo generate_custom_alert($_SESSION['error'], 'danger');
+                                    unset($_SESSION['error']);
+                                }
+                            ?>
                         </div>
 
+                        <div class="form-group mt-4" style="margin-bottom: 100px;">
+                            <button type="submit" 
+                                    name="password_update_btn" 
+                                    class="btn register-btn btn-ripple w-100">
+                                Update Password
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>

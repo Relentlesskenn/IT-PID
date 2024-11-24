@@ -41,77 +41,97 @@ $username = filter_var($username);
 <link rel="stylesheet" href="./assets/css/custom-strength-meter.css">
 
 <!-- HTML content -->
-<div class="py-5 px-2 vh-100 d-flex flex-column main" style="color: #433878;">
-    <div class="container flex-grow-1">
-        <div class="row justify-content-center h-100">
-            <div class="col-md-6 d-flex flex-column justify-content-between">
+<body class="graphs-page">
+<div class="main">
+    <div class="container" style="margin-top: 100px;">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="flex-wrapper">
+                    <!-- Back Button -->
+                    <div class="content-spacing">
+                        <h1>
+                            <a href="registration-page-1.php" class="text-decoration-none">
+                                <i class="bi bi-arrow-left-circle icon-lg" style="color: white;"></i>
+                            </a> 
+                        </h1>
+                    </div>
 
-                <!-- Registration Form -->
-                <h1>
-                    <a href="registration-page-1.php" class="text-decoration-none">
-                        <i class="bi bi-arrow-left-circle icon-lg" style= "color:white;"></i>
-                    </a> 
-                </h1>
-                <br>
-                <form action="registration-process.php" method="POST" class="d-flex flex-column flex-grow-1">
-                    <input type="hidden" name="f_name" value="<?= htmlspecialchars($f_name) ?>">
-                    <input type="hidden" name="l_name" value="<?= htmlspecialchars($l_name) ?>">
-                    <input type="hidden" name="email" value="<?= htmlspecialchars($email) ?>">
-                    <br>
-                    <br>
-                    <br>
-                    <div class="register-form-container">
-                    <div class="flex-grow-1">
-                        <h1 style="color: white; font-size: 2.5rem;">Register</h1>
-                        <br>
-                        <div class="form-group mb-3">
-                            <label for="username" class="label-font">Username</label>
-                            <input type="text" name="username" id="username" placeholder="Enter Username" class="form-control form-control-lg input-margin" required autocomplete="on" value="<?= htmlspecialchars($username) ?>">
-                        </div>
-                        <div class="form-group mb-3">
-                            <label for="password" class="label-font">Password</label>
-                            <input type="password" name="password" id="password" placeholder="Enter Password" class="form-control form-control-lg input-margin" required onkeyup="checkPasswordStrength()">
-                            <div class="password-strength-meter">
-                                <div id="password-strength-meter-fill" class="password-strength-meter-fill"></div>
+                    <!-- Registration Form -->
+                    <form action="registration-process.php" method="POST" class="register-form-container">
+                        <!-- Hidden Fields -->
+                        <input type="hidden" name="f_name" value="<?= htmlspecialchars($f_name) ?>">
+                        <input type="hidden" name="l_name" value="<?= htmlspecialchars($l_name) ?>">
+                        <input type="hidden" name="email" value="<?= htmlspecialchars($email) ?>">
+
+                        <div class="form-content">
+                            <h1 class="text-white mb-4" style="font-size: calc(1.8rem + 1vw); margin-top: 50px;">Register</h1>
+
+                            <div class="form-group mb-3">
+                                <label for="username" class="label-font">Username</label>
+                                <input type="text" 
+                                       name="username" 
+                                       id="username" 
+                                       placeholder="Enter Username" 
+                                       class="form-control form-control-lg input-margin" 
+                                       required 
+                                       autocomplete="username" 
+                                       value="<?= htmlspecialchars($username) ?>">
                             </div>
-                            <p id="password-strength-text" class="password-strength-text"></p>
-                            <div id="password-requirements" class="password-requirements"></div>
+
+                            <div class="form-group mb-3">
+                                <label for="password" class="label-font">Password</label>
+                                <input type="password" 
+                                       name="password" 
+                                       id="password" 
+                                       placeholder="Enter Password" 
+                                       class="form-control form-control-lg input-margin" 
+                                       required 
+                                       onkeyup="checkPasswordStrength()">
+                                <div class="password-strength-meter">
+                                    <div id="password-strength-meter-fill" class="password-strength-meter-fill"></div>
+                                </div>
+                                <p id="password-strength-text" class="password-strength-text"></p>
+                                <div id="password-requirements" class="password-requirements"></div>
+                            </div>
+
+                            <div class="form-group mb-1">
+                                <label for="c_password" class="label-font">Confirm Password</label>
+                                <input type="password" 
+                                       name="c_password" 
+                                       id="c_password" 
+                                       placeholder="Enter Confirm Password" 
+                                       class="form-control form-control-lg" 
+                                       required>
+                            </div>
+
+                            <!-- Alert Container -->
+                            <div class="alert-container">
+                                <?php
+                                    include('includes/alert_helper.php');
+
+                                    if (isset($_SESSION['status'])) {
+                                        $status_type = $_SESSION['status_type'] ?? 'primary';
+                                        echo generate_custom_alert($_SESSION['status'], $status_type);
+                                        unset($_SESSION['status']);
+                                        unset($_SESSION['status_type']);
+                                    }
+
+                                    if (isset($_SESSION['error'])) {
+                                        echo generate_custom_alert($_SESSION['error'], 'danger');
+                                        unset($_SESSION['error']);
+                                    }
+                                ?>
+                            </div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label for="c_password" class="label-font">Confirm Password</label>
-                            <input type="password" name="c_password" id="c_password" placeholder="Enter Confirm Password" class="form-control form-control-lg" required>
-                        </div>
 
-                        <!-- Alert -->
-                        <div class="alert-container">
-                        <?php
-                            include('includes/alert_helper.php');
-
-                            if (isset($_SESSION['status'])) {
-                                $status_type = $_SESSION['status_type'] ?? 'primary';
-                                echo generate_custom_alert($_SESSION['status'], $status_type);
-                                unset($_SESSION['status']);
-                                unset($_SESSION['status_type']);
-                            }
-
-                            if (isset($_SESSION['error'])) {
-                                echo generate_custom_alert($_SESSION['error'], 'danger');
-                                unset($_SESSION['error']);
-                            }
-                        ?>
-                        </div>
-
-                    </div>
-                    </div>
-                    <!-- Button at the bottom -->
-                    <div class="btn-container">
-                        <div class="form-group">
-                            <button type="submit" name="register_btn" class="btn register-btn btn-ripple w-100">
+                        <!-- Button Container -->
+                        <div class="btn-container">
+                            <button type="submit" name="register_btn" class="btn register-btn btn-ripple w-100" style="margin-bottom: 100px;">
                                 <span>Register</span>
                             </button>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
