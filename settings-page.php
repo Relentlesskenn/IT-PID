@@ -319,13 +319,15 @@ include('includes/navbar.php');
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <a href="logout.php" class="btn btn-outline-danger w-100">
-                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                <a href="logout.php" class="btn btn-outline-danger">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                    <span>Logout</span>
                                 </a>
                             </div>
                             <div class="col-md-6">
-                                <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
-                                    <i class="bi bi-trash me-2"></i>Delete Account
+                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                                    <i class="bi bi-trash"></i>
+                                    <span>Delete Account</span>
                                 </button>
                             </div>
                         </div>
