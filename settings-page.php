@@ -51,10 +51,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: settings-page.php");
             exit();
         }
-        
-        // Password strength check
-        if (strlen($newPassword) < 8) {
-            $_SESSION['message'] = "Password must be at least 8 characters long.";
+
+        // Check password strength
+        include('includes/password_policy.php');
+        $passwordStrength = is_password_strong($newPassword);
+        if ($passwordStrength !== true) {
+            $_SESSION['message'] = "Password is not strong enough: " . implode(", ", $passwordStrength);
             $_SESSION['message_type'] = "danger";
             header("Location: settings-page.php");
             exit();
@@ -254,7 +256,7 @@ include('includes/navbar.php');
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-key"></i></span>
                                         <input type="password" name="current_password" class="form-control" required
-                                               minlength="8">
+                                            minlength="8">
                                         <button class="btn btn-outline-secondary toggle-password" type="button">
                                             <i class="bi bi-eye"></i>
                                         </button>
@@ -263,26 +265,29 @@ include('includes/navbar.php');
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     <label class="form-label">New Password</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-lock"></i></span>
                                         <input type="password" name="new_password" class="form-control" required
-                                               minlength="8" id="newPassword">
+                                            minlength="12" id="newPassword" onkeyup="checkPasswordStrength()">
                                         <button class="btn btn-outline-secondary toggle-password" type="button">
                                             <i class="bi bi-eye"></i>
                                         </button>
-                                        <div class="invalid-feedback">
-                                            Password must be at least 8 characters long.
-                                        </div>
                                     </div>
+                                    <!-- Password Strength Meter -->
+                                    <div class="password-strength-meter mt-2">
+                                        <div id="password-strength-meter-fill" class="password-strength-meter-fill"></div>
+                                    </div>
+                                    <p id="password-strength-text" class="password-strength-text mt-1"></p>
+                                    <div id="password-requirements" class="password-requirements mt-2"></div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     <label class="form-label">Confirm New Password</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-lock"></i></span>
                                         <input type="password" name="confirm_password" class="form-control" required
-                                               minlength="8">
+                                            minlength="12">
                                         <button class="btn btn-outline-secondary toggle-password" type="button">
                                             <i class="bi bi-eye"></i>
                                         </button>
@@ -292,7 +297,8 @@ include('includes/navbar.php');
                                     </div>
                                 </div>
                                 <div class="col-12">
-                                    <button type="submit" name="change_password" class="btn btn-custom-primary w-100">
+                                    <button type="submit" name="change_password" class="btn btn-custom-primary w-100"
+                                            id="changePasswordBtn" disabled>
                                         <i class="bi bi-key me-2"></i>Change Password
                                     </button>
                                 </div>
@@ -411,6 +417,70 @@ include('includes/navbar.php');
     });
 })();
 
+// Password strength checker function
+function checkPasswordStrength() {
+    const password = document.getElementById('newPassword').value;
+    const confirmPassword = document.querySelector('input[name="confirm_password"]');
+    const strengthMeterFill = document.getElementById('password-strength-meter-fill');
+    const strengthText = document.getElementById('password-strength-text');
+    const requirementsElement = document.getElementById('password-requirements');
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    
+    let strength = 0;
+    const requirements = [
+        { regex: /.{12,}/, text: "At least 12 characters long" },
+        { regex: /[A-Z]/, text: "Contains uppercase letters" },
+        { regex: /[a-z]/, text: "Contains lowercase letters" },
+        { regex: /[0-9]/, text: "Contains numbers" },
+        { regex: /[^A-Za-z0-9]/, text: "Contains special characters" }
+    ];
+    
+    let requirementsHTML = "";
+    requirements.forEach(requirement => {
+        const isMet = requirement.regex.test(password);
+        strength += isMet ? 1 : 0;
+        requirementsHTML += `<div class="${isMet ? 'requirement-met' : 'requirement-unmet'}">
+            ${isMet ? '✓' : '✗'} ${requirement.text}
+        </div>`;
+    });
+    
+    requirementsElement.innerHTML = requirementsHTML;
+    
+    // Update strength meter
+    const percentage = (strength / requirements.length) * 100;
+    strengthMeterFill.style.width = `${percentage}%`;
+    
+    // Set color and text based on strength
+    let color, text;
+    if (strength <= 2) {
+        color = '#B8001F';
+        text = 'Weak';
+    } else if (strength <= 4) {
+        color = '#EC8305';
+        text = 'Medium';
+    } else {
+        color = '#347928';
+        text = 'Strong';
+    }
+    
+    strengthMeterFill.style.backgroundColor = color;
+    strengthText.textContent = `Password Strength: ${text}`;
+    strengthText.style.color = color;
+
+    // Enable/disable submit button based on password strength
+    changePasswordBtn.disabled = strength < 5;
+
+    // Update confirm password validation
+    if (confirmPassword.value) {
+        if (password !== confirmPassword.value) {
+            confirmPassword.setCustomValidity("Passwords don't match");
+            changePasswordBtn.disabled = true;
+        } else {
+            confirmPassword.setCustomValidity('');
+        }
+    }
+}
+
 // Password visibility toggle
 document.querySelectorAll('.toggle-password').forEach(button => {
     button.addEventListener('click', function() {
@@ -427,8 +497,24 @@ document.querySelectorAll('.toggle-password').forEach(button => {
     });
 });
 
+// Add event listener for confirm password
+document.querySelector('input[name="confirm_password"]').addEventListener('input', function() {
+    const newPassword = document.getElementById('newPassword').value;
+    if (this.value !== newPassword) {
+        this.setCustomValidity("Passwords don't match");
+        document.getElementById('changePasswordBtn').disabled = true;
+    } else {
+        this.setCustomValidity('');
+        // Re-check password strength to enable/disable button
+        checkPasswordStrength();
+    }
+});
+
 // Toast notification for messages
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize password validation
+    checkPasswordStrength();
+    
     // Auto-dismiss alerts after 5 seconds
     const alerts = document.querySelectorAll('.alert');
     alerts.forEach(alert => {
@@ -468,6 +554,64 @@ document.querySelectorAll('.accordion-body form').forEach(form => {
 document.querySelector('button[name="delete_account"]').addEventListener('click', function(e) {
     if (!confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
         e.preventDefault();
+    }
+});
+
+// Common weak password patterns check
+function hasCommonPatterns(password) {
+    const commonPatterns = [
+        /123/,
+        /abc/i,
+        /qwerty/i,
+        /password/i,
+        /admin/i,
+        new RegExp(new Date().getFullYear()),
+        /test/i
+    ];
+    
+    return commonPatterns.some(pattern => pattern.test(password));
+}
+
+// Check for keyboard sequence patterns
+function hasKeyboardSequence(password) {
+    const sequences = [
+        'qwertyuiop',
+        'asdfghjkl',
+        'zxcvbnm'
+    ];
+    
+    return sequences.some(sequence => {
+        for (let i = 0; i < sequence.length - 2; i++) {
+            if (password.toLowerCase().includes(sequence.substring(i, i + 3))) {
+                return true;
+            }
+        }
+        return false;
+    });
+}
+
+// Reset form when accordion is closed
+document.querySelector('#securitySettings').addEventListener('hidden.bs.collapse', function () {
+    const form = this.querySelector('form');
+    if (form) {
+        form.reset();
+        checkPasswordStrength();
+        document.getElementById('password-requirements').innerHTML = '';
+        document.getElementById('password-strength-text').textContent = '';
+        document.getElementById('password-strength-meter-fill').style.width = '0%';
+    }
+});
+
+// Handle escape key to close modals
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const modals = document.querySelectorAll('.modal.show');
+        modals.forEach(modal => {
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        });
     }
 });
 </script>
