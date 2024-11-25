@@ -9,6 +9,14 @@ include('includes/navbar.php');
 // Get the current user ID
 $userId = $_SESSION['auth_user']['user_id'];
 
+// Get count of active goals for the user
+$activeGoalsCount = getActiveGoalsCount($conn, $userId);
+
+// Make sure we have a valid count
+if ($activeGoalsCount === false) {
+    $activeGoalsCount = 0; // Fallback to 0 if there's an error
+}
+
 // Check if user is subscribed
 require_once('includes/SubscriptionHelper.php');
 $subscriptionHelper = new SubscriptionHelper($conn);
@@ -215,23 +223,122 @@ function checkGoalsDueDate($conn, $userId) {
     return $alerts;
 }
 
+// Get the number of active goals for a user
+function getActiveGoalsCount($conn, $userId) {
+    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM goals WHERE user_id = ? AND is_archived = 0");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    return $row['count'];
+}
+
 // Handle form submission for adding a new goal
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_goal'])) {
-    $name = $_POST['goal_name'];
-    $targetAmount = $_POST['target_amount']; 
-    $targetDate = $_POST['target_date'];
-    $category = $_POST['category'];
+    // Check subscription status and goal limit for free users
+    if (!$hasActiveSubscription) {
+        $activeGoalsCount = getActiveGoalsCount($conn, $userId);
+        if ($activeGoalsCount >= 3) {
+            header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("You've reached the maximum of 5 goals. Please upgrade to Premium for unlimited goals."));
+            exit();
+        }
+    }
 
-    // Validate the amount and date
-    $sql = "INSERT INTO goals (user_id, name, target_amount, target_date, category) VALUES (?, ?, ?, ?, ?)";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("isdss", $userId, $name, $targetAmount, $targetDate, $category);
-    
-    if ($stmt->execute()) {
+    // Sanitize and validate inputs
+    $name = trim(htmlspecialchars($_POST['goal_name']));
+    $targetAmount = filter_var($_POST['target_amount'], FILTER_VALIDATE_FLOAT);
+    $targetDate = $_POST['target_date'];
+    $category = trim(htmlspecialchars($_POST['category']));
+
+    // Input validation
+    $errors = [];
+
+    // Validate goal name
+    if (empty($name) || strlen($name) < 3 || strlen($name) > 100) {
+        $errors[] = "Goal name must be between 3 and 100 characters.";
+    }
+
+    // Validate target amount
+    if (!$targetAmount || $targetAmount <= 0) {
+        $errors[] = "Please enter a valid target amount greater than 0.";
+    }
+
+    // Validate target date
+    $targetDateTime = new DateTime($targetDate);
+    $today = new DateTime();
+    if ($targetDateTime < $today) {
+        $errors[] = "Target date cannot be in the past.";
+    }
+
+    // Validate category
+    if (empty($category)) {
+        $errors[] = "Please select a valid category.";
+    }
+
+    // If there are any errors, redirect back with error message
+    if (!empty($errors)) {
+        $errorMessage = implode(" ", $errors);
+        header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode($errorMessage));
+        exit();
+    }
+
+    try {
+        // Begin transaction
+        $conn->begin_transaction();
+
+        // Insert the new goal
+        $sql = "INSERT INTO goals (user_id, name, target_amount, target_date, category) VALUES (?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        
+        if (!$stmt) {
+            throw new Exception("Prepare failed: " . $conn->error);
+        }
+
+        $stmt->bind_param("isdss", $userId, $name, $targetAmount, $targetDate, $category);
+        
+        if (!$stmt->execute()) {
+            throw new Exception("Execute failed: " . $stmt->error);
+        }
+
+        $goalId = $stmt->insert_id;
+
+        // Add notification for goal creation
+        $notificationMessage = sprintf(
+            "New goal '%s' created with target amount ₱%s due on %s",
+            $name,
+            number_format($targetAmount, 2),
+            date('M d, Y', strtotime($targetDate))
+        );
+
+        $notifySql = "INSERT INTO notifications (user_id, type, message) VALUES (?, 'goal', ?)";
+        $notifyStmt = $conn->prepare($notifySql);
+        
+        if (!$notifyStmt) {
+            throw new Exception("Notification prepare failed: " . $conn->error);
+        }
+
+        $notifyStmt->bind_param("is", $userId, $notificationMessage);
+        
+        if (!$notifyStmt->execute()) {
+            throw new Exception("Notification insert failed: " . $notifyStmt->error);
+        }
+
+        // Commit transaction
+        $conn->commit();
+
+        // Redirect with success message
         header("Location: " . $_SERVER['PHP_SELF'] . "?success=goal_added");
         exit();
-    } else {
-        header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Error adding goal: " . $conn->error));
+
+    } catch (Exception $e) {
+        // Rollback transaction on error
+        $conn->rollback();
+        
+        // Log error
+        error_log("Error adding goal: " . $e->getMessage());
+        
+        // Redirect with error message
+        header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Error adding goal: " . $e->getMessage()));
         exit();
     }
 }
@@ -567,10 +674,34 @@ $goalCategories = [
             </div>
         </div>
 
+        <!-- Free Plan Alert -->
+        <?php if (!$hasActiveSubscription): ?>
+            <div class="alert alert-custom-info mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="bi bi-info-circle me-2"></i>
+                        Using Free Plan: <?php echo (int)$activeGoalsCount; ?>/3 goals created
+                    </div>
+                    <a href="subscription-plans.php" class="btn btn-sm btn-custom-primary-rounded">
+                        Upgrade to Premium
+                    </a>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <!-- Add Goal Button -->
-        <button type="button" class="btn btn-add w-100 mb-4" data-bs-toggle="modal" data-bs-target="#addGoalModal">
-                + New Goal
-        </button>
+        <?php 
+            $activeGoalsCount = getActiveGoalsCount($conn, $userId);
+            if (!$hasActiveSubscription && $activeGoalsCount >= 3): 
+            ?>
+                <button type="button" class="btn btn-add w-100 mb-4" onclick="showSubscriptionPrompt()">
+                    + New Goal
+                </button>
+            <?php else: ?>
+                <button type="button" class="btn btn-add w-100 mb-4" data-bs-toggle="modal" data-bs-target="#addGoalModal">
+                    + New Goal
+                </button>
+        <?php endif; ?>
 
         <!-- Active Goals Section -->
         <div class="row mb-4">
@@ -1086,6 +1217,21 @@ $goalCategories = [
 // Get PHP variables
 const hasAvailableBalance = <?php echo json_encode($hasBalance); ?>;
 const availableBalance = <?php echo json_encode($currentBalance); ?>;
+
+// Show subscription prompt
+function showSubscriptionPrompt() {
+    const toast = new bootstrap.Toast(document.getElementById('liveToast'));
+    const toastBody = document.querySelector('#liveToast .toast-body');
+        
+    toastBody.innerHTML = `
+        <div class="d-flex align-items-center justify-content-between">
+            <span>You've reached the maximum of 3 goals. Upgrade to Premium for unlimited goals!</span>
+            <a href="subscription-plans.php" class="btn btn-sm btn-custom-primary-rounded ms-3">Upgrade Now</a>
+        </div>
+    `;
+        
+    toast.show();
+}
 
 // Wait for DOM to be fully loaded before executing any code
 document.addEventListener('DOMContentLoaded', function() {

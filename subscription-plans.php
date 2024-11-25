@@ -134,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['subscribe'])) {
                             </tr>
                             <tr>
                                 <td>Number of Goals</td>
-                                <td class="text-center">Up to 5</td>
+                                <td class="text-center">Up to 3</td>
                                 <td class="text-center">Unlimited</td>
                             </tr>
                             <tr>
