@@ -58,17 +58,22 @@ class Advertisement {
             .advertisement-wrapper {
                 width: 100%;
                 padding: 0;
+                margin: 0; /* Remove default margins */
             }
             
             .advertisement-container {
-                width: 90%;
+                width: 100%; /* Full width */
                 max-width: ' . self::$defaultStyles['maxWidth'] . ';
                 background: #FFFFFF;
-                border-radius: 8px;
+                border-radius: 13px;
                 overflow: hidden;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                box-shadow: none; /* Remove shadow to match other cards */
                 transition: box-shadow 0.3s ease;
             }
+            
+            .advertisement-wrapper .container {
+                padding: 0;
+            }    
             
             .advertisement-container:hover {
                 box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -132,7 +137,7 @@ class Advertisement {
             
             @media (max-width: 768px) {
                 .advertisement-container {
-                    width: 95%;
+                    width: 100%;
                 }
                 
                 .ad-content {
