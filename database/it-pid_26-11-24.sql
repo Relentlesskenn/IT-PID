@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 24, 2024 at 08:19 PM
+-- Generation Time: Nov 25, 2024 at 06:28 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -151,7 +151,10 @@ CREATE TABLE `goals` (
   `is_completed` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `is_archived` tinyint(1) DEFAULT 0
+  `is_archived` tinyint(1) DEFAULT 0,
+  `status` varchar(20) DEFAULT 'active',
+  `due_action` varchar(20) DEFAULT NULL,
+  `action_date` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -167,6 +170,20 @@ CREATE TRIGGER `update_goal_completion` BEFORE UPDATE ON `goals` FOR EACH ROW BE
 END
 $$
 DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `goal_alerts`
+--
+
+CREATE TABLE `goal_alerts` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `goal_id` int(11) NOT NULL,
+  `alert_type` varchar(20) NOT NULL,
+  `create_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -219,6 +236,67 @@ CREATE TABLE `notifications` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `quotes`
+--
+
+CREATE TABLE `quotes` (
+  `id` int(11) NOT NULL,
+  `content` text NOT NULL,
+  `author` varchar(255) NOT NULL,
+  `category` varchar(50) DEFAULT 'finance',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `quotes`
+--
+
+INSERT INTO `quotes` (`id`, `content`, `author`, `category`, `created_at`) VALUES
+(1, 'Do not save what is left after spending, but spend what is left after saving.', 'Warren Buffett', 'finance', '2024-11-20 10:55:02'),
+(2, 'The habit of saving is itself an education; it fosters every virtue, teaches self-denial, cultivates the sense of order, trains to forethought.', 'T.T. Munger', 'savings', '2024-11-20 10:55:02'),
+(3, 'Financial peace isn\'t the acquisition of stuff. It\'s learning to live on less than you make, so you can give money back and have money to invest.', 'Dave Ramsey', 'finance', '2024-11-20 10:55:02'),
+(4, 'Never depend on a single income. Make an investment to create a second source.', 'Warren Buffett', 'investment', '2024-11-20 10:55:02'),
+(5, 'A budget is telling your money where to go instead of wondering where it went.', 'Dave Ramsey', 'budgeting', '2024-11-20 10:55:02'),
+(6, 'The goal isn\'t more money. The goal is living life on your terms.', 'Chris Brogan', 'motivation', '2024-11-20 10:55:02'),
+(7, 'It\'s not how much money you make, but how much money you keep, how hard it works for you, and how many generations you keep it for.', 'Robert Kiyosaki', 'wealth', '2024-11-20 10:55:02'),
+(8, 'Money looks better in the bank than on your feet.', 'Sophia Amoruso', 'savings', '2024-11-20 10:55:02');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `subscription_payments`
+--
+
+CREATE TABLE `subscription_payments` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `subscription_id` int(11) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `payment_method` varchar(50) NOT NULL,
+  `payment_status` enum('pending','completed','failed') NOT NULL DEFAULT 'pending',
+  `transaction_id` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `subscription_plans`
+--
+
+CREATE TABLE `subscription_plans` (
+  `id` int(11) NOT NULL,
+  `name` varchar(50) NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `duration_months` int(11) NOT NULL,
+  `description` text NOT NULL,
+  `features` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -233,6 +311,52 @@ CREATE TABLE `users` (
   `verify_status` tinyint(2) NOT NULL DEFAULT 0 COMMENT '0=no,1=yes',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_subscriptions`
+--
+
+CREATE TABLE `user_subscriptions` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `plan_id` int(11) NOT NULL,
+  `start_date` datetime NOT NULL,
+  `end_date` datetime NOT NULL,
+  `status` enum('active','cancelled','expired') NOT NULL DEFAULT 'active',
+  `payment_status` enum('pending','completed','failed') NOT NULL DEFAULT 'pending',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `videos`
+--
+
+CREATE TABLE `videos` (
+  `id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `description` text NOT NULL,
+  `thumbnail_url` varchar(255) NOT NULL,
+  `video_url` varchar(255) NOT NULL,
+  `category` varchar(50) NOT NULL,
+  `duration` varchar(10) NOT NULL,
+  `level` varchar(20) NOT NULL,
+  `views` int(11) DEFAULT 0,
+  `date_added` timestamp NOT NULL DEFAULT current_timestamp(),
+  `status` varchar(20) DEFAULT 'active'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `videos`
+--
+
+INSERT INTO `videos` (`id`, `title`, `description`, `thumbnail_url`, `video_url`, `category`, `duration`, `level`, `views`, `date_added`, `status`) VALUES
+(1, 'Emergency Funds 101', 'Everything you need to know about building an emergency fund.', '/assets/imgs/thumbnails/1.jpg', 'https://www.youtube.com/embed/tVGJqaOkqac', 'savings', '10:15', 'beginner', 0, '2024-11-21 05:57:40', 'active'),
+(2, 'Why the secret to success is setting the right goals', 'Learn how to set and achieve meaningful goals.', '/assets/imgs/thumbnails/2.jpg', 'https://www.youtube.com/embed/L4N1q4RNi9I', 'goals', '11:51', 'intermediate', 0, '2024-11-21 05:57:40', 'active'),
+(3, 'The Chinese Secret to Saving Money Revealed', 'Discover advanced Chinese techniques to maximize your savings potential.', '/assets/imgs/thumbnails/3.jpg', 'https://www.youtube.com/embed/ms1nTeFO7ps', 'savings', '10:56', 'advanced', 0, '2024-11-21 05:57:40', 'active');
 
 -- --------------------------------------------------------
 
@@ -298,6 +422,14 @@ ALTER TABLE `goals`
   ADD KEY `idx_category` (`category`);
 
 --
+-- Indexes for table `goal_alerts`
+--
+ALTER TABLE `goal_alerts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `goal_id` (`goal_id`);
+
+--
 -- Indexes for table `incomes`
 --
 ALTER TABLE `incomes`
@@ -312,11 +444,45 @@ ALTER TABLE `notifications`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indexes for table `quotes`
+--
+ALTER TABLE `quotes`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `subscription_payments`
+--
+ALTER TABLE `subscription_payments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `subscription_id` (`subscription_id`);
+
+--
+-- Indexes for table `subscription_plans`
+--
+ALTER TABLE `subscription_plans`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`user_id`),
   ADD UNIQUE KEY `email` (`email`);
+
+--
+-- Indexes for table `user_subscriptions`
+--
+ALTER TABLE `user_subscriptions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `plan_id` (`plan_id`);
+
+--
+-- Indexes for table `videos`
+--
+ALTER TABLE `videos`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -365,6 +531,12 @@ ALTER TABLE `goals`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `goal_alerts`
+--
+ALTER TABLE `goal_alerts`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `incomes`
 --
 ALTER TABLE `incomes`
@@ -377,10 +549,40 @@ ALTER TABLE `notifications`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `quotes`
+--
+ALTER TABLE `quotes`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- AUTO_INCREMENT for table `subscription_payments`
+--
+ALTER TABLE `subscription_payments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `subscription_plans`
+--
+ALTER TABLE `subscription_plans`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
   MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `user_subscriptions`
+--
+ALTER TABLE `user_subscriptions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `videos`
+--
+ALTER TABLE `videos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables
@@ -418,6 +620,13 @@ ALTER TABLE `goals`
   ADD CONSTRAINT `goals_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`);
 
 --
+-- Constraints for table `goal_alerts`
+--
+ALTER TABLE `goal_alerts`
+  ADD CONSTRAINT `goal_alerts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
+  ADD CONSTRAINT `goal_alerts_ibfk_2` FOREIGN KEY (`goal_id`) REFERENCES `goals` (`id`);
+
+--
 -- Constraints for table `incomes`
 --
 ALTER TABLE `incomes`
@@ -428,6 +637,20 @@ ALTER TABLE `incomes`
 --
 ALTER TABLE `notifications`
   ADD CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`);
+
+--
+-- Constraints for table `subscription_payments`
+--
+ALTER TABLE `subscription_payments`
+  ADD CONSTRAINT `subscription_payments_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
+  ADD CONSTRAINT `subscription_payments_ibfk_2` FOREIGN KEY (`subscription_id`) REFERENCES `user_subscriptions` (`id`);
+
+--
+-- Constraints for table `user_subscriptions`
+--
+ALTER TABLE `user_subscriptions`
+  ADD CONSTRAINT `user_subscriptions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
+  ADD CONSTRAINT `user_subscriptions_ibfk_2` FOREIGN KEY (`plan_id`) REFERENCES `subscription_plans` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
