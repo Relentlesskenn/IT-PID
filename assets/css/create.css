@@ -411,3 +411,77 @@
 .recent-item-comment {
     margin-bottom: 0.5rem !important;
 }
+
+/* Custom Modal Styling */
+.custom-modal {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.custom-modal .modal-dialog {
+    max-width: 500px;
+    margin: 1.75rem auto;
+}
+
+.custom-modal .modal-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    pointer-events: auto;
+    background-color: #fff;
+    border: none;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.custom-modal .modal-header {
+    position: relative;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    background: #f8f9fa;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+}
+
+.custom-modal .modal-body {
+    position: relative;
+    flex: 1 1 auto;
+    padding: 1.5rem;
+}
+
+.custom-modal .btn-close {
+    position: absolute;
+    right: 1.5rem;
+    top: 1.5rem;
+    z-index: 2;
+}
+
+.custom-modal .form-control:focus,
+.custom-modal .form-select:focus {
+    box-shadow: none;
+    border-color: #433878;
+}
+
+/* Fix z-index stacking */
+.modal-backdrop {
+    z-index: 1040;
+}
+
+.custom-modal {
+    z-index: 1045;
+}
+
+/* Prevent scrolling when modal is open */
+body.modal-open {
+    overflow: hidden;
+    padding-right: 0 !important;
+}
+
+/* Modal animation */
+.custom-modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+    transform: translate(0, -50px);
+}
+
+.custom-modal.show .modal-dialog {
+    transform: none;
+}

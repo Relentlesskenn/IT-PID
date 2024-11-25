@@ -122,6 +122,18 @@ include('includes/authentication.php');
 include('includes/header.php');
 include('includes/navbar.php');
 
+// Get the current user ID
+$userId = $_SESSION['auth_user']['user_id'];
+
+// Check if user is subscribed
+require_once('includes/SubscriptionHelper.php');
+$subscriptionHelper = new SubscriptionHelper($conn);
+$hasActiveSubscription = $subscriptionHelper->hasActiveSubscription($_SESSION['auth_user']['user_id']);
+
+// Check subscription status
+$subscriptionHelper = new SubscriptionHelper($conn);
+$hasActiveSubscription = $subscriptionHelper->hasActiveSubscription($userId);
+
 // Function to get all articles with pagination
 function getArticles($conn, $category = null) {
     try {
@@ -373,6 +385,14 @@ $goalsCount = getArticleCountByCategory($conn, 'goals');
                 </div>
             </div>
         </div>
+
+        <!-- Ad Section -->
+        <?php
+        require_once 'includes/Advertisement.php';
+        if (!$hasActiveSubscription) {
+            echo Advertisement::render('banner', 'center');
+        }
+        ?>
 
         <!-- Quotes Section -->
         <div class="quotes-section">

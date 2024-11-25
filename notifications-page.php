@@ -7,6 +7,15 @@ include('includes/header.php');
 // Get the current user ID
 $userId = $_SESSION['auth_user']['user_id'];
 
+// Check if user is subscribed
+require_once('includes/SubscriptionHelper.php');
+$subscriptionHelper = new SubscriptionHelper($conn);
+$hasActiveSubscription = $subscriptionHelper->hasActiveSubscription($_SESSION['auth_user']['user_id']);
+
+// Check subscription status
+$subscriptionHelper = new SubscriptionHelper($conn);
+$hasActiveSubscription = $subscriptionHelper->hasActiveSubscription($userId);
+
 // Handle notification deletion
 if (isset($_POST['delete_notification'])) {
     $notificationId = filter_input(INPUT_POST, 'notification_id', FILTER_SANITIZE_NUMBER_INT);
@@ -116,6 +125,14 @@ function getNotificationDetails($type, $message) {
                     </form>
                 <?php endif; ?>
             </div>
+
+            <!-- Ad Section -->
+            <?php
+            require_once 'includes/Advertisement.php';
+            if (!$hasActiveSubscription) {
+                echo Advertisement::render('banner', 'center');
+            }
+            ?>
 
             <!-- Notifications List -->
             <?php if ($result->num_rows > 0): ?>

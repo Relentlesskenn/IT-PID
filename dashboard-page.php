@@ -2,6 +2,9 @@
 require_once('_dbconnect.php');
 require_once('includes/authentication.php');
 
+// Get current user ID
+$userId = $_SESSION['auth_user']['user_id'];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
     
@@ -126,6 +129,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $page_title = "Dashboard · IT-PID";
 include('includes/header.php');
 include('includes/navbar.php');
+
+// Check if user is subscribed
+require_once('includes/SubscriptionHelper.php');
+$subscriptionHelper = new SubscriptionHelper($conn);
+$hasActiveSubscription = $subscriptionHelper->hasActiveSubscription($_SESSION['auth_user']['user_id']);
+
+// Check subscription status
+$subscriptionHelper = new SubscriptionHelper($conn);
+$hasActiveSubscription = $subscriptionHelper->hasActiveSubscription($userId);
 
 // Functions
 // Function to get the total expenses for a specific month and year
@@ -323,6 +335,14 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                 <?php endif; ?>
             </a>
         </div>
+        
+        <!-- Ad Section -->
+        <?php
+        require_once 'includes/Advertisement.php';
+        if (!$hasActiveSubscription) {
+            echo Advertisement::render('banner', 'center');
+        }
+        ?>
         
         <!--Expenses, Incomes, and Balance-->
         <div class="card my-4 card-custom">

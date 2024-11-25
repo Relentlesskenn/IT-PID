@@ -9,6 +9,15 @@ include('includes/navbar.php');
 
 $userId = $_SESSION['auth_user']['user_id'];
 
+// Check if user is subscribed
+require_once('includes/SubscriptionHelper.php');
+$subscriptionHelper = new SubscriptionHelper($conn);
+$hasActiveSubscription = $subscriptionHelper->hasActiveSubscription($_SESSION['auth_user']['user_id']);
+
+// Check subscription status
+$subscriptionHelper = new SubscriptionHelper($conn);
+$hasActiveSubscription = $subscriptionHelper->hasActiveSubscription($userId);
+
 // Get the current date, month, and year
 $currentDate = date('Y-m-d');
 $currentMonth = date('Y-m');
@@ -343,6 +352,14 @@ $hasExpenses = ($result && $result->num_rows > 0);
                 <i class="bi bi-graph-up"></i> Graphs
             </a>
         </div>
+
+        <!-- Ad Section -->
+        <?php
+        require_once 'includes/Advertisement.php';
+        if (!$hasActiveSubscription) {
+            echo Advertisement::render('banner', 'center');
+        }
+        ?>
 
         <!-- Expense History Controls Card -->
         <div class="card shadow-sm rounded-4 mb-4">

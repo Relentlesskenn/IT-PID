@@ -391,3 +391,57 @@
         transform: rotate(360deg);
     }
 }
+
+/* Subscription status card styles */
+.subscription-status-card {
+    background: linear-gradient(145deg, #f8f9fa, #ffffff);
+    border: 1px solid rgba(67, 56, 120, 0.1);
+    box-shadow: 0 2px 4px rgba(67, 56, 120, 0.05);
+    transition: all 0.3s ease;
+}
+
+.subscription-status-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(67, 56, 120, 0.1);
+}
+
+.subscription-status-card .card-title {
+    color: #433878;
+    font-size: 1.1rem;
+}
+
+.subscription-status-card .text-warning {
+    color: #ffc107 !important;
+}
+
+.subscription-status-card .text-muted {
+    font-size: 0.9rem;
+}
+
+.subscription-status-card .btn-custom-primary-rounded {
+    background: linear-gradient(135deg, #433878, #7d62b4);
+    color: white;
+    border: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 50px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.subscription-status-card .btn-custom-primary-rounded:hover {
+    background: linear-gradient(135deg, #7d62b4, #433878);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(67, 56, 120, 0.2);
+}
+
+@media (max-width: 768px) {
+    .subscription-status-card .d-flex {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .subscription-status-card .btn-custom-primary-rounded {
+        width: 100%;
+    }
+}

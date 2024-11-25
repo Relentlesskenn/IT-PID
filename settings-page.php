@@ -150,6 +150,15 @@ $userData = $stmt->get_result()->fetch_assoc();
 $page_title = "Settings · IT-PID";
 include('includes/header.php');
 include('includes/navbar.php');
+
+// Check if user is subscribed
+require_once('includes/SubscriptionHelper.php');
+$subscriptionHelper = new SubscriptionHelper($conn);
+$currentSubscription = $subscriptionHelper->getCurrentSubscription($userId);
+
+// Check subscription status
+$subscriptionHelper = new SubscriptionHelper($conn);
+$hasActiveSubscription = $subscriptionHelper->hasActiveSubscription($userId);
 ?>
 
 <link rel="stylesheet" href="./assets/css/settings.css">
@@ -161,6 +170,14 @@ include('includes/navbar.php');
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h4">Settings</h1>
         </div>
+
+        <!-- Ad Section -->
+        <?php
+        require_once 'includes/Advertisement.php';
+        if (!$hasActiveSubscription) {
+            echo Advertisement::render('banner', 'center');
+        }
+        ?>
 
         <!-- Display Messages -->
         <?php if(isset($_SESSION['message'])): ?>
@@ -176,6 +193,34 @@ include('includes/navbar.php');
 
         <!-- Settings Accordion -->
         <div class="accordion settings-accordion mb-4" id="settingsAccordion">
+            <!-- Subscription Status Card -->
+            <div class="card subscription-status-card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-1">
+                                <i class="bi bi-star-fill text-warning me-2"></i>
+                                Subscription Status
+                            </h5>
+                            <p class="card-text mb-0">
+                                <?php if ($currentSubscription): ?>
+                                    You are currently on <strong><?php echo htmlspecialchars($currentSubscription['plan_name']); ?></strong>
+                                    <span class="text-muted">
+                                        (Expires: <?php echo date('F j, Y', strtotime($currentSubscription['end_date'])); ?>)
+                                    </span>
+                                <?php else: ?>
+                                    You are currently on the <strong>Free Plan</strong>
+                                <?php endif; ?>
+                            </p>
+                        </div>
+                        <a href="subscription-plans.php" class="btn btn-custom-primary-rounded">
+                            <i class="bi bi-arrow-up-circle me-2"></i>
+                            <?php echo $currentSubscription ? 'Manage Subscription' : 'Upgrade Now'; ?>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             <!-- Account Settings -->
             <div class="accordion-item">
                 <h2 class="accordion-header">

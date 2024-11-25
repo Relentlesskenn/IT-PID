@@ -8,6 +8,15 @@ include('includes/header.php');
 // Get the current user ID
 $userId = $_SESSION['auth_user']['user_id'];
 
+// Check if user is subscribed
+require_once('includes/SubscriptionHelper.php');
+$subscriptionHelper = new SubscriptionHelper($conn);
+$hasActiveSubscription = $subscriptionHelper->hasActiveSubscription($_SESSION['auth_user']['user_id']);
+
+// Check subscription status
+$subscriptionHelper = new SubscriptionHelper($conn);
+$hasActiveSubscription = $subscriptionHelper->hasActiveSubscription($userId);
+
 // Get the current month and year
 $currentMonth = date('Y-m');
 $currentYear = date('Y');
@@ -119,18 +128,53 @@ if ($hasData) {
 <!-- Main container with bento grid -->
 <body class="graphs-page">
 <div class="graphs-container pt-4 pb-5">
+
+    <!-- Ad Section -->
+    <?php
+    require_once 'includes/Advertisement.php';
+    if (!$hasActiveSubscription) {
+        echo Advertisement::render('banner', 'center');
+    }
+    ?>
+
     <!-- Header section -->
-    <div class="d-flex justify-content-between align-items-center">
-        <a href="reports-page.php" class="btn btn-custom-primary-rounded btn-sm">
-            <i class="bi bi-arrow-left"></i>
-            <span>Reports</span>
-        </a>
-        <h1 class="h4 mb-0">Financial Graphs</h1>
-        <!-- Add print button -->
-        <button class="btn btn-custom-primary-rounded btn-sm" onclick="printGraphs()" id="printButton">
-            <i class="bi bi-printer"></i>
-            <span>Print Graphs</span>
-        </button>
+    <div class="graphs-header">
+        <div class="graphs-header-content">
+            <!-- Title and subtitle -->
+            <div class="graphs-header-titles">
+                <h1 class="graphs-title">Financial Graphs</h1>
+                <p class="graphs-subtitle">Visualize your financial data</p>
+            </div>
+            
+            <!-- Navigation and action buttons -->
+            <div class="graphs-header-actions">
+                <!-- Report navigation group -->
+                <div class="graphs-nav-group">
+                    <a href="reports-page.php" class="graphs-btn graphs-btn-outline">
+                        <i class="bi bi-arrow-left"></i>
+                        <span class="btn-text">Back to Reports</span>
+                    </a>
+                </div>
+                
+                <!-- Actions group -->
+                <div class="graphs-actions-group">
+                    <a href="graphs-page.php" class="graphs-btn graphs-btn-icon refresh-btn" title="Refresh Graphs">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </a>
+                    <button class="graphs-btn graphs-btn-primary" onclick="printGraphs()" id="printButton">
+                        <i class="bi bi-printer"></i>
+                        <i class="bi bi-hourglass-split spinner"></i>
+                        <span class="btn-text">Export PDF</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Period indicator -->
+        <div class="graphs-period">
+            <span class="period-label">Showing data for:</span>
+            <span class="period-value"><?php echo date('F Y'); ?></span>
+        </div>
     </div>
 
     <?php if ($hasData): ?>

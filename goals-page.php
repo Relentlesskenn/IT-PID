@@ -9,6 +9,15 @@ include('includes/navbar.php');
 // Get the current user ID
 $userId = $_SESSION['auth_user']['user_id'];
 
+// Check if user is subscribed
+require_once('includes/SubscriptionHelper.php');
+$subscriptionHelper = new SubscriptionHelper($conn);
+$hasActiveSubscription = $subscriptionHelper->hasActiveSubscription($_SESSION['auth_user']['user_id']);
+
+// Check subscription status
+$subscriptionHelper = new SubscriptionHelper($conn);
+$hasActiveSubscription = $subscriptionHelper->hasActiveSubscription($userId);
+
 // Function to update total balance for a user
 function updateCumulativeBalance($conn, $userId) {
     $currentMonth = date('Y-m-01'); // First day of current month
@@ -492,6 +501,14 @@ $goalCategories = [
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h4 mb-0">Goals</h1>
         </div>
+
+        <!-- Ad Section -->
+        <?php
+        require_once 'includes/Advertisement.php';
+        if (!$hasActiveSubscription) {
+            echo Advertisement::render('banner', 'center');
+        }
+        ?>
 
         <!-- Overview Cards Section -->
         <div class="row g-3 mb-4">

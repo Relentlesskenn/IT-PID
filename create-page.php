@@ -20,6 +20,11 @@ $redirect_url = 'create-page.php?page=' . (isset($_GET['page']) ? $_GET['page'] 
 // Get current user ID
 $userId = $_SESSION['auth_user']['user_id'];
 
+// Check if user is subscribed
+require_once('includes/SubscriptionHelper.php');
+$subscriptionHelper = new SubscriptionHelper($conn);
+$hasActiveSubscription = $subscriptionHelper->hasActiveSubscription($_SESSION['auth_user']['user_id']);
+
 // Edit Income Amount
 if (isset($_POST['edit_income'])) {
     $incomeId = intval($_POST['income_id']);
@@ -71,6 +76,14 @@ if (isset($_POST['edit_expense'])) {
         $stmt->close();
     }
     $checkStmt->close();
+}
+
+// Add Category Button - Only for premium users
+if (isset($_POST['addCategoryBtn']) && !$hasActiveSubscription) {
+    $_SESSION['message'] = "Custom categories are only available for premium users.";
+    $_SESSION['message_type'] = "warning";
+    header("Location: create-page.php");
+    exit();
 }
 
 // Initialize variables
@@ -166,63 +179,132 @@ function showBudget() {
     global $conn, $budgetCategories;
     $userId = $_SESSION['auth_user']['user_id'];
     $current_month = date('Y-m');
+
+    // Check subscription status
+    $subscriptionHelper = new SubscriptionHelper($conn);
+    $hasActiveSubscription = $subscriptionHelper->hasActiveSubscription($userId);
+    
     echo '   
         <form method="post">
-        <input type="hidden" name="budget_month" value="' . $current_month . '">
+            <input type="hidden" name="budget_month" value="' . $current_month . '">
             <div class="mb-3">
                 <label for="budget_name" class="form-label">Budget Category</label>
                 <div class="input-group input-group-lg">
                     <select class="form-select" name="budget_name" id="budget_name" required>
-                        ';
+                        <option value="">Select Category</option>';
+                        
+    // Add predefined categories
     foreach ($budgetCategories as $category => $color) {
-        echo '<option value="' . htmlspecialchars($category) . '" data-color="' . htmlspecialchars($color) . '">' . htmlspecialchars($category) . '</option>';
+        echo '<option value="' . htmlspecialchars($category) . '" data-color="' . htmlspecialchars($color) . '">' 
+            . htmlspecialchars($category) . '</option>';
     }
-    echo '          </select>
-                    <button type="button" class="btn btn-plus" id="add-category-btn">
-                        +
-                    </button>
-                </div>
+
+    // Add custom categories if user has subscription
+    if ($hasActiveSubscription) {
+        $stmt = $conn->prepare("
+            SELECT name, color 
+            FROM budgets 
+            WHERE user_id = ? 
+            AND name NOT IN ('" . implode("','", array_keys($budgetCategories)) . "')
+            AND month = ?
+            ORDER BY name
+        ");
+        $stmt->bind_param("is", $userId, $current_month);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            echo '<optgroup label="Custom Categories">';
+            while ($row = $result->fetch_assoc()) {
+                echo '<option value="' . htmlspecialchars($row['name']) . '" data-color="' . htmlspecialchars($row['color']) . '">' 
+                    . htmlspecialchars($row['name']) . '</option>';
+            }
+            echo '</optgroup>';
+        }
+    }
+
+    echo '          </select>';
+
+    // Add Category Button - Show tooltip for non-subscribers
+    if ($hasActiveSubscription) {
+        echo '
+            <button type="button" class="btn btn-plus" id="add-category-btn">
+                <i class="bi bi-plus-lg"></i>
+            </button>';
+    } else {
+        echo '
+            <button type="button" class="btn btn-plus" 
+                    data-bs-toggle="tooltip" 
+                    data-bs-placement="top" 
+                    title="Subscribe to Premium to add custom categories">
+                <i class="bi bi-plus-lg"></i>
+                <i class="bi bi-lock-fill ms-1"></i>
+            </button>';
+    }
+
+    echo '      </div>
+                <div class="form-text">';
+    if (!$hasActiveSubscription) {
+        echo '<i class="bi bi-info-circle me-1"></i>Upgrade to Premium to create custom budget categories';
+    }
+    echo '      </div>
             </div>
             <div class="mb-4">
                 <label for="budget_amount" class="form-label">Amount</label>
                 <div class="input-group input-group-lg">
                     <span class="input-group-text">₱</span>
-                    <input type="number" step="0.01" class="form-control" name="budget_amount" id="budget_amount" required inputmode="decimal">
+                    <input type="number" 
+                           step="0.01" 
+                           class="form-control" 
+                           name="budget_amount" 
+                           id="budget_amount" 
+                           required 
+                           inputmode="decimal"
+                           min="0.01"
+                           placeholder="Enter budget amount">
                 </div>
             </div>
             <button type="submit" class="btn btn-custom-primary-rounded btn-lg w-100 mb-2" name="budget_btn">
-                + Add Budget
+                <i class="bi bi-plus-circle me-2"></i>Add Budget
             </button>
             <a class="btn btn-outline-secondary btn-lg w-100 mb-2" href="dashboard-page.php">
                 Back
             </a>
-        </form>
-    ';
+        </form>';
+
+    // Recent Budgets Section
     echo '
         <div class="accordion mt-4" id="recentBudgetsAccordion">
             <div class="accordion-item">
                 <h2 class="accordion-header">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#recentBudgetsCollapse">
-                        Recently Added Budgets
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                            data-bs-target="#recentBudgetsCollapse">
+                        <i class="bi bi-clock-history me-2"></i>Recently Added Budgets
                     </button>
                 </h2>
                 <div id="recentBudgetsCollapse" class="accordion-collapse collapse" data-bs-parent="#recentBudgetsAccordion">
                     <div class="accordion-body">
                         <div class="recent-items">';
-                        $recentBudgets = getRecentBudgets($conn, $userId);
-                        if ($recentBudgets->num_rows > 0) {
-                            while ($budget = $recentBudgets->fetch_assoc()) {
-                                echo '<div class="recent-item">
-                                        <div class="recent-item-details">
-                                            <span class="recent-item-name">' . htmlspecialchars($budget['name']) . '</span>
-                                            <span class="recent-item-amount">₱' . number_format($budget['amount'], 2) . '</span>
-                                        </div>
-                                        <small class="text-muted">' . date('M d, Y', strtotime($budget['date'])) . '</small>
-                                    </div>';
-                            }
-                        } else {
-                            echo '<p class="text-muted mb-0">No recent budgets found.</p>';
-                        }
+                        
+    // Fetch recent budgets
+    $recentBudgets = getRecentBudgets($conn, $userId);
+    if ($recentBudgets->num_rows > 0) {
+        while ($budget = $recentBudgets->fetch_assoc()) {
+            $isCustomCategory = !array_key_exists($budget['name'], $budgetCategories);
+            echo '<div class="recent-item">
+                    <div class="recent-item-details">
+                        <span class="recent-item-name">' 
+                            . htmlspecialchars($budget['name']) 
+                            . ($isCustomCategory && !$hasActiveSubscription ? ' <i class="bi bi-lock-fill text-muted"></i>' : '') 
+                            . '</span>
+                        <span class="recent-item-amount">₱' . number_format($budget['amount'], 2) . '</span>
+                    </div>
+                    <small class="text-muted">' . date('M d, Y', strtotime($budget['date'])) . '</small>
+                </div>';
+        }
+    } else {
+        echo '<p class="text-muted mb-0">No recent budgets found.</p>';
+    }
     echo '          </div>
                 </div>
             </div>
@@ -436,29 +518,86 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->close();
     }
 
-    // Add New Category Process
+    // Add New Category Process 
     if (isset($_POST['addCategoryBtn'])) {
-        $newCategoryName = mysqli_real_escape_string($conn, $_POST['newCategoryName']);
+        // First verify subscription status
+        if (!$hasActiveSubscription) {
+            $redirect_url = 'create-page.php?page=budget&message=' . urlencode('Custom categories are only available for premium users.') . '&type=warning';
+            header("Location: $redirect_url");
+            exit();
+        }
+
+        // Validate and sanitize inputs
+        $newCategoryName = trim(mysqli_real_escape_string($conn, $_POST['newCategoryName']));
         $newCategoryAmount = floatval($_POST['newCategoryAmount']);
         $newCategoryColor = mysqli_real_escape_string($conn, $_POST['newCategoryColor']);
-        $userId = $_SESSION['auth_user']['user_id'];
-        $currentMonth = date('Y-m');
-    
-        $stmt = $conn->prepare("INSERT INTO budgets (user_id, name, amount, month, color) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("isdss", $userId, $newCategoryName, $newCategoryAmount, $currentMonth, $newCategoryColor);
-        
-        if ($stmt->execute()) {
-            $redirect_url .= '&message=' . urlencode("A custom Budget of ₱" . number_format($newCategoryAmount, 2) . " for '" . $newCategoryName . "' has been set for " . date('F Y', strtotime($currentMonth)) . "!") . '&type=primary';
-            $notificationMessage = sprintf("A new custom budget '%s' of ₱%.2f has been successfully set for %s", 
+        $currentMonth = mysqli_real_escape_string($conn, $_POST['current_month']);
+
+        // Input validation
+        if (empty($newCategoryName) || strlen($newCategoryName) < 3 || strlen($newCategoryName) > 50) {
+            $_SESSION['message'] = 'Category name must be between 3 and 50 characters.';
+            $_SESSION['message_type'] = 'danger';
+            header("Location: create-page.php?page=budget");
+            exit();
+        }
+
+        if ($newCategoryAmount <= 0) {
+            $_SESSION['message'] = 'Amount must be greater than 0.';
+            $_SESSION['message_type'] = 'danger';
+            header("Location: create-page.php?page=budget");
+            exit();
+        }
+
+        try {
+            // Begin transaction
+            $conn->begin_transaction();
+
+            // Check if category already exists for this month
+            $checkStmt = $conn->prepare("SELECT id FROM budgets WHERE user_id = ? AND name = ? AND month = ?");
+            $checkStmt->bind_param("iss", $userId, $newCategoryName, $currentMonth);
+            $checkStmt->execute();
+            $result = $checkStmt->get_result();
+
+            if ($result->num_rows > 0) {
+                throw new Exception('A category with this name already exists for the current month.');
+            }
+
+            // Insert new category
+            $stmt = $conn->prepare("INSERT INTO budgets (user_id, name, amount, month, color) VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("isdss", $userId, $newCategoryName, $newCategoryAmount, $currentMonth, $newCategoryColor);
+            
+            if (!$stmt->execute()) {
+                throw new Exception('Failed to add category: ' . $stmt->error);
+            }
+
+            // Add notification
+            $notificationMessage = sprintf(
+                "New custom category '%s' with budget ₱%.2f has been created for %s",
                 $newCategoryName,
                 $newCategoryAmount,
                 date('F Y', strtotime($currentMonth))
             );
             addNotification($userId, 'budget', $notificationMessage);
-        } else {
-            $redirect_url .= '&message=' . urlencode('Error adding category: ' . $stmt->error) . '&type=danger';
+
+            // Commit transaction
+            $conn->commit();
+
+            $_SESSION['message'] = sprintf(
+                "Custom category '%s' with budget ₱%s has been created successfully.",
+                $newCategoryName,
+                number_format($newCategoryAmount, 2)
+            );
+            $_SESSION['message_type'] = 'success';
+
+        } catch (Exception $e) {
+            // Rollback transaction on error
+            $conn->rollback();
+            $_SESSION['message'] = $e->getMessage();
+            $_SESSION['message_type'] = 'danger';
         }
-        $stmt->close();
+
+        header("Location: create-page.php?page=budget");
+        exit();
     }
 
     // Add New Expense Process
@@ -570,6 +709,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         </div>
     </div>
+
+    <!-- Ad Section -->
+    <?php
+    require_once 'includes/Advertisement.php';
+    if (!$hasActiveSubscription) {
+        echo Advertisement::render('banner', 'center');
+    }
+    ?>
+
 </div>
 
 <!-- Toast container -->
@@ -583,38 +731,63 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 </div>
 
-<!-- Adding Custom Category Modal -->
-<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="addCategoryModalLabel">Add Custom Budget</h5>
-      </div>
-      <div class="modal-body">
-        <form method="post">
-            <div class="mb-3">
-                <label for="newCategoryName" class="form-label">Custom Budget Name</label>
-                <input type="text" class="form-control form-control-lg" name="newCategoryName" id="newCategoryName" required>
+<!-- Add Category Modal -->
+<div class="modal custom-modal" id="addCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>Add Custom Category
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="mb-3">
-                <label for="newCategoryAmount" class="form-label">Amount</label>
-                <div class="input-group input-group-lg">
-                    <span class="input-group-text">₱</span>
-                    <input type="number" step="0.01" class="form-control" name="newCategoryAmount" id="newCategoryAmount" required inputmode="decimal">
-                </div>
+            <div class="modal-body">
+                <form method="post" id="addCategoryForm" class="needs-validation" novalidate>
+                    <!-- Add a hidden input for the current month -->
+                    <input type="hidden" name="current_month" value="<?php echo date('Y-m'); ?>">
+                    
+                    <div class="mb-3">
+                        <label for="newCategoryName" class="form-label">Category Name</label>
+                        <input type="text" class="form-control form-control-lg" 
+                               name="newCategoryName" id="newCategoryName" 
+                               required maxlength="50" 
+                               pattern="[A-Za-z0-9\s]{3,50}"
+                               placeholder="Enter category name">
+                        <div class="invalid-feedback">
+                            Category name must be 3-50 characters, letters and numbers only.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newCategoryAmount" class="form-label">Initial Budget Amount</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">₱</span>
+                            <input type="number" step="0.01" class="form-control" 
+                                   name="newCategoryAmount" id="newCategoryAmount" 
+                                   required min="0.01"
+                                   placeholder="Enter amount">
+                            <div class="invalid-feedback">
+                                Please enter a valid amount greater than 0.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="newCategoryColor" class="form-label">Category Color</label>
+                        <input type="color" class="form-control form-control-color w-100" 
+                               id="newCategoryColor" name="newCategoryColor" 
+                               value="#6c757d">
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" name="addCategoryBtn" class="btn btn-lg btn-custom-primary-rounded">
+                            <i class="bi bi-plus-circle me-2"></i>Add Category
+                        </button>
+                        <button type="button" class="btn btn-lg btn-outline-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
             </div>
-            <div class="mb-4">
-                <label for="newCategoryColor" class="form-label">Color</label>
-                <input type="color" class="form-control form-control-color w-100" id="newCategoryColor" name="newCategoryColor" value="#6c757d">
-            </div>
-            <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-custom-primary-rounded btn-lg" name="addCategoryBtn">+ Add Budget</button>
-                <button type="button" class="btn btn-outline-secondary btn-lg w-100 mb-1" data-bs-dismiss="modal" aria-label="Close">Close</button>
-            </div>
-        </form>
-      </div>
+        </div>
     </div>
-  </div>
 </div>
 
 <!-- Edit Income Modal -->
@@ -675,92 +848,337 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 </div>
 
+<!-- Pass subscription status to JavaScript -->
 <script>
-// Add event listener to radio buttons
+    const hasActiveSubscription = <?php echo json_encode($hasActiveSubscription); ?>;
+</script>
+
+<script>
+// Initialize all Bootstrap components when document loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize all tooltips
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+
+    // Initialize all modals with proper options
+    const existingModals = document.querySelectorAll('.modal');
+    existingModals.forEach(modal => {
+        const instance = bootstrap.Modal.getInstance(modal);
+        if (instance) {
+            instance.dispose();
+        }
+        new bootstrap.Modal(modal, {
+            backdrop: 'static',
+            keyboard: false,
+            focus: true
+        });
+    });
+
+    // Check for URL parameters for toast messages
+    handleUrlParameters();
+
+    // Initialize form validations
+    initializeFormValidations();
+});
+
+// Radio button event listeners for page selection
 document.querySelectorAll('input[name="page"]').forEach(radio => {
     radio.addEventListener('change', function() {
         window.location.href = 'create-page.php?page=' + this.value;
     });
 });
 
-// Add New Category Modal Script
+// Category management scripts
 const addCategoryBtn = document.getElementById('add-category-btn');
 if (addCategoryBtn) {
-    addCategoryBtn.addEventListener('click', function() {
-        var myModal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
-        myModal.show();
+    addCategoryBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        if (!hasActiveSubscription) {
+            showSubscriptionPrompt();
+            return;
+        }
+
+        const modalElement = document.getElementById('addCategoryModal');
+        if (!modalElement) return;
+
+        // Get existing modal instance or create new one
+        let modalInstance = bootstrap.Modal.getInstance(modalElement);
+        if (!modalInstance) {
+            modalInstance = new bootstrap.Modal(modalElement, {
+                backdrop: 'static',
+                keyboard: false
+            });
+        }
+
+        // Reset form before showing modal
+        const form = modalElement.querySelector('#addCategoryForm');
+        if (form) {
+            form.reset();
+            form.classList.remove('was-validated');
+            
+            // Reset any custom validity
+            form.querySelectorAll('input').forEach(input => {
+                input.setCustomValidity('');
+                input.classList.remove('is-valid', 'is-invalid');
+            });
+        }
+
+        // Show modal
+        modalInstance.show();
     });
 }
 
-// Function to open edit income modal
+// Initialize form validations
+function initializeFormValidations() {
+    // Add category form validation
+    const addCategoryForm = document.getElementById('addCategoryForm');
+    if (addCategoryForm) {
+        addCategoryForm.addEventListener('submit', function(e) {
+            if (!this.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            // Custom validation
+            const nameInput = this.querySelector('#newCategoryName');
+            const amountInput = this.querySelector('#newCategoryAmount');
+            
+            // Validate name
+            const nameValue = nameInput.value.trim();
+            const nameRegex = /^[A-Za-z0-9\s]{3,50}$/;
+            if (!nameRegex.test(nameValue)) {
+                nameInput.setCustomValidity('Category name must be 3-50 characters and contain only letters, numbers, and spaces.');
+                e.preventDefault();
+            } else {
+                nameInput.setCustomValidity('');
+            }
+            
+            // Validate amount
+            const amount = parseFloat(amountInput.value);
+            if (isNaN(amount) || amount <= 0) {
+                amountInput.setCustomValidity('Please enter a valid amount greater than 0');
+                e.preventDefault();
+            } else {
+                amountInput.setCustomValidity('');
+            }
+            
+            this.classList.add('was-validated');
+        });
+
+        // Real-time validation for category name
+        const categoryNameInput = document.getElementById('newCategoryName');
+        if (categoryNameInput) {
+            categoryNameInput.addEventListener('input', function() {
+                const namePattern = /^[A-Za-z0-9\s]{3,50}$/;
+                if (!namePattern.test(this.value)) {
+                    this.setCustomValidity('Category name must be 3-50 characters and contain only letters, numbers, and spaces.');
+                    this.classList.remove('is-valid');
+                    this.classList.add('is-invalid');
+                } else {
+                    this.setCustomValidity('');
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                }
+            });
+        }
+
+        // Real-time validation for amount
+        const categoryAmountInput = document.getElementById('newCategoryAmount');
+        if (categoryAmountInput) {
+            categoryAmountInput.addEventListener('input', function() {
+                const amount = parseFloat(this.value);
+                if (isNaN(amount) || amount <= 0) {
+                    this.setCustomValidity('Please enter a valid amount greater than 0');
+                    this.classList.remove('is-valid');
+                    this.classList.add('is-invalid');
+                } else {
+                    this.setCustomValidity('');
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                }
+            });
+        }
+    }
+}
+
+// Function to show subscription prompt
+function showSubscriptionPrompt() {
+    const toast = new bootstrap.Toast(document.getElementById('liveToast'));
+    const toastBody = document.querySelector('#liveToast .toast-body');
+    const toastElement = document.querySelector('#liveToast');
+    
+    toastElement.classList.remove('border-primary', 'border-warning', 'border-danger');
+    toastElement.classList.add('border-warning');
+    
+    toastBody.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="bi bi-lock-fill me-2"></i>
+            <span>Custom categories are a premium feature. </span>
+            <a href="subscription-plans.php" class="btn btn-sm btn-custom-primary-rounded ms-2">Upgrade Now</a>
+        </div>
+    `;
+    
+    toast.show();
+}
+
+// Income modal functions
 function openEditIncomeModal(id, amount) {
     document.getElementById('edit_income_id').value = id;
     document.getElementById('new_income_amount').value = parseFloat(amount).toFixed(2);
-    new bootstrap.Modal(document.getElementById('editIncomeModal')).show();
+    const modalElement = document.getElementById('editIncomeModal');
+    const modalInstance = new bootstrap.Modal(modalElement);
+    modalInstance.show();
 }
 
-// Function to open edit expense modal
+// Expense modal functions
 function openEditExpenseModal(id, amount, comment) {
     document.getElementById('edit_expense_id').value = id;
     document.getElementById('new_expense_amount').value = parseFloat(amount).toFixed(2);
     document.getElementById('new_expense_comment').value = comment ? comment.replace(/\\'/g, "'") : '';
-    new bootstrap.Modal(document.getElementById('editExpenseModal')).show();
+    const modalElement = document.getElementById('editExpenseModal');
+    const modalInstance = new bootstrap.Modal(modalElement);
+    modalInstance.show();
 }
 
-// Add form validation
-document.querySelectorAll('form').forEach(form => {
-    form.addEventListener('submit', function(e) {
-        if (!this.checkValidity()) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        this.classList.add('was-validated');
+// Color picker enhancement
+const colorPicker = document.getElementById('newCategoryColor');
+if (colorPicker) {
+    // Set initial background color
+    colorPicker.style.backgroundColor = colorPicker.value;
+    
+    // Update background color on change
+    colorPicker.addEventListener('input', function() {
+        this.style.backgroundColor = this.value;
     });
-});
+    
+    // Update background color on load
+    colorPicker.addEventListener('load', function() {
+        this.style.backgroundColor = this.value;
+    });
+}
 
-// Toast notification script
-window.addEventListener('DOMContentLoaded', (event) => {
-    const toastLiveExample = document.getElementById('liveToast');
-    if (toastLiveExample) {
-        const toast = new bootstrap.Toast(toastLiveExample, {
+// Toast notification handler
+function showToast(message, type = 'primary') {
+    const toastElement = document.getElementById('liveToast');
+    if (toastElement) {
+        const toast = new bootstrap.Toast(toastElement, {
             animation: true,
             autohide: true,
             delay: 5000
         });
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const toastMessage = urlParams.get('message');
-        const toastType = urlParams.get('type');
-
-        if (toastMessage) {
-            const toastBody = document.querySelector('.toast-body');
-            const toastElement = document.querySelector('.toast');
-            
-            toastBody.textContent = decodeURIComponent(toastMessage);
-            toastElement.classList.remove('border-primary', 'border-warning', 'border-danger');
-            
-            switch (toastType) {
-                case 'primary':
-                    toastElement.classList.add('border-primary');
-                    break;
-                case 'warning':
-                    toastElement.classList.add('border-warning');
-                    break;
-                case 'danger':
-                    toastElement.classList.add('border-danger');
-                    break;
-            }
-            
-            toast.show();
-
-            // Remove the message and type from the URL
-            urlParams.delete('message');
-            urlParams.delete('type');
-            const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
-            history.replaceState(null, '', newUrl);
+        const toastBody = toastElement.querySelector('.toast-body');
+        
+        toastElement.classList.remove('border-primary', 'border-warning', 'border-danger');
+        toastElement.classList.add(`border-${type}`);
+        
+        if (typeof message === 'string') {
+            toastBody.textContent = message;
+        } else {
+            toastBody.innerHTML = message;
         }
+        
+        toast.show();
+    }
+}
+
+// URL parameter handling for toasts
+function handleUrlParameters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const toastMessage = urlParams.get('message');
+    const toastType = urlParams.get('type');
+
+    if (toastMessage) {
+        showToast(decodeURIComponent(toastMessage), toastType || 'primary');
+
+        // Clean URL after showing toast
+        urlParams.delete('message');
+        urlParams.delete('type');
+        const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+        history.replaceState(null, '', newUrl);
+    }
+}
+
+// Handle subscription-required features
+document.querySelectorAll('[data-requires-subscription="true"]').forEach(element => {
+    element.addEventListener('click', function(e) {
+        if (!hasActiveSubscription) {
+            e.preventDefault();
+            showSubscriptionPrompt();
+        }
+    });
+});
+
+// Clean up on modal close
+['addCategoryModal', 'editIncomeModal', 'editExpenseModal'].forEach(modalId => {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.addEventListener('hidden.bs.modal', function () {
+            const form = this.querySelector('form');
+            if (form) {
+                form.reset();
+                form.classList.remove('was-validated');
+            }
+            this.querySelectorAll('.is-invalid, .is-valid').forEach(el => {
+                el.classList.remove('is-invalid', 'is-valid');
+            });
+        });
     }
 });
+
+// Handle modal keyboard events
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const modals = document.querySelectorAll('.modal.show');
+        modals.forEach(modal => {
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            if (modalInstance && !modal.classList.contains('static')) {
+                modalInstance.hide();
+            }
+        });
+    }
+});
+
+// Form input formatting
+document.querySelectorAll('input[type="number"]').forEach(input => {
+    input.addEventListener('input', function() {
+        if (this.value.length > 0) {
+            this.value = parseFloat(this.value).toFixed(2);
+        }
+    });
+});
+
+// Add feedback classes to form inputs
+document.querySelectorAll('.needs-validation').forEach(form => {
+    const inputs = form.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.checkValidity()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else {
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
+            }
+        });
+    });
+});
+
+// Format currency values
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(amount);
+}
+
+// Prevent form resubmission on page refresh
+if (window.history.replaceState) {
+    window.history.replaceState(null, null, window.location.href);
+}
 </script>
 
 <?php include('includes/footer.php') ?>

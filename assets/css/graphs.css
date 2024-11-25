@@ -301,3 +301,221 @@
         page-break-inside: avoid;
     }
 }
+
+/* Header section styles */
+.graphs-header {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 12px rgba(67, 56, 120, 0.08);
+}
+
+.graphs-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+}
+
+/* Title and subtitle styles */
+.graphs-header-titles {
+    flex: 1;
+}
+
+.graphs-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: #2D2D2D;
+    line-height: 1.2;
+}
+
+.graphs-subtitle {
+    color: #666;
+    margin: 0.25rem 0 0;
+    font-size: 0.875rem;
+}
+
+/* Actions section styles */
+.graphs-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.graphs-nav-group,
+.graphs-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Button styles */
+.graphs-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: none;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Primary button style */
+.graphs-btn-primary {
+    background: linear-gradient(135deg, #433878, #7d62b4);
+    color: white;
+}
+
+.graphs-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(67, 56, 120, 0.2);
+    color: white;
+}
+
+/* Outline button style */
+.graphs-btn-outline {
+    background: transparent;
+    border: 2px solid #433878;
+    color: #433878;
+}
+
+.graphs-btn-outline:hover {
+    background: #433878;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Icon button style */
+.graphs-btn-icon {
+    padding: 0.75rem;
+    background: #f5f5f5;
+    color: #433878;
+    border-radius: 10px;
+}
+
+.graphs-btn-icon:hover {
+    background: #433878;
+    color: white;
+    transform: rotate(15deg);
+}
+
+/* Loading state */
+.graphs-btn .spinner {
+    display: none;
+}
+
+.graphs-btn.loading {
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.graphs-btn.loading .spinner {
+    display: inline-block;
+}
+
+.graphs-btn.loading .btn-text,
+.graphs-btn.loading i:not(.spinner) {
+    display: none;
+}
+
+/* Period indicator styles */
+.graphs-period {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.period-label {
+    color: #666;
+}
+
+.period-value {
+    font-weight: 600;
+    color: #433878;
+    padding: 0.25rem 0.75rem;
+    background: rgba(67, 56, 120, 0.1);
+    border-radius: 6px;
+}
+
+/* Responsive styles */
+@media (max-width: 992px) {
+    .graphs-header {
+        padding: 1.25rem;
+    }
+    
+    .graphs-header-content {
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .graphs-header-content {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .graphs-header-titles {
+        text-align: center;
+    }
+
+    .graphs-header-actions {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .graphs-header {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .graphs-header-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .graphs-nav-group,
+    .graphs-actions-group {
+        width: 100%;
+    }
+
+    .graphs-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .graphs-btn-icon {
+        width: auto;
+    }
+
+    .graphs-period {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+/* Additional animation */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.refresh-btn i {
+    transition: transform 0.3s ease;
+}
+
+.refresh-btn:hover i {
+    animation: spin 1s linear infinite;
+}
