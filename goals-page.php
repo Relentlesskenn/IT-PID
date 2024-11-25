@@ -218,16 +218,11 @@ function checkGoalsDueDate($conn, $userId) {
 // Handle form submission for adding a new goal
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_goal'])) {
     $name = $_POST['goal_name'];
-    $targetAmount = $_POST['target_amount'];
+    $targetAmount = $_POST['target_amount']; 
     $targetDate = $_POST['target_date'];
     $category = $_POST['category'];
 
-    // Validate the amount
-    if (!validateGoalAmount($conn, $userId, $targetAmount)) {
-        header("Location: " . $_SERVER['PHP_SELF'] . "?error=" . urlencode("Invalid amount: Exceeds available balance"));
-        exit();
-    }
-
+    // Validate the amount and date
     $sql = "INSERT INTO goals (user_id, name, target_amount, target_date, category) VALUES (?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("isdss", $userId, $name, $targetAmount, $targetDate, $category);
@@ -1237,12 +1232,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Set max attribute
                 const maxAllowed = availableBalance + originalAmount;
                 amountInput.setAttribute('max', maxAllowed);
-                
-                // Add helper text
-                const helpText = document.createElement('small');
-                helpText.className = 'form-text text-muted mt-1';
-                helpText.textContent = `Maximum allowed: ${formatCurrency(maxAllowed)}`;
-                amountInput.parentNode.appendChild(helpText);
             });
 
             // Clean up when modal closes
@@ -1277,23 +1266,20 @@ document.addEventListener('DOMContentLoaded', function() {
         const amountInput = document.getElementById('target_amount');
 
         if (addForm && amountInput) {
-            // Set max attribute
-            amountInput.setAttribute('max', availableBalance);
-            
-            // Add helper text
-            const helpText = document.createElement('small');
-            helpText.className = 'form-text text-muted mt-1';
-            amountInput.parentNode.appendChild(helpText);
+            amountInput.removeAttribute('max');
 
-            // Real-time validation
+            // Add helper text
             amountInput.addEventListener('input', function() {
-                validateAmount(this);
+                if (this.value <= 0) {
+                    this.setCustomValidity('Amount must be greater than 0');
+                } else {
+                    this.setCustomValidity('');
+                }
                 addForm.classList.add('was-validated');
             });
 
-            // Form submission validation
             addForm.addEventListener('submit', function(e) {
-                if (!validateAmount(amountInput)) {
+                if (amountInput.value <= 0) {
                     e.preventDefault();
                     e.stopPropagation();
                 }
