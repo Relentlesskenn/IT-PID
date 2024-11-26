@@ -38,6 +38,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['subscribe'])) {
 <body class="graphs-page">
 <div class="pt-4 pb-5">
     <div class="container">
+        
+        <!-- Back button -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <button onclick="goBack()" class="btn btn-custom-primary-rounded">
+                <i class="bi bi-arrow-left me-2"></i>Back
+            </button>
+            <div class="ms-auto">
+                <!-- If you want to add any right-aligned elements -->
+            </div>
+        </div>
+
         <!-- Header -->
         <div class="text-center mb-5">
             <h1 class="display-4 mb-3">Upgrade Your Experience</h1>
@@ -143,6 +154,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['subscribe'])) {
                                 <td class="text-center"><i class="bi bi-check-circle text-success"></i></td>
                             </tr>
                             <tr>
+                                <td>Access to Financial Graphs</td>
+                                <td class="text-center"><i class="bi bi-x-circle text-danger"></i></td>
+                                <td class="text-center"><i class="bi bi-check-circle text-success"></i></td>
+                            </tr>
+                            <tr>
                                 <td>Ad-Free Experience</td>
                                 <td class="text-center"><i class="bi bi-x-circle text-danger"></i></td>
                                 <td class="text-center"><i class="bi bi-check-circle text-success"></i></td>
@@ -220,7 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['subscribe'])) {
                         </h3>
                         <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                             <div class="accordion-body">
-                                We accept all major credit cards, debit cards, and digital wallets. All payments 
+                                We accept all major digital wallets. All payments 
                                 are processed securely through our payment gateway partner.
                             </div>
                         </div>
@@ -250,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 
-    // Handle subscription form submission
+    // Handle subscription form submission with confirmation
     const subscriptionForms = document.querySelectorAll('form[name="subscribe"]');
     subscriptionForms.forEach(form => {
         form.addEventListener('submit', function(e) {
@@ -266,6 +282,142 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             bootstrap.Alert.getOrCreateInstance(alert).close();
         }, 5000);
+    });
+
+    // Back button navigation function
+    window.goBack = function() {
+        // Check if there's a previous page in the browser history
+        if (document.referrer) {
+            window.location.href = document.referrer;
+        } else {
+            // Fallback to dashboard if no previous page
+            window.location.href = 'dashboard-page.php';
+        }
+    };
+
+    // Handle keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        // Support Escape key for back navigation
+        if (e.key === 'Escape') {
+            goBack();
+        }
+    });
+
+    // Initialize accordions with smooth transitions
+    const accordionItems = document.querySelectorAll('.accordion-item');
+    accordionItems.forEach(item => {
+        const button = item.querySelector('.accordion-button');
+        const collapse = item.querySelector('.accordion-collapse');
+        
+        if (button && collapse) {
+            const bsCollapse = new bootstrap.Collapse(collapse, {
+                toggle: false
+            });
+
+            button.addEventListener('click', function() {
+                // Smooth scroll to the accordion item when opened
+                if (collapse.classList.contains('collapsed')) {
+                    item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        }
+    });
+
+    // Handle subscription card hover effects
+    const subscriptionCards = document.querySelectorAll('.card');
+    subscriptionCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+
+    // Form validation for subscription forms
+    const validateSubscriptionForm = function(form) {
+        let isValid = true;
+        const requiredFields = form.querySelectorAll('[required]');
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                isValid = false;
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+
+        return isValid;
+    };
+
+    // Add form validation to subscription forms
+    subscriptionForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            if (!validateSubscriptionForm(this)) {
+                e.preventDefault();
+                showToast('Please fill in all required fields', 'danger');
+            }
+        });
+    });
+
+    // Toast notification function
+    function showToast(message, type = 'info') {
+        const toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) return;
+
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center border-${type}`;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+
+        toastContainer.appendChild(toast);
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+
+        // Remove toast after it's hidden
+        toast.addEventListener('hidden.bs.toast', function() {
+            this.remove();
+        });
+    }
+
+    // Handle page visibility changes
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            // Pause any animations or non-essential operations when page is not visible
+            document.querySelectorAll('.animation').forEach(element => {
+                element.style.animationPlayState = 'paused';
+            });
+        } else {
+            // Resume animations when page becomes visible
+            document.querySelectorAll('.animation').forEach(element => {
+                element.style.animationPlayState = 'running';
+            });
+        }
+    });
+
+    // Cleanup function for page unload
+    window.addEventListener('beforeunload', function() {
+        // Dispose of all tooltips
+        const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        tooltips.forEach(element => {
+            const tooltip = bootstrap.Tooltip.getInstance(element);
+            if (tooltip) {
+                tooltip.dispose();
+            }
+        });
     });
 });
 </script>

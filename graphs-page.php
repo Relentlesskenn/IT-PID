@@ -17,6 +17,14 @@ $hasActiveSubscription = $subscriptionHelper->hasActiveSubscription($_SESSION['a
 $subscriptionHelper = new SubscriptionHelper($conn);
 $hasActiveSubscription = $subscriptionHelper->hasActiveSubscription($userId);
 
+// Redirect non-subscribers to subscription page
+if (!$hasActiveSubscription) {
+    $_SESSION['message'] = "Graphs feature is only available for premium users.";
+    $_SESSION['message_type'] = "warning";
+    header("Location: subscription-plans.php");
+    exit();
+}
+
 // Get the current month and year
 $currentMonth = date('Y-m');
 $currentYear = date('Y');

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 25, 2024 at 06:28 PM
+-- Generation Time: Nov 26, 2024 at 04:38 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -294,6 +294,14 @@ CREATE TABLE `subscription_plans` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `subscription_plans`
+--
+
+INSERT INTO `subscription_plans` (`id`, `name`, `price`, `duration_months`, `description`, `features`, `created_at`) VALUES
+(1, 'Monthly Premium', 199.00, 1, 'Monthly subscription plan with all premium features', 'Custom budgets,Unlimited goals,PDF exports,Access to Financial Graphs,No advertisements', '2024-11-25 08:10:40'),
+(2, 'Yearly Premium', 1999.00, 12, 'Yearly subscription plan with all premium features at a discounted rate', 'Custom budgets,Unlimited goals,PDF exports,Access to Financial Graphs,No advertisements', '2024-11-25 08:10:40');
+
 -- --------------------------------------------------------
 
 --
@@ -564,7 +572,7 @@ ALTER TABLE `subscription_payments`
 -- AUTO_INCREMENT for table `subscription_plans`
 --
 ALTER TABLE `subscription_plans`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `users`

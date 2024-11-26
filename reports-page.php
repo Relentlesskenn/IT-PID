@@ -151,6 +151,15 @@ $totalPages = ceil($totalExpenses / $perPage);
 
 // Function to generate PDF
 function generatePDF($conn, $userId, $viewType, $selectedDate, $selectedMonth, $selectedYear) {
+    // Check subscription status first
+    $subscriptionHelper = new SubscriptionHelper($conn);
+    if (!$subscriptionHelper->hasActiveSubscription($userId)) {
+        $_SESSION['message'] = "PDF generation is only available for premium users.";
+        $_SESSION['message_type'] = "warning";
+        header("Location: subscription-plans.php");
+        exit();
+    }
+    
     ob_clean(); // Clear any previous output
     try {
         // Extend TCPDF with custom Header and Footer
@@ -348,9 +357,16 @@ $hasExpenses = ($result && $result->num_rows > 0);
         <!-- Reports and Graph Button -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h4">Reports</h1>
-            <a href="graphs-page.php" class="btn btn-custom-primary-rounded">
-                <i class="bi bi-graph-up"></i> Graphs
-            </a>
+            <?php if ($hasActiveSubscription): ?>
+                <a href="graphs-page.php" class="btn btn-custom-primary-rounded">
+                    <i class="bi bi-graph-up"></i> Graphs
+                </a>
+            <?php else: ?>
+                <button type="button" class="btn btn-custom-primary-rounded" onclick="showSubscriptionPrompt()">
+                    <i class="bi bi-graph-up"></i> Graphs
+                    <i class="bi bi-lock-fill ms-2"></i>
+                </button>
+            <?php endif; ?>
         </div>
 
         <!-- Ad Section -->
@@ -411,15 +427,24 @@ $hasExpenses = ($result && $result->num_rows > 0);
                 <!-- PDF Generation Form -->
                 <div class="row justify-content-center">
                     <div class="col-md-6">
-                        <form method="post">
-                            <input type="hidden" name="view" value="<?php echo htmlspecialchars($viewType); ?>">
-                            <input type="hidden" name="date" value="<?php echo htmlspecialchars($selectedDate); ?>">
-                            <input type="hidden" name="month" value="<?php echo htmlspecialchars($selectedMonth); ?>">
-                            <input type="hidden" name="year" value="<?php echo htmlspecialchars($selectedYear); ?>">
-                            <button type="submit" name="generate_pdf" class="btn btn-custom-primary-rounded w-100" <?php echo $hasExpenses ? '' : 'disabled'; ?>>
-                                Generate PDF
-                            </button>
-                        </form>
+                        <?php if ($hasActiveSubscription): ?>
+                            <form method="post">
+                                <input type="hidden" name="view" value="<?php echo htmlspecialchars($viewType); ?>">
+                                <input type="hidden" name="date" value="<?php echo htmlspecialchars($selectedDate); ?>">
+                                <input type="hidden" name="month" value="<?php echo htmlspecialchars($selectedMonth); ?>">
+                                <input type="hidden" name="year" value="<?php echo htmlspecialchars($selectedYear); ?>">
+                                <button type="submit" name="generate_pdf" class="btn btn-custom-primary-rounded w-100" 
+                                        <?php echo $hasExpenses ? '' : 'disabled'; ?>>
+                                    Generate PDF
+                                </button>
+                            </form>
+                        <?php else: ?>
+                            <div class="alert alert-custom-info text-center">
+                                <i class="bi bi-lock-fill me-2"></i>
+                                PDF generation is a premium feature. 
+                                <a href="subscription-plans.php" class="alert-link">Upgrade to Premium</a>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -521,6 +546,19 @@ $hasExpenses = ($result && $result->num_rows > 0);
                 <?php endif; ?>
             </div>
         </div>
+        
+        <!-- Toast for subscription prompt -->
+        <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080">
+            <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong class="me-auto">Notification</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body"></div>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -540,6 +578,24 @@ $hasExpenses = ($result && $result->num_rows > 0);
 </div>
 
 <script>
+    // Show subscription prompt
+    function showSubscriptionPrompt() {
+    const toast = new bootstrap.Toast(document.getElementById('liveToast'));
+    const toastBody = document.querySelector('#liveToast .toast-body');
+    const toastElement = document.querySelector('#liveToast');
+    
+    toastElement.classList.remove('border-primary', 'border-warning', 'border-danger');
+    toastElement.classList.add('border-warning');
+    
+    toastBody.innerHTML = `
+        <div class="d-flex align-items-center justify-content-between">
+            <span>Graphs feature is only available for premium users.</span>
+            <a href="subscription-plans.php" class="btn btn-sm btn-custom-primary-rounded ms-3">Upgrade Now</a>
+        </div>
+    `;
+    
+    toast.show();
+}
     // JavaScript to handle the comment modal
     const commentModal = document.getElementById('commentModal');
     commentModal.addEventListener('show.bs.modal', function (event) {

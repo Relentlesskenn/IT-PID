@@ -143,3 +143,36 @@
         transform: rotate(1turn);
     }
 }
+
+/* Back button styles */
+.btn-custom-primary-rounded {
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #433878, #7d62b4);
+    color: white;
+    border: none;
+}
+
+.btn-custom-primary-rounded:hover {
+    background: linear-gradient(135deg, #7d62b4, #433878);
+    transform: translateX(-3px);
+    color: white;
+    box-shadow: 0 4px 12px rgba(67, 56, 120, 0.2);
+}
+
+.btn-custom-primary-rounded i {
+    transition: transform 0.3s ease;
+}
+
+.btn-custom-primary-rounded:hover i {
+    transform: translateX(-3px);
+}
+
+/* Add responsive styles */
+@media (max-width: 768px) {
+    .btn-custom-primary-rounded {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+}
