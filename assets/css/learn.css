@@ -816,3 +816,120 @@
     border: none;
     background: black;
 }
+
+/* Quiz Styles */
+.quiz-container {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    margin-top: 32px;
+    border: 1px solid #e5e7eb;
+}
+
+.quiz-title {
+    color: #433878;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.quiz-progress {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.quiz-question {
+    color: #1f2937;
+    font-size: 1.125rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+}
+
+.quiz-answers {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.quiz-answer-btn {
+    width: 100%;
+    text-align: left;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background-color: #fff;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.quiz-answer-btn:hover {
+    border-color: #433878;
+}
+
+.quiz-answer-btn.active {
+    border-color: #433878;
+    background-color: #f3f4f6;
+}
+
+.quiz-answer-btn.correct {
+    border-color: #059669;
+    background-color: #d1fae5;
+}
+
+.quiz-answer-btn.incorrect {
+    border-color: #dc2626;
+    background-color: #fee2e2;
+}
+
+.quiz-feedback {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.quiz-feedback-correct {
+    background-color: #d1fae5;
+    color: #059669;
+}
+
+.quiz-feedback-incorrect {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+.quiz-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.quiz-check-btn,
+.quiz-next-btn,
+.quiz-retry-btn {
+    background-color: #433878;
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 9999px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.quiz-check-btn:hover,
+.quiz-next-btn:hover,
+.quiz-retry-btn:hover {
+    background-color: #372f62;
+}
+
+.quiz-completion {
+    text-align: center;
+    padding: 2rem 0;
+}
+
+.quiz-completion p {
+    color: #4b5563;
+    margin-bottom: 1.5rem;
+}
+

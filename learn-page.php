@@ -737,7 +737,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const modalTitle = document.querySelector('#articleModal .modal-title');
         const modalBody = document.querySelector('#articleModal .modal-body');
 
-        // Show loading state
         modalTitle.textContent = 'Loading...';
         modalBody.innerHTML = `
             <div class="text-center py-4">
@@ -749,7 +748,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         modal.show();
 
-        // Fetch article data
         fetch('learn-page.php', {
             method: 'POST',
             headers: {
@@ -764,7 +762,28 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             const article = response.data;
             modalTitle.textContent = article.title;
-            modalBody.innerHTML = article.content;
+            
+            // Create container for article content and quiz
+            const container = document.createElement('div');
+            
+            // Add article content
+            container.innerHTML = article.content;
+            
+            // Add quiz if available
+            if (article.quiz_data) {
+                const quizContainer = document.createElement('div');
+                quizContainer.id = `quiz-${articleId}`;
+                container.appendChild(quizContainer);
+                
+                modalBody.innerHTML = '';
+                modalBody.appendChild(container);
+                
+                // Initialize quiz
+                new QuizHandler(quizContainer, JSON.parse(article.quiz_data));
+            } else {
+                modalBody.innerHTML = '';
+                modalBody.appendChild(container);
+            }
         })
         .catch(error => {
             console.error('Error:', error);
@@ -1321,5 +1340,7 @@ document.addEventListener('DOMContentLoaded', function() {
     init();
 });
 </script>
+
+<script src="./assets/js/quiz-handler.js"></script>
 
 <?php include('includes/footer.php'); ?>
