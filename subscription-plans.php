@@ -20,16 +20,23 @@ $plans = $subscriptionHelper->getSubscriptionPlans();
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['subscribe'])) {
     $planId = filter_input(INPUT_POST, 'plan_id', FILTER_VALIDATE_INT);
     
-    if ($subscriptionHelper->subscribeToPlan($_SESSION['auth_user']['user_id'], $planId)) {
-        $_SESSION['message'] = "Subscription activated successfully!";
-        $_SESSION['message_type'] = "success";
-    } else {
-        $_SESSION['message'] = "Error activating subscription. Please try again.";
-        $_SESSION['message_type'] = "danger";
-    }
+    // Get plan details
+    $stmt = $conn->prepare("SELECT * FROM subscription_plans WHERE id = ?");
+    $stmt->bind_param("i", $planId);
+    $stmt->execute();
+    $plan = $stmt->get_result()->fetch_assoc();
     
-    header("Location: subscription-plans.php");
-    exit();
+    if ($plan) {
+        // Store plan details in session
+        $_SESSION['selected_plan'] = $plan;
+        header("Location: payment-verification.php");
+        exit();
+    } else {
+        $_SESSION['message'] = "Invalid plan selected. Please try again.";
+        $_SESSION['message_type'] = "danger";
+        header("Location: subscription-plans.php");
+        exit();
+    }
 }
 ?>
 
@@ -41,12 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['subscribe'])) {
         
         <!-- Back button -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <button onclick="goBack()" class="btn btn-custom-primary-rounded">
+            <a href="settings-page.php" class="btn btn-custom-primary-rounded">
                 <i class="bi bi-arrow-left me-2"></i>Back
-            </button>
-            <div class="ms-auto">
-                <!-- If you want to add any right-aligned elements -->
-            </div>
+            </a>
         </div>
 
         <!-- Header -->
@@ -236,8 +240,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['subscribe'])) {
                         </h3>
                         <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                             <div class="accordion-body">
-                                We accept all major digital wallets. All payments 
-                                are processed securely through our payment gateway partner.
+                                We accept Gcash and Paymaya.
                             </div>
                         </div>
                     </div>
@@ -283,17 +286,6 @@ document.addEventListener('DOMContentLoaded', function() {
             bootstrap.Alert.getOrCreateInstance(alert).close();
         }, 5000);
     });
-
-    // Back button navigation function
-    window.goBack = function() {
-        // Check if there's a previous page in the browser history
-        if (document.referrer) {
-            window.location.href = document.referrer;
-        } else {
-            // Fallback to dashboard if no previous page
-            window.location.href = 'dashboard-page.php';
-        }
-    };
 
     // Handle keyboard navigation
     document.addEventListener('keydown', function(e) {

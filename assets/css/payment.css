@@ -1,0 +1,207 @@
+/* Main container */
+.payment-container {
+    max-width: 800px;
+    margin: 0rem auto;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+}
+
+/* Card styles */
+.bento-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(67, 56, 120, 0.1);
+}
+
+.bento-header {
+    background: #433878;
+    color: white;
+    padding: 1rem 1.5rem;
+}
+
+.bento-header h5 {
+    margin: 0;
+}
+
+.bento-body {
+    padding: 1.5rem;
+}
+
+/* Plan details section */
+.plan-details {
+    background: #f8f7fa;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px dashed rgba(67, 56, 120, 0.1);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row span.text-muted {
+    color: #6c757d;
+}
+
+.detail-row span.text-primary {
+    color: #433878;
+    font-weight: 500;
+}
+
+/* Payment method grid */
+.payment-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+/* Payment option styles */
+.payment-option {
+    position: relative;
+}
+
+.payment-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.payment-label:hover {
+    border-color: #7d62b4;
+}
+
+.payment-label img {
+    height: 30px;
+    width: auto;
+    margin-bottom: 0.5rem;
+}
+
+.payment-label span {
+    font-size: 0.875rem;
+    color: #433878;
+}
+
+/* QR code sections */
+.qr-sections {
+    display: none;
+    transition: all 0.3s ease;
+}
+
+.qr-section {
+    background: #f8f7fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    display: none;
+}
+
+.qr-code {
+    max-width: 200px;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.qr-section p {
+    margin: 0;
+    color: #433878;
+    font-size: 0.875rem;
+}
+
+/* Form controls */
+.form-label {
+    color: #433878;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: #433878;
+    box-shadow: none;
+}
+
+.form-text {
+    color: #6c757d;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+/* Button styles */
+.btn {
+    border-radius: 12px;
+    padding: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: #433878;
+    border: none;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #524696;
+    transform: translateY(-1px);
+}
+
+.btn-light {
+    background: #f8f7fa;
+    border: none;
+    color: #433878;
+}
+
+.btn-light:hover {
+    background: #e9ecef;
+}
+
+/* Radio button styles */
+.btn-check {
+    position: absolute;
+    clip: rect(0, 0, 0, 0);
+}
+
+.btn-check:checked + .payment-label {
+    border-color: #433878;
+    background: #f8f7fa;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .bento-body {
+        padding: 1rem;
+    }
+    
+    .payment-label {
+        padding: 0.75rem;
+    }
+    
+    .payment-label img {
+        height: 24px;
+    }
+    
+    .qr-code {
+        max-width: 150px;
+    }
+}

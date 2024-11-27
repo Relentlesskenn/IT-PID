@@ -40,6 +40,7 @@ include('includes/header.php');
 <link rel="stylesheet" href="./assets/css/page_transition.css">
 
 <!-- HTML content -->
+<body class="graphs-page">
 <div class="main">
     <div class="container" style="margin-top: 100px;">
         <div class="row justify-content-center">
