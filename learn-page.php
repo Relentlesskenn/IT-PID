@@ -376,14 +376,6 @@ $goalsCount = getArticleCountByCategory($conn, 'goals');
             <div class="col-md-6 mb-3 mb-md-0">
                 <h1 class="h4 mb-0">Learn</h1>
             </div>
-            <div class="col-md-6">
-                <div class="search-container ms-md-auto">
-                    <input type="text" class="form-control form-control-lg" id="searchInput" placeholder="Search articles...">
-                    <button class="btn" type="button" id="clearSearch">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                </div>
-            </div>
         </div>
 
         <!-- Ad Section -->
@@ -488,11 +480,19 @@ $goalsCount = getArticleCountByCategory($conn, 'goals');
         </div>
 
         <!-- Latest Articles Section -->
-        <div class="row g-2 mb-4"> <!-- Use same row structure as other sections -->
+        <div class="row g-2 mb-4">
             <div class="col-12">
-                <div class="section-header">
+                <div class="section-header d-flex justify-content-between align-items-center">
                     <h2 class="mb-0">Latest Articles</h2>
-                    <span class="articles-status">Showing all articles</span>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="articles-status">Showing all articles</span>
+                        <div class="search-container">
+                            <input type="text" class="form-control form-control-lg" id="searchInput" placeholder="Search articles...">
+                            <button class="btn" type="button" id="clearSearch">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="articles-grid">

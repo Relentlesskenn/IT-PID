@@ -25,6 +25,23 @@
     font-size: 0.9rem;
 }
 
+.articles-status {
+    color: #666;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .section-header .d-flex {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .articles-status {
+        margin-bottom: 0.5rem;
+    }
+}
+
 /* Search Bar Styles */
 .search-container {
     position: relative;
