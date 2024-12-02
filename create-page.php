@@ -99,8 +99,30 @@ $budgetCategories = [
     'Rent' => '#2B2B2B',
     'Transportation' => '#F3C623',
     'Health' => '#B31312',
-    'Utilities' => '#2B3499',
-    'Entertainment' => '#EE7214'
+    'Electricity' => '#2B3499',
+    'Water' => '#00B8D9',
+    'Internet' => '#6554C0',
+    'Entertainment' => '#EE7214',
+    'Education' => '#4C9AFF',
+    'Shopping' => '#FF8F73',
+    'Insurance' => '#6554C0',
+    'Savings' => '#36B37E',
+    'Investments' => '#00B8D9',
+    'Dining Out' => '#FF5630',
+    'Personal Care' => '#998DD9',
+    'Household' => '#79B1B0',
+    'Pets' => '#FF991F',
+    'Gifts' => '#FF7A9B', 
+    'Fitness' => '#57D9A3',
+    'Technology' => '#6B778C',
+    'Books' => '#8993A4',
+    'Clothing' => '#C054BE',
+    'Car Maintenance' => '#5243AA',
+    'Home Repairs' => '#B79638',
+    'Subscriptions' => '#DE350B',
+    'Hobbies' => '#00875A',
+    'Travel' => '#FF8B00',    
+    'Charity' => '#36B37E'
 ];
 
 // Functions

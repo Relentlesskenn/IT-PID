@@ -124,6 +124,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         exit;
     }
+
+    // Category name update handler
+    if (isset($_POST['action']) && $_POST['action'] === 'update_category') {
+        try {
+            $budgetId = filter_input(INPUT_POST, 'budget_id', FILTER_VALIDATE_INT);
+            $newName = trim(filter_input(INPUT_POST, 'new_name'));
+            $userId = $_SESSION['auth_user']['user_id'];
+
+            // Validate inputs
+            if (!$budgetId || empty($newName)) {
+                throw new Exception('Invalid input parameters');
+            }
+
+            // Check if the new name already exists for this month
+            $checkStmt = $conn->prepare("SELECT id FROM budgets WHERE name = ? AND user_id = ? AND month = (SELECT month FROM budgets WHERE id = ?) AND id != ?");
+            $checkStmt->bind_param("siis", $newName, $userId, $budgetId, $budgetId);
+            $checkStmt->execute();
+            if ($checkStmt->get_result()->num_rows > 0) {
+                throw new Exception('A category with this name already exists for the current month');
+            }
+
+            // Update the category name
+            $stmt = $conn->prepare("UPDATE budgets SET name = ? WHERE id = ? AND user_id = ?");
+            $stmt->bind_param("sii", $newName, $budgetId, $userId);
+            
+            if ($stmt->execute()) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Category name updated successfully'
+                ]);
+            } else {
+                throw new Exception('Failed to update category name');
+            }
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+        exit;
+    }
 }
 
 $page_title = "Dashboard · IT-PID";
@@ -507,112 +549,148 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
 
     <!-- Budget Details Modal -->
     <div class="modal fade" id="budgetDetailsModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0">
-            <!-- Header with Category and Date -->
-            <div class="modal-header flex-column border-0 bg-gradient-primary p-4">
-                <button type="button" class="btn-close opacity-75" data-bs-dismiss="modal"></button>
-                
-                <div class="category-badge mb-2">
-                    <span class="badge bg-white bg-opacity-10 rounded-pill px-3 py-2" id="budgetPeriod"></span> 
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <!-- Header with Category and Date -->
+                <div class="modal-header flex-column border-0 bg-gradient-primary p-4">
+                    <button type="button" class="btn-close opacity-75" data-bs-dismiss="modal"></button>
+                    
+                    <div class="category-badge mb-2">
+                        <span class="badge bg-white bg-opacity-10 rounded-pill px-3 py-2" id="budgetPeriod"></span> 
+                    </div>
+
+                    <!-- Category Title with Edit Feature -->
+                    <div class="d-flex flex-column align-items-center w-100">
+                        <div class="category-badge mb-2">
+                            <span class="badge bg-white bg-opacity-10 rounded-pill px-3 py-2" id="budgetPeriod"></span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-center">
+                            <span class="badge rounded-circle me-2" id="categoryColor"></span>
+                            <div class="d-flex align-items-center">
+                                <h3 class="modal-title text-white mb-0" id="budgetTitle"></h3>
+                                <?php if ($hasActiveSubscription): ?>
+                                    <button class="btn btn-link text-white p-0 ms-2" 
+                                            onclick="toggleCategoryEdit()" 
+                                            title="Edit Category Name">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </button>
+                                <?php else: ?>
+                                    <a href="subscription-plans.php" class="btn btn-link text-white p-0 ms-2" 
+                                        title="Premium Feature" style="text-decoration: none;">
+                                        <i class="bi bi-pencil-fill"></i>
+                                        <i class="bi bi-lock-fill ms-1"></i>
+                                    </a>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Edit Form -->
+                    <div id="categoryEditForm" class="d-none w-100 mt-2">
+                        <div class="input-group">
+                            <input type="text" id="newCategoryName" class="form-control" 
+                                placeholder="Enter category name" maxlength="50">
+                            <button class="btn btn-light px-3" onclick="updateCategoryName()">Save</button>
+                            <button class="btn btn-outline-light" onclick="toggleCategoryEdit()">Cancel</button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="d-flex align-items-center">
-                    <span class="badge rounded-circle me-2" id="categoryColor"></span>
-                    <h3 class="modal-title text-white mb-0" id="budgetTitle"></h3>
-                </div>
-            </div>
+                <!-- Budget Content -->
+                <div class="modal-body p-4">
+                    <!-- Total Budget Amount -->
+                    <div class="budget-amount text-center mb-4">
+                        <span class="text-muted small">Total Budget</span>
+                        <div class="d-flex align-items-center justify-content-center gap-2">
+                            <h3 class="mb-0 fw-bold" id="budgetAmount"></h3>
+                            <button class="btn btn-link p-0 text-muted" 
+                                    onclick="toggleBudgetEdit()" 
+                                    title="Edit Budget Amount">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                        </div>
 
-            <!-- Budget Content -->
-            <div class="modal-body p-4">
-                <!-- Total Budget Amount -->
-                <div class="budget-amount text-center mb-4">
-                    <span class="text-muted small">Total Budget</span>
-                    <div class="d-flex align-items-center justify-content-center gap-2">
-                        <h3 class="mb-0 fw-bold" id="budgetAmount"></h3>
-                        <button class="btn btn-link p-0 text-muted" onclick="toggleBudgetEdit()">
-                            <i class="bi bi-pencil-fill"></i>
+                        <!-- Edit Budget Form -->
+                        <div id="budgetEditForm" class="d-none mt-3">
+                            <div class="input-group">
+                                <span class="input-group-text">₱</span>
+                                <input type="number" id="newBudgetAmount" 
+                                    class="form-control" step="0.01" min="0"
+                                    placeholder="Enter new amount">
+                                <button class="btn btn-primary px-3" onclick="updateBudget()">Save</button>
+                                <button class="btn btn-outline-secondary" onclick="toggleBudgetEdit()">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Circle -->
+                    <div class="progress-circle text-center mb-4">
+                        <div class="position-relative" style="width: 200px; height: 200px; margin: 0 auto;">
+                            <svg class="w-100 h-100" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" fill="none" 
+                                        stroke="#f0f0f0" stroke-width="10"/>
+                                <circle id="progressRing" cx="50" cy="50" r="45" 
+                                        fill="none" stroke="#433878" stroke-width="10" 
+                                        stroke-dasharray="282.74" stroke-linecap="round" 
+                                        transform="rotate(-90 50 50)"/>
+                            </svg>
+                            <div class="position-absolute top-50 start-50 translate-middle text-center">
+                                <div class="h2 mb-0 fw-bold" id="progressText"></div>
+                                <div class="text-muted small">of budget used</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Budget Stats -->
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="stat-card spent">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-circle me-3">
+                                        <i class="bi bi-arrow-down"></i>
+                                    </div>
+                                    <div>
+                                        <div class="stat-label">Spent</div>
+                                        <div class="stat-value" id="spentAmount"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-card remaining">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-circle me-3">
+                                        <i class="bi bi-arrow-up"></i>
+                                    </div>
+                                    <div>
+                                        <div class="stat-label">Remaining</div>
+                                        <div class="stat-value" id="remainingBalance"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Transactions Section -->
+                    <div class="recent-transactions mt-4">
+                        <h6 class="d-flex align-items-center">
+                            <i class="bi bi-clock-history me-2"></i>
+                            Recent Transactions
+                        </h6>
+                        <div class="transactions-list" id="transactionsList">
+                            <!-- Transactions will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Delete Budget Button -->
+                    <div class="mt-4">
+                        <button type="button" class="btn btn-danger w-100" onclick="confirmDeleteBudget()">
+                            <i class="bi bi-trash-fill me-2"></i>Delete Budget
                         </button>
                     </div>
-
-                    <!-- Edit Budget Form -->
-                    <div id="budgetEditForm" class="d-none mt-3">
-                        <div class="input-group">
-                            <span class="input-group-text">₱</span>
-                            <input type="number" id="newBudgetAmount" class="form-control" step="0.01" min="0">
-                            <button class="btn btn-primary px-3" onclick="updateBudget()">Save</button>
-                            <button class="btn btn-outline-secondary" onclick="toggleBudgetEdit()">Cancel</button>
-                        </div>
-                    </div>
                 </div>
-
-                <!-- Progress Circle -->
-                <div class="progress-circle text-center mb-4">
-                    <div class="position-relative" style="width: 200px; height: 200px; margin: 0 auto;">
-                        <svg class="w-100 h-100" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="#f0f0f0" stroke-width="10"/>
-                            <circle id="progressRing" cx="50" cy="50" r="45" fill="none" 
-                                stroke="#433878" stroke-width="10" stroke-dasharray="282.74" 
-                                stroke-linecap="round" transform="rotate(-90 50 50)"/>
-                        </svg>
-                        <div class="position-absolute top-50 start-50 translate-middle text-center">
-                            <div class="h2 mb-0 fw-bold" id="progressText"></div>
-                            <div class="text-muted small">of budget used</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Budget Stats -->
-                <div class="row g-3">
-                    <div class="col-6">
-                        <div class="stat-card spent">
-                            <div class="d-flex align-items-center">
-                                <div class="icon-circle me-3">
-                                    <i class="bi bi-arrow-down"></i>
-                                </div>
-                                <div>
-                                    <div class="stat-label">Spent</div>
-                                    <div class="stat-value" id="spentAmount"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="stat-card remaining">
-                            <div class="d-flex align-items-center">
-                                <div class="icon-circle me-3">
-                                    <i class="bi bi-arrow-up"></i>
-                                </div>
-                                <div>
-                                    <div class="stat-label">Remaining</div>
-                                    <div class="stat-value" id="remainingBalance"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Transactions Section -->
-                <div class="recent-transactions mt-4">
-                    <h6 class="d-flex align-items-center">
-                        <i class="bi bi-clock-history me-2"></i>
-                        Recent Transactions
-                    </h6>
-                    <div class="transactions-list" id="transactionsList">
-                        <!-- Transactions will be loaded here -->
-                    </div>
-                </div>
-
-                <!-- Delete Budget Button -->
-                <div class="mt-4 d-flex justify-content-end">
-                    <button type="button" class="btn btn-danger w-100" onclick="confirmDeleteBudget()">
-                        <i class="bi bi-trash-fill me-2"></i>Delete Budget
-                    </button>
-                </div>
-
             </div>
         </div>
-    </div>
     </div>
 
     <!-- Delete Confirmation Modal -->
@@ -716,6 +794,19 @@ function formatCurrency(amount) {
     }).format(amount);
 }
 
+// Function to show toast messages
+function showToast(message, type = 'primary') {
+    const toast = new bootstrap.Toast(document.getElementById('budgetAlertToast'));
+    const toastBody = document.querySelector('#budgetAlertToast .toast-body');
+    const toastElement = document.getElementById('budgetAlertToast');
+    
+    toastElement.classList.remove('border-primary', 'border-warning', 'border-danger');
+    toastElement.classList.add(`border-${type}`);
+    toastBody.textContent = message;
+    
+    toast.show();
+}
+
 // Function to update progress ring
 function updateProgressRing(percentage) {
     const ring = document.getElementById('progressRing');
@@ -733,6 +824,66 @@ function updateProgressRing(percentage) {
     ring.style.stroke = progressColor;
     
     document.getElementById('progressText').textContent = `${percentage.toFixed(1)}%`;
+}
+
+// Category name editing functions
+function toggleCategoryEdit() {
+    const form = document.getElementById('categoryEditForm');
+    const currentName = document.getElementById('budgetTitle').textContent;
+    const input = document.getElementById('newCategoryName');
+    
+    if (form.classList.contains('d-none')) {
+        // Show form
+        input.value = currentName;
+        form.classList.remove('d-none');
+        input.focus();
+    } else {
+        // Hide form
+        form.classList.add('d-none');
+    }
+}
+
+async function updateCategoryName() {
+    const newName = document.getElementById('newCategoryName').value.trim();
+    const saveButton = document.querySelector('#categoryEditForm .btn-light');
+    
+    // Basic validation
+    if (!newName) {
+        showToast('Category name cannot be empty', 'danger');
+        return;
+    }
+
+    // Show loading state
+    saveButton.disabled = true;
+    saveButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    
+    try {
+        const response = await fetch('dashboard-page.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `action=update_category&budget_id=${currentBudgetId}&new_name=${encodeURIComponent(newName)}`
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            // Update UI
+            document.getElementById('budgetTitle').textContent = newName;
+            toggleCategoryEdit();
+            showToast('Category name updated successfully', 'primary');
+            
+            // Refresh the page to update the budget cards
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            throw new Error(data.message || 'Failed to update category name');
+        }
+    } catch (error) {
+        showToast(error.message, 'danger');
+    } finally {
+        saveButton.disabled = false;
+        saveButton.innerHTML = 'Save';
+    }
 }
 
 // Function to fetch recent transactions
@@ -828,11 +979,11 @@ async function showBudgetDetails(card, data) {
     }
 }
 
-// Edit budget amount
+// Budget amount editing functions
 function toggleBudgetEdit() {
     const form = document.getElementById('budgetEditForm');
     const currentAmount = document.getElementById('budgetAmount').textContent
-        .replace('₱', '').replace(',', '');
+        .replace('₱', '').replace(/,/g, '');
     
     document.getElementById('newBudgetAmount').value = parseFloat(currentAmount);
     form.classList.toggle('d-none');
@@ -865,11 +1016,7 @@ async function updateBudget() {
             throw new Error(data.message || 'Failed to update budget');
         }
     } catch (error) {
-        const toast = new bootstrap.Toast(document.getElementById('budgetAlertToast'));
-        const toastBody = document.querySelector('#budgetAlertToast .toast-body');
-        toastBody.textContent = error.message;
-        document.getElementById('budgetAlertToast').classList.add('border-danger');
-        toast.show();
+        showToast(error.message, 'danger');
     } finally {
         updateButton.disabled = false;
         updateButton.innerHTML = 'Save';
@@ -908,13 +1055,7 @@ async function deleteBudget() {
         const data = await response.json();
         if (data.success) {
             bootstrap.Modal.getInstance(document.getElementById('deleteBudgetModal')).hide();
-            
-            const toast = new bootstrap.Toast(document.getElementById('budgetAlertToast'));
-            const toastBody = document.querySelector('#budgetAlertToast .toast-body');
-            toastBody.textContent = data.message || 'Budget deleted successfully.';
-            document.getElementById('budgetAlertToast').classList.add('border-primary');
-            toast.show();
-
+            showToast(data.message || 'Budget deleted successfully.', 'primary');
             setTimeout(() => {
                 location.reload();
             }, 1500);
@@ -922,11 +1063,7 @@ async function deleteBudget() {
             throw new Error(data.message || 'Failed to delete budget');
         }
     } catch (error) {
-        const toast = new bootstrap.Toast(document.getElementById('budgetAlertToast'));
-        const toastBody = document.querySelector('#budgetAlertToast .toast-body');
-        toastBody.textContent = error.message;
-        document.getElementById('budgetAlertToast').classList.add('border-danger');
-        toast.show();
+        showToast(error.message, 'danger');
     } finally {
         deleteButton.innerHTML = originalContent;
         deleteButton.disabled = false;
@@ -945,6 +1082,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const resetButton = document.getElementById('resetSearch');
     const resetButtonMobile = document.getElementById('resetSearchMobile');
     const budgetCards = document.querySelectorAll('#budgetCardsContainer .col:not(.no-results-message)');
+    
+    // Category name input keyboard events
+    document.getElementById('newCategoryName')?.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            updateCategoryName();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            toggleCategoryEdit();
+        }
+    });
     
     // Notification button click handler
     notificationBtn.addEventListener('click', function(e) {
@@ -974,7 +1122,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateNoResultsMessage(visibleCards);
     }
 
-    // Function to update the no results message when no budgets are found
+    // Function to update the no results message
     function updateNoResultsMessage(visibleCards) {
         let noResultsMessage = document.querySelector('#budgetCardsContainer .no-results-message');
         
@@ -1009,33 +1157,42 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Event listeners for search functionality
-    searchInput.addEventListener('input', function() {
+    searchInput?.addEventListener('input', function() {
         performSearch();
         resetButton.style.display = this.value ? 'block' : 'none';
     });
 
-    // Reset search input on mobile
-    searchInputMobile.addEventListener('input', function() {
+    searchInputMobile?.addEventListener('input', function() {
         performSearch();
         resetButtonMobile.style.display = this.value ? 'block' : 'none';
     });
 
     // Reset search button click handler
-    resetButton.addEventListener('click', resetSearch);
-    resetButtonMobile.addEventListener('click', resetSearch);
+    resetButton?.addEventListener('click', resetSearch);
+    resetButtonMobile?.addEventListener('click', resetSearch);
 
     // Sync search inputs
-    searchInput.addEventListener('input', function() {
+    searchInput?.addEventListener('input', function() {
         searchInputMobile.value = this.value;
     });
 
-    searchInputMobile.addEventListener('input', function() {
+    searchInputMobile?.addEventListener('input', function() {
         searchInput.value = this.value;
     });
 
     // Initial setup
     resetButton.style.display = 'none';
     resetButtonMobile.style.display = 'none';
+
+    // Handle modal events
+    const budgetDetailsModal = document.getElementById('budgetDetailsModal');
+    if (budgetDetailsModal) {
+        budgetDetailsModal.addEventListener('hidden.bs.modal', function () {
+            // Reset forms when modal is closed
+            document.getElementById('categoryEditForm').classList.add('d-none');
+            document.getElementById('budgetEditForm').classList.add('d-none');
+        });
+    }
 
     // Handle resize events
     window.addEventListener('resize', function() {
@@ -1044,6 +1201,121 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             searchInput.value = searchInputMobile.value;
         }
+    });
+
+    // Handle keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const activeModals = document.querySelectorAll('.modal.show');
+            activeModals.forEach(modal => {
+                const modalInstance = bootstrap.Modal.getInstance(modal);
+                if (modalInstance && !modal.classList.contains('static')) {
+                    modalInstance.hide();
+                }
+            });
+        }
+    });
+
+    // Handle form submissions
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const submitButton = form.querySelector('[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+                const originalText = submitButton.innerHTML;
+                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+                
+                // Re-enable button after short delay if form submission fails
+                setTimeout(() => {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                }, 5000);
+            }
+        });
+    });
+
+    // Clean up function for page unload
+    window.addEventListener('beforeunload', function() {
+        // Dispose of all tooltips
+        const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        tooltips.forEach(element => {
+            const tooltip = bootstrap.Tooltip.getInstance(element);
+            if (tooltip) {
+                tooltip.dispose();
+            }
+        });
+    });
+
+    // Error handling for failed updates
+    window.addEventListener('error', function(e) {
+        if (e.target.tagName === 'IMG') {
+            e.target.src = 'assets/imgs/placeholder.jpg';
+        }
+    }, true);
+
+    // Handle visibility change
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            // Pause any animations when page is not visible
+            document.querySelectorAll('.animation').forEach(element => {
+                element.style.animationPlayState = 'paused';
+            });
+        } else {
+            // Resume animations when page becomes visible
+            document.querySelectorAll('.animation').forEach(element => {
+                element.style.animationPlayState = 'running';
+            });
+        }
+    });
+
+    // Initialize any Bootstrap popovers
+    const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+    popoverTriggerList.map(function (popoverTriggerEl) {
+        return new bootstrap.Popover(popoverTriggerEl);
+    });
+
+    // Initialize Bootstrap tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Handle budget card click animations
+    const budgetCardsList = document.querySelectorAll('.card');
+    budgetCardsList.forEach(card => {
+        card.addEventListener('click', function() {
+            this.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 100);
+        });
+    });
+
+    // Focus trap for modals
+    const modalElements = document.querySelectorAll('.modal');
+    modalElements.forEach(modal => {
+        const focusableElements = modal.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstFocusable = focusableElements[0];
+        const lastFocusable = focusableElements[focusableElements.length - 1];
+
+        modal.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                if (e.shiftKey) {
+                    if (document.activeElement === firstFocusable) {
+                        lastFocusable.focus();
+                        e.preventDefault();
+                    }
+                } else {
+                    if (document.activeElement === lastFocusable) {
+                        firstFocusable.focus();
+                        e.preventDefault();
+                    }
+                }
+            }
+        });
     });
 });
 </script>

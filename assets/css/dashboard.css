@@ -416,3 +416,33 @@
 .transactions-list::-webkit-scrollbar-thumb:hover {
     background: #7d62b4;
 }
+
+#categoryEditForm .input-group {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#categoryEditForm .form-control {
+    background: transparent;
+    border: none;
+    color: white;
+}
+
+#categoryEditForm .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+#categoryEditForm .btn-light {
+    border: none;
+    background: #433878;
+    color: white;
+}
+
+#categoryEditForm .btn-outline-light {
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+#categoryEditForm .btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.1);
+}

@@ -148,6 +148,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['subscribe'])) {
                                 <td class="text-center"><i class="bi bi-check-circle text-success"></i></td>
                             </tr>
                             <tr>
+                                <td>Full Access to Budgets Customization</td>
+                                <td class="text-center"><i class="bi bi-x-circle text-danger"></i></td>
+                                <td class="text-center"><i class="bi bi-check-circle text-success"></i></td>
+                            </tr>
+                            <tr>
                                 <td>Number of Goals</td>
                                 <td class="text-center">Up to 3</td>
                                 <td class="text-center">Unlimited</td>
