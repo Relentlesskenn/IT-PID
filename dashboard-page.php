@@ -465,11 +465,8 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
         <!-- Budget Cards -->
         <div class="row row-cols-2 row-cols-sm-2 row-cols-lg-4 g-3" id="budgetCardsContainer">
             <?php
-            // Fetch budget data from the database and calculate the remaining balance
-            $userId = $_SESSION['auth_user']['user_id'];
-            
-            // Modified query to strictly match the month-year format
-            $stmt = $conn->prepare("SELECT b.id, b.name, b.amount, b.month, b.color, 
+            // Fetch budget data with priority sorting
+            $stmt = $conn->prepare("SELECT b.id, b.name, b.amount, b.month, b.color, b.priority, 
                     COALESCE(SUM(CASE 
                         WHEN MONTH(e.date) = ? AND YEAR(e.date) = ? 
                         THEN e.amount 
@@ -479,14 +476,22 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                     LEFT JOIN expenses e ON b.id = e.category_id
                     WHERE b.user_id = ? 
                     AND b.month = ?
-                    GROUP BY b.id, b.name, b.amount, b.month, b.color");
-                    
+                    GROUP BY b.id, b.name, b.amount, b.month, b.color, b.priority
+                    ORDER BY 
+                        CASE b.priority 
+                            WHEN 'high' THEN 1 
+                            WHEN 'medium' THEN 2 
+                            WHEN 'low' THEN 3 
+                        END");
+                            
             $yearMonth = sprintf('%04d-%02d', $currentYear, $currentMonth);
             $stmt->bind_param("iiss", $currentMonth, $currentYear, $userId, $yearMonth);
             $stmt->execute();
             $result = $stmt->get_result();
 
             if ($result->num_rows > 0) {
+                $currentPriority = null;
+                
                 while ($row = $result->fetch_assoc()) {
                     $budgetId = $row['id'];
                     $budgetName = $row['name'];
@@ -495,33 +500,77 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                     $totalExpenses = $row['total_expenses'] ?? 0;
                     $remainingBalance = $budgetAmount - $totalExpenses;
                     $percentageUsed = ($totalExpenses / $budgetAmount) * 100;
-            ?>
-                    <!-- Budget Card Content -->
+                    
+                    // Add priority section header if priority changes
+                    if ($currentPriority !== $row['priority']) {
+                        $currentPriority = $row['priority'];
+                        ?>
+                        <div class="col-12">
+                            <div class="priority-section-header">
+                                <h6>
+                                    <?php 
+                                    $priorityIcon = $row['priority'] === 'high' ? 'arrow-up-circle' : 
+                                                ($row['priority'] === 'medium' ? 'arrow-right-circle' : 'arrow-down-circle');
+                                    ?>
+                                    <i class="bi bi-<?= $priorityIcon ?> me-1"></i>
+                                    <?= ucfirst($row['priority']) ?> Priority
+                                </h6>
+                                <div class="divider"></div>
+                            </div>
+                        </div>
+                        <?php
+                    }
+                    ?>
+                    <!-- Budget Card -->
                     <div class="col">
-                    <div class="card h-100" onclick="showBudgetDetails(this, <?= htmlspecialchars(json_encode([
-                            'id' => $budgetId,
-                            'name' => $budgetName,
-                            'amount' => $budgetAmount,
-                            'spent' => $totalExpenses,
-                            'remaining' => $remainingBalance,
-                            'period' => $monthCreated,
-                            'color' => $row['color'],
-                            'percentage' => $percentageUsed
-                        ])) ?>)">
-                            <div class="card-body d-flex flex-column p-2">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <h6 class="card-title mb-0" style="font-size: 1rem; font-weight: bold;">
-                                        <span class="badge rounded-pill-custom" style="background-color: <?= htmlspecialchars($row['color']) ?>; margin-bottom: 0.2rem;">&nbsp;</span>
+                        <div class="card h-100" onclick="showBudgetDetails(this, <?= htmlspecialchars(json_encode([
+                                'id' => $budgetId,
+                                'name' => $budgetName,
+                                'amount' => $budgetAmount,
+                                'spent' => $totalExpenses,
+                                'remaining' => $remainingBalance,
+                                'period' => $monthCreated,
+                                'color' => $row['color'],
+                                'percentage' => $percentageUsed,
+                                'priority' => $row['priority']
+                            ])) ?>)">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div class="category-label">
+                                        <span class="category-dot" 
+                                            style="background-color: <?= htmlspecialchars($row['color']) ?>"></span>
                                         <?= htmlspecialchars($budgetName) ?>
-                                    </h6>
+                                    </div>
+                                    <?php
+                                        $priorityClass = $row['priority'] === 'high' ? 'high' : 
+                                                    ($row['priority'] === 'medium' ? 'medium' : 'low');
+                                        $priorityIcon = $row['priority'] === 'high' ? 'exclamation-circle' : 
+                                                    ($row['priority'] === 'medium' ? 'arrow-up-circle' : 'arrow-down-circle');
+                                    ?>
+                                    <span class="priority-badge <?= $priorityClass ?>">
+                                        <i class="bi bi-<?= $priorityIcon ?>"></i>
+                                        <?= ucfirst($row['priority']) ?>
+                                    </span>
                                 </div>
-                                <div class="budget-info mt-1 mb-2">
-                                    <p class="card-text mb-0" style="font-size: 0.8rem; line-height: 1.6;">Budget - <strong>₱<?= number_format($budgetAmount, 2) ?></strong></p>
-                                    <p class="card-text mb-0" style="font-size: 0.8rem; line-height: 1.6;">Spent - <strong>₱<?= number_format($totalExpenses, 2) ?></strong></p>
-                                    <p class="card-text" style="font-size: 0.8rem; line-height: 1.6;">Balance - <strong>₱<?= number_format($remainingBalance, 2) ?></strong></p>
+                                
+                                <div class="budget-info mb-3">
+                                    <p>
+                                        <span class="text-muted">Budget</span>
+                                        <strong>₱<?= number_format($budgetAmount, 2) ?></strong>
+                                    </p>
+                                    <p>
+                                        <span class="text-muted">Spent</span>
+                                        <strong>₱<?= number_format($totalExpenses, 2) ?></strong>
+                                    </p>
+                                    <p>
+                                        <span class="text-muted">Balance</span>
+                                        <strong>₱<?= number_format($remainingBalance, 2) ?></strong>
+                                    </p>
                                 </div>
-                                <div class="progress mt-auto position-relative" style="height: 0.4rem;">
-                                    <div class="progress-bar <?php echo $percentageUsed >= 90 ? 'bg-custom-danger' : ($percentageUsed >= 70 ? 'bg-warning' : 'bg-success'); ?>" 
+                                
+                                <div class="progress">
+                                    <div class="progress-bar <?php echo $percentageUsed >= 90 ? 'bg-custom-danger' : 
+                                                                ($percentageUsed >= 70 ? 'bg-warning' : 'bg-success'); ?>" 
                                         role="progressbar" 
                                         style="width: <?= $percentageUsed ?>%;" 
                                         aria-valuenow="<?= $percentageUsed ?>" 
@@ -532,20 +581,25 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                             </div>
                         </div>
                     </div>
-            <?php
+                    <?php
                 }
             } else {
-                echo '<div class="col-12 no-results-message">
-                        <div class="card">
-                            <div class="card-body">
-                                <p class="card-text text-center">No budgets found for the selected date.</p>
-                            </div>
+                ?>
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body text-center py-5">
+                            <i class="bi bi-wallet2 text-muted mb-3" style="font-size: 2rem;"></i>
+                            <p class="card-text text-muted mb-0">No budgets found for the selected date.</p>
+                            <a href="create-page.php?page=budget" class="btn btn-custom-primary-rounded mt-3">
+                                <i class="bi bi-plus-circle me-2"></i>Create Budget
+                            </a>
                         </div>
-                    </div>';
+                    </div>
+                </div>
+                <?php
             }
             ?>        
         </div>
-    </div>
 
     <!-- Budget Details Modal -->
     <div class="modal fade" id="budgetDetailsModal" tabindex="-1">

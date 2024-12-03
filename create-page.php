@@ -209,7 +209,7 @@ function showBudget() {
     echo '   
         <form method="post">
             <input type="hidden" name="budget_month" value="' . $current_month . '">
-            <div class="mb-3">
+            <div class="mb-2">
                 <label for="budget_name" class="form-label">Budget Category</label>
                 <div class="input-group input-group-lg">
                     <select class="form-select" name="budget_name" id="budget_name" required>
@@ -264,11 +264,17 @@ function showBudget() {
             </button>';
     }
 
-    echo '      </div>
-                <div class="form-text">';
-    if (!$hasActiveSubscription) {
-        echo '<i class="bi bi-info-circle me-1"></i>Upgrade to Premium to create custom budget categories';
-    }
+    // Priority Level
+    echo '
+        <div class="mb-1 mt-3 w-100">
+            <label for="budget_priority" class="form-label">Priority</label>
+            <select class="form-select form-select-lg" name="budget_priority" id="budget_priority" required>
+                <option value="high">High Priority</option>
+                <option value="medium" selected>Medium Priority</option>
+                <option value="low">Low Priority</option>
+            </select>
+        </div>';
+
     echo '      </div>
             </div>
             <div class="mb-4">
@@ -510,20 +516,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $budgetName = mysqli_real_escape_string($conn, $_POST['budget_name']);
         $budgetAmount = floatval($_POST['budget_amount']);
         $budgetMonth = mysqli_real_escape_string($conn, $_POST['budget_month']);
+        $budgetPriority = mysqli_real_escape_string($conn, $_POST['budget_priority']);
         $userId = $_SESSION['auth_user']['user_id'];
-
+    
         $budgetColor = isset($budgetCategories[$budgetName]) ? $budgetCategories[$budgetName] : '#6c757d';
-
+    
         $stmt = $conn->prepare("SELECT * FROM budgets WHERE user_id = ? AND name = ? AND month = ?");
         $stmt->bind_param("iss", $userId, $budgetName, $budgetMonth);
         $stmt->execute();
         $result = $stmt->get_result();
-
+    
         if ($result->num_rows > 0) {
             $redirect_url .= '&message=' . urlencode('A budget with this name already exists for the current month!') . '&type=warning';
         } else {
-            $stmt = $conn->prepare("INSERT INTO budgets (user_id, name, amount, month, color) VALUES (?, ?, ?, ?, ?)");
-            $stmt->bind_param("isdss", $userId, $budgetName, $budgetAmount, $budgetMonth, $budgetColor);
+            // Update the INSERT query to include priority
+            $stmt = $conn->prepare("INSERT INTO budgets (user_id, name, amount, month, color, priority) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("isdsss", $userId, $budgetName, $budgetAmount, $budgetMonth, $budgetColor, $budgetPriority);
             
             if ($stmt->execute()) {
                 $redirect_url .= '&message=' . urlencode("A budget of ₱" . number_format($budgetAmount, 2) . " for '" . $budgetName . "' has been set for " . date('F Y', strtotime($budgetMonth)) . "!") . '&type=primary';
