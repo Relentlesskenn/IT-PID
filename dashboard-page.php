@@ -500,26 +500,6 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                     $totalExpenses = $row['total_expenses'] ?? 0;
                     $remainingBalance = $budgetAmount - $totalExpenses;
                     $percentageUsed = ($totalExpenses / $budgetAmount) * 100;
-                    
-                    // Add priority section header if priority changes
-                    if ($currentPriority !== $row['priority']) {
-                        $currentPriority = $row['priority'];
-                        ?>
-                        <div class="col-12">
-                            <div class="priority-section-header">
-                                <h6>
-                                    <?php 
-                                    $priorityIcon = $row['priority'] === 'high' ? 'arrow-up-circle' : 
-                                                ($row['priority'] === 'medium' ? 'arrow-right-circle' : 'arrow-down-circle');
-                                    ?>
-                                    <i class="bi bi-<?= $priorityIcon ?> me-1"></i>
-                                    <?= ucfirst($row['priority']) ?> Priority
-                                </h6>
-                                <div class="divider"></div>
-                            </div>
-                        </div>
-                        <?php
-                    }
                     ?>
                     <!-- Budget Card -->
                     <div class="col">
