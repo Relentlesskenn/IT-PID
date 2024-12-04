@@ -599,7 +599,7 @@ $budgetAlerts = checkBudgetStatus($userId, $currentMonth, $currentYear);
                             <span class="badge bg-white bg-opacity-10 rounded-pill px-3 py-2" id="budgetPeriod"></span>
                         </div>
                         <div class="d-flex align-items-center justify-content-center">
-                            <span class="badge rounded-circle me-2" id="categoryColor"></span>
+                            <span class="category-dot me-2" id="categoryColor"></span>
                             <div class="d-flex align-items-center">
                                 <h3 class="modal-title text-white mb-0" id="budgetTitle"></h3>
                                 <?php if ($hasActiveSubscription): ?>

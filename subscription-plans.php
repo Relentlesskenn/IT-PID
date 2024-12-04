@@ -148,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['subscribe'])) {
                                 <td class="text-center"><i class="bi bi-check-circle text-success"></i></td>
                             </tr>
                             <tr>
-                                <td>Full Access to Budgets Customization</td>
+                                <td>Full Access to Budget Customization</td>
                                 <td class="text-center"><i class="bi bi-x-circle text-danger"></i></td>
                                 <td class="text-center"><i class="bi bi-check-circle text-success"></i></td>
                             </tr>
